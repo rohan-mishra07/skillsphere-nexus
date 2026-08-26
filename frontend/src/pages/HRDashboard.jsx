@@ -8,11 +8,14 @@ import {
   XCircle, 
   Briefcase, 
   Calendar,
-  Sparkles
+  Sparkles,
+  Activity
 } from 'lucide-react';
 import api from '../api/axios';
+import { useWorkforce } from '../context/WorkforceContext';
 
 export const HRDashboard = () => {
+  const { activeInOffice, totalHeadcount, pulseType, latestEvent, liveLog } = useWorkforce();
   const [leaves, setLeaves] = useState([]);
   const [jobPostings, setJobPostings] = useState([]);
 
@@ -55,20 +58,28 @@ export const HRDashboard = () => {
             People Operations <span className="text-purple-400">Dashboard</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Workforce Planning, Leave Approvals, Recruitment ATS Pipeline & Employee Records.
+            Workforce Planning, Real-time Clock-ins, Leave Approvals, Recruitment ATS Pipeline & Employee Records.
           </p>
         </div>
       </div>
 
       {/* Metrics Row */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="glass-panel p-4 rounded-2xl border border-slate-800">
+        <div className={`glass-panel p-4 rounded-2xl border transition-all duration-300 ${
+          pulseType === 'JOIN' ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/20' :
+          pulseType === 'LEFT' ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/20' : 'border-slate-800'
+        }`}>
           <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-xs font-medium">Headcount</span>
+            <span className="text-xs font-medium">Headcount (Live)</span>
             <Users className="w-4 h-4 text-purple-400" />
           </div>
-          <div className="text-2xl font-extrabold text-white font-outfit">480 Staff</div>
-          <div className="text-[11px] text-emerald-400 mt-1">+12 this month</div>
+          <div className="text-2xl font-extrabold text-white font-outfit">{activeInOffice} Staff</div>
+          <div className="text-[11px] text-emerald-400 mt-1 flex items-center gap-1 font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+            {pulseType === 'JOIN' ? `+1 ${latestEvent.name.split(' ')[0]} joined` :
+             pulseType === 'LEFT' ? `-1 ${latestEvent.name.split(' ')[0]} left` :
+             'Dynamic Real-Time Sync'}
+          </div>
         </div>
 
         <div className="glass-panel p-4 rounded-2xl border border-slate-800">

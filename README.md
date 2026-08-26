@@ -68,7 +68,7 @@ A unified enterprise-grade digital platform integrating Learning Management (LMS
 
 ### 🧠 Option 2: IntelliJ IDEA Setup & Run
 1. **Open Project**: Open IntelliJ IDEA -> `File` -> `Open` -> Select the `infosys` root folder.
-2. **Maven Sync**: IntelliJ will automatically detect [backend/pom.xml](file:///c:/Users/mishr/OneDrive/Desktop/infosys/backend/pom.xml). If prompted, click **"Load Maven Project"** or right-click `backend/pom.xml` -> **Maven** -> **Reload Project**.
+2. **Maven Sync**: IntelliJ will automatically detect [user-service/pom.xml](file:///c:/Users/mishr/OneDrive/Desktop/infosys/user-service/pom.xml). If prompted, click **"Load Maven Project"** or right-click `user-service/pom.xml` -> **Maven** -> **Reload Project**.
 3. **Run Configurations**:
    - In the top right toolbar run dropdown, select **`SkillSphereApplication`** and click **Run** (or `Shift + F10`).
    - Select **`Frontend - npm dev`** to run the frontend server directly inside IntelliJ.
@@ -78,7 +78,7 @@ A unified enterprise-grade digital platform integrating Learning Management (LMS
 
 #### 1. Run Backend (Java Spring Boot)
 ```powershell
-cd backend
+cd user-service
 .\mvnw.cmd spring-boot:run
 ```
 - REST APIs will run on: `http://localhost:8080/api`

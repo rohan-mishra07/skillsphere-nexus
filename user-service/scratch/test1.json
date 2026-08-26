@@ -1,0 +1,9 @@
+{
+  "title": "Cloud Native Kubernetes Architecture",
+  "description": "Enterprise microservices orchestration with Docker and K8s",
+  "duration": 25,
+  "type": "BOOTCAMP",
+  "instructor": "Dr. Sarah Connor",
+  "rating": 5.0,
+  "active": true
+}

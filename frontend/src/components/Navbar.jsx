@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth, getInitials } from '../context/AuthContext';
+import { useWorkforce } from '../context/WorkforceContext';
 import { NotificationBar, INITIAL_NOTIFICATIONS } from './NotificationBar';
 import { 
   Sparkles, 
@@ -12,11 +13,13 @@ import {
   Briefcase, 
   GraduationCap, 
   Users,
-  Bot
+  Bot,
+  Activity
 } from 'lucide-react';
 
 export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
   const { user, switchRole, logout } = useAuth();
+  const { totalHeadcount, activeInOffice, pulseType, latestEvent } = useWorkforce();
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [showNotificationBar, setShowNotificationBar] = useState(false);
   const [notifications] = useState(INITIAL_NOTIFICATIONS);
@@ -37,15 +40,36 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
 
   return (
     <header className="sticky top-0 z-40 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-6 py-3 flex items-center justify-between">
-      {/* Left: Search Bar */}
-      <div className="flex items-center gap-4 flex-1 max-w-md">
-        <div className="relative w-full">
+      {/* Left: Search Bar & Real-time Live Staff Badge */}
+      <div className="flex items-center gap-4 flex-1 max-w-xl">
+        <div className="relative w-full max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
             type="text"
             placeholder="Search courses, skills, students, or job postings..."
             className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-4 py-2 text-sm text-slate-200 focus:outline-none focus:border-indigo-500 transition-colors"
           />
+        </div>
+
+        {/* Dynamic Real-Time Employee Ticker */}
+        <div className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all duration-300 ${
+          pulseType === 'JOIN' 
+            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-lg shadow-emerald-500/20 scale-105' 
+            : pulseType === 'LEFT'
+            ? 'bg-amber-500/20 text-amber-300 border-amber-500/50 shadow-lg shadow-amber-500/20 scale-105'
+            : 'bg-slate-950 text-slate-300 border-slate-800'
+        }`}>
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+          <span className="font-outfit font-extrabold text-white">{activeInOffice} Staff Live</span>
+          {pulseType === 'JOIN' && (
+            <span className="text-[10px] text-emerald-400 font-bold animate-pulse">+1 Joined ({latestEvent.name.split(' ')[0]})</span>
+          )}
+          {pulseType === 'LEFT' && (
+            <span className="text-[10px] text-amber-400 font-bold animate-pulse">-1 Left ({latestEvent.name.split(' ')[0]})</span>
+          )}
         </div>
       </div>
 

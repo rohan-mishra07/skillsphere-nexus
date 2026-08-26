@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { 
   User, Award, ShieldCheck, BookOpen, CheckCircle, AlertTriangle, 
   Search, Filter, Plus, RefreshCw, BarChart2, Star, CheckCircle2, 
-  Sparkles, Shield, ChevronRight, Layers, FileCheck, Key
+  Sparkles, Shield, ChevronRight, Layers, FileCheck, Key, Users
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useWorkforce } from '../context/WorkforceContext';
 
 export const SkillManagementHub = () => {
   const { user } = useAuth();
+  const { totalHeadcount, formattedTotalHeadcount, activeInOffice, pulseType, latestEvent, liveLog } = useWorkforce();
   const [activeTab, setActiveTab] = useState('profile'); // profile, catalog, assessments, competency, certifications, rbac
   const [profileData, setProfileData] = useState(null);
   const [catalog, setCatalog] = useState([]);
@@ -205,33 +207,50 @@ export const SkillManagementHub = () => {
 
       {/* Enterprise Metrics Bar */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        <div className="glass-panel p-3.5 rounded-xl border border-slate-800 text-center space-y-1">
-          <p className="text-[10px] uppercase font-bold text-slate-400">Total Employees</p>
-          <p className="text-lg font-extrabold text-white">{profileData?.enterpriseMetrics?.totalEmployeesManaged || "12.4K"}</p>
+        <div className={`glass-panel p-3.5 rounded-xl border text-center space-y-1 transition-all duration-300 ${
+          pulseType === 'JOIN' ? 'border-emerald-500 bg-emerald-500/10 shadow-md shadow-emerald-500/20' : 
+          pulseType === 'LEFT' ? 'border-amber-500 bg-amber-500/10 shadow-md shadow-amber-500/20' : 'border-slate-800'
+        }`}>
+          <div className="flex items-center justify-center gap-1">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Total Staff</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+          </div>
+          <p className="text-lg font-extrabold text-white font-outfit">{totalHeadcount.toLocaleString()}</p>
+          <div className="text-[9px] font-semibold text-emerald-400">
+            {pulseType === 'JOIN' ? `+1 ${latestEvent.name.split(' ')[0]} joined` : 
+             pulseType === 'LEFT' ? `-1 ${latestEvent.name.split(' ')[0]} left` : 
+             'Live Real-time'}
+          </div>
         </div>
         <div className="glass-panel p-3.5 rounded-xl border border-slate-800 text-center space-y-1">
           <p className="text-[10px] uppercase font-bold text-slate-400">Skills Catalog</p>
           <p className="text-lg font-extrabold text-cyan-400">{profileData?.enterpriseMetrics?.trackedSkillsCount || "2,847"}</p>
+          <div className="text-[9px] text-slate-400">Verified Skills</div>
         </div>
         <div className="glass-panel p-3.5 rounded-xl border border-slate-800 text-center space-y-1">
           <p className="text-[10px] uppercase font-bold text-slate-400">Active Certs</p>
           <p className="text-lg font-extrabold text-emerald-400">{profileData?.enterpriseMetrics?.activeCertificationsCount || "8.4K"}</p>
+          <div className="text-[9px] text-slate-400">Verified</div>
         </div>
         <div className="glass-panel p-3.5 rounded-xl border border-slate-800 text-center space-y-1">
           <p className="text-[10px] uppercase font-bold text-slate-400">Cert Renewal</p>
           <p className="text-lg font-extrabold text-purple-400">{profileData?.enterpriseMetrics?.certificationRenewalRate || "94%"}</p>
+          <div className="text-[9px] text-slate-400">On Track</div>
         </div>
         <div className="glass-panel p-3.5 rounded-xl border border-slate-800 text-center space-y-1">
           <p className="text-[10px] uppercase font-bold text-slate-400">Course Comp.</p>
           <p className="text-lg font-extrabold text-blue-400">{profileData?.enterpriseMetrics?.courseCompletionRate || "87%"}</p>
+          <div className="text-[9px] text-slate-400">Avg Completion</div>
         </div>
         <div className="glass-panel p-3.5 rounded-xl border border-slate-800 text-center space-y-1">
           <p className="text-[10px] uppercase font-bold text-slate-400">Career Plans</p>
           <p className="text-lg font-extrabold text-pink-400">{profileData?.enterpriseMetrics?.careerPlansCount || "2,847"}</p>
+          <div className="text-[9px] text-slate-400">Active Roadmaps</div>
         </div>
         <div className="glass-panel p-3.5 rounded-xl border border-slate-800 text-center space-y-1">
           <p className="text-[10px] uppercase font-bold text-slate-400">Annual Prom.</p>
           <p className="text-lg font-extrabold text-amber-400">{profileData?.enterpriseMetrics?.annualPromotions || "247"}</p>
+          <div className="text-[9px] text-slate-400">Promotions YTD</div>
         </div>
       </div>
 

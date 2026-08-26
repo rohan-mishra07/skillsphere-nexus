@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/backend/skill-service/skill-service.iml" filepath="$PROJECT_DIR$/backend/skill-service/skill-service.iml" />
       <module fileurl="file://$PROJECT_DIR$/backend/skillsphere-backend.iml" filepath="$PROJECT_DIR$/backend/skillsphere-backend.iml" />
     </modules>
   </component>

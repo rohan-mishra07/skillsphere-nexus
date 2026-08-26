@@ -1,0 +1,15 @@
+<h2>Certifications Expiring Within 30 Days</h2>
+<table>
+  <tr>
+    <th>Employee</th>
+    <th>Certification</th>
+    <th>Expiry</th>
+    <th>Status</th>
+  </tr>
+  <tr *ngFor="let cert of certifications">
+    <td>{{ cert.employeeName }}</td>
+    <td>{{ cert.name }}</td>
+    <td>{{ cert.expiry }}</td>
+    <td>{{ cert.status }}</td>
+  </tr>
+</table>

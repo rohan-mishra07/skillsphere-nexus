@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../api/axios';
+import { useWorkforce } from './WorkforceContext';
 
 const AuthContext = createContext();
 
@@ -23,19 +24,18 @@ export const MOCK_USERS = [
 ];
 
 export const AuthProvider = ({ children }) => {
+  const workforce = useWorkforce();
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('skillsphere_user');
     return saved ? JSON.parse(saved) : MOCK_USERS[0]; // Default to John Smith (Developer)
   });
 
   const login = async (email, password, customName) => {
+    let userData;
     try {
       const res = await api.post('/auth/login', { email, password });
-      const userData = res.data;
+      userData = res.data;
       if (customName) userData.fullName = customName;
-      setUser(userData);
-      localStorage.setItem('skillsphere_user', JSON.stringify(userData));
-      return userData;
     } catch (err) {
       const found = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase()) || {
         id: Date.now(),
@@ -46,15 +46,17 @@ export const AuthProvider = ({ children }) => {
         designation: 'Software Specialist',
       };
 
-      const fallbackUser = { 
+      userData = { 
         ...found, 
         fullName: customName || found.fullName,
         token: 'mock-jwt-token-demo' 
       };
-      setUser(fallbackUser);
-      localStorage.setItem('skillsphere_user', JSON.stringify(fallbackUser));
-      return fallbackUser;
     }
+
+    setUser(userData);
+    localStorage.setItem('skillsphere_user', JSON.stringify(userData));
+    if (workforce?.recordLogin) workforce.recordLogin(userData);
+    return userData;
   };
 
   const register = async (registerData) => {
@@ -74,6 +76,7 @@ export const AuthProvider = ({ children }) => {
     };
     setUser(newUser);
     localStorage.setItem('skillsphere_user', JSON.stringify(newUser));
+    if (workforce?.recordLogin) workforce.recordLogin(newUser);
     return newUser;
   };
 
@@ -89,6 +92,7 @@ export const AuthProvider = ({ children }) => {
     };
     setUser(studentUser);
     localStorage.setItem('skillsphere_user', JSON.stringify(studentUser));
+    if (workforce?.recordLogin) workforce.recordLogin(studentUser);
     return studentUser;
   };
 
@@ -101,9 +105,11 @@ export const AuthProvider = ({ children }) => {
     };
     setUser(updatedUser);
     localStorage.setItem('skillsphere_user', JSON.stringify(updatedUser));
+    if (workforce?.recordLogin) workforce.recordLogin(updatedUser);
   };
 
   const logout = () => {
+    if (user && workforce?.recordLogout) workforce.recordLogout(user);
     setUser(null);
     localStorage.removeItem('skillsphere_user');
   };

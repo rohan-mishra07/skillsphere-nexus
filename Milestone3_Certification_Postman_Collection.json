@@ -1,0 +1,197 @@
+{
+	"info": {
+		"_postman_id": "m3-certification-management-collection",
+		"name": "Milestone 3 - Certification Management",
+		"description": "Postman requests for Milestone 3 Certification Management inside skill-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Step 0 - Keycloak Bearer Token",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/x-www-form-urlencoded"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{ "key": "grant_type", "value": "password", "type": "text" },
+						{ "key": "client_id", "value": "skillsphere-app", "type": "text" },
+						{ "key": "username", "value": "hr_user", "type": "text" },
+						{ "key": "password", "value": "password123", "type": "text" }
+					]
+				},
+				"url": {
+					"raw": "http://localhost:8081/realms/skillsphere/protocol/openid-connect/token",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"port": "8081",
+					"path": [ "realms", "skillsphere", "protocol", "openid-connect", "token" ]
+				}
+			}
+		},
+		{
+			"name": "1. Register Certification",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Content-Type", "value": "application/json" },
+					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"empId\": \"PUT-EMPLOYEE-UUID-HERE\",\n  \"name\": \"AWS Solutions Architect\",\n  \"issuingOrganization\": \"AWS\",\n  \"credentialId\": \"AWS-12345\",\n  \"issued\": \"2025-03-15\",\n  \"expiry\": \"2028-03-15\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/certifications",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"port": "8080",
+					"path": [ "api", "certifications" ]
+				}
+			}
+		},
+		{
+			"name": "2. Get Employee Certifications",
+			"request": {
+				"method": "GET",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/certifications/employee/:empId",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"port": "8080",
+					"path": [ "api", "certifications", "employee", ":empId" ],
+					"variable": [ { "key": "empId", "value": "PUT-EMPLOYEE-UUID-HERE" } ]
+				}
+			}
+		},
+		{
+			"name": "3. Get Expiring Certifications",
+			"request": {
+				"method": "GET",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/certifications/expiring",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"port": "8080",
+					"path": [ "api", "certifications", "expiring" ]
+				}
+			}
+		},
+		{
+			"name": "4. Get Expired Certifications",
+			"request": {
+				"method": "GET",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/certifications/expired",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"port": "8080",
+					"path": [ "api", "certifications", "expired" ]
+				}
+			}
+		},
+		{
+			"name": "5. Request Renewal",
+			"request": {
+				"method": "POST",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/certifications/renewals/:certificationId?requestedBy=HR",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"port": "8080",
+					"path": [ "api", "certifications", "renewals", ":certificationId" ],
+					"query": [ { "key": "requestedBy", "value": "HR" } ],
+					"variable": [ { "key": "certificationId", "value": "CERT-UUID-HERE" } ]
+				}
+			}
+		},
+		{
+			"name": "6. Approve Renewal",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/certifications/renewals/:renewalId/approve?newExpiry=2031-03-15&approvedBy=HR_MANAGER",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"port": "8080",
+					"path": [ "api", "certifications", "renewals", ":renewalId", "approve" ],
+					"query": [
+						{ "key": "newExpiry", "value": "2031-03-15" },
+						{ "key": "approvedBy", "value": "HR_MANAGER" }
+					],
+					"variable": [ { "key": "renewalId", "value": "RENEWAL-UUID-HERE" } ]
+				}
+			}
+		},
+		{
+			"name": "7. Get Compliance",
+			"request": {
+				"method": "GET",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/certifications/compliance/:empId",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"port": "8080",
+					"path": [ "api", "certifications", "compliance", ":empId" ],
+					"variable": [ { "key": "empId", "value": "PUT-EMPLOYEE-UUID-HERE" } ]
+				}
+			}
+		},
+		{
+			"name": "8. Get Certification Report",
+			"request": {
+				"method": "GET",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/certifications/report",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"port": "8080",
+					"path": [ "api", "certifications", "report" ]
+				}
+			}
+		},
+		{
+			"name": "9. Get Certification Audit History",
+			"request": {
+				"method": "GET",
+				"header": [
+					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
+				],
+				"url": {
+					"raw": "http://localhost:8080/api/certifications/:certificationId/audit",
+					"protocol": "http",
+					"host": [ "localhost" ],
+					"port": "8080",
+					"path": [ "api", "certifications", ":certificationId", "audit" ],
+					"variable": [ { "key": "certificationId", "value": "CERT-UUID-HERE" } ]
+				}
+			}
+		}
+	]
+}

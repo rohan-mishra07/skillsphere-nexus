@@ -15,13 +15,24 @@ import {
 } from 'lucide-react';
 import api from '../api/axios';
 import { CertificateModal } from '../components/CertificateModal';
+import { getIndiaTimeString } from '../context/WorkforceContext';
 
 export const EmployeeDashboard = () => {
   const { user } = useAuth();
   const [courses, setCourses] = useState([]);
   const [userSkills, setUserSkills] = useState([]);
-  const [clockedIn, setClockedIn] = useState(true);
+  const [clockedIn, setClockedIn] = useState(false);
+  const [clockInTime, setClockInTime] = useState('');
   const [showCertModal, setShowCertModal] = useState(false);
+
+  const handleToggleClockIn = () => {
+    if (!clockedIn) {
+      setClockInTime(getIndiaTimeString(0));
+      setClockedIn(true);
+    } else {
+      setClockedIn(false);
+    }
+  };
 
   useEffect(() => {
     fetchData();
@@ -74,14 +85,14 @@ export const EmployeeDashboard = () => {
               </div>
             </div>
             <button
-              onClick={() => setClockedIn(!clockedIn)}
+              onClick={handleToggleClockIn}
               className={`px-4 py-2 text-xs font-bold rounded-xl transition-all shadow-md ${
                 clockedIn
                   ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                   : 'bg-indigo-600 text-white hover:bg-indigo-500'
               }`}
             >
-              {clockedIn ? '✓ Clocked In (08:55 AM)' : 'Clock In Now'}
+              {clockedIn ? `✓ Clocked In (${clockInTime})` : 'Clock In Now'}
             </button>
           </div>
         </div>

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Clock, Calendar, CheckCircle2, AlertCircle, Plus, Send, UserCheck } from 'lucide-react';
+import { Clock, Calendar, CheckCircle2, AlertCircle, Plus, Send, UserCheck, Users, Activity } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useWorkforce, getIndiaDateString } from '../context/WorkforceContext';
 
 export const WorkforcePlanner = () => {
   const { user } = useAuth();
-  const [attendance, setAttendance] = useState([]);
+  const { totalHeadcount, activeInOffice, clockedInToday, pulseType, latestEvent, liveLog } = useWorkforce();
   const [leaves, setLeaves] = useState([]);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [leaveForm, setLeaveForm] = useState({
@@ -21,16 +22,9 @@ export const WorkforcePlanner = () => {
 
   const fetchWorkforceData = async () => {
     try {
-      const aRes = await api.get('/workforce/attendance/all');
-      setAttendance(aRes.data);
       const lRes = await api.get(`/workforce/leaves/user/${user?.id || 4}`);
       setLeaves(lRes.data);
     } catch (err) {
-      setAttendance([
-        { id: 1, userName: 'Alex Chen', date: '2026-07-27', checkInTime: '08:55', status: 'Present', shift: 'Morning Shift (09:00 - 17:00)' },
-        { id: 2, userName: 'Priya Sharma', date: '2026-07-27', checkInTime: '09:02', status: 'Present', shift: 'Morning Shift (09:00 - 17:00)' },
-        { id: 3, userName: 'David Kim', date: '2026-07-27', checkInTime: '09:15', status: 'Late', shift: 'Morning Shift (09:00 - 17:00)' },
-      ]);
       setLeaves([
         { id: 1, leaveType: 'Annual Vacation', startDate: '2026-08-10', endDate: '2026-08-14', reason: 'Tech Summit', status: 'APPROVED', approvedBy: 'Marcus Vance' }
       ]);
@@ -58,13 +52,13 @@ export const WorkforcePlanner = () => {
       <div className="glass-panel p-6 rounded-3xl border border-indigo-500/20 bg-gradient-to-r from-slate-900 via-indigo-950/20 to-slate-900 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 text-xs font-semibold border border-indigo-500/20 mb-2">
-            <Clock className="w-3.5 h-3.5" /> Enterprise Workforce Engine
+            <Clock className="w-3.5 h-3.5" /> Enterprise Real-Time Workforce Engine (IST)
           </div>
           <h1 className="text-2xl font-extrabold text-white font-outfit">
             Attendance, Shifts & <span className="gradient-text">Leave Management</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Automated clock-in logs, shift scheduling, and HR leave workflow automation.
+            Automated live clock-in logs (India Standard Time IST), real-time user login tracking, and HR leave workflows.
           </p>
         </div>
 
@@ -76,17 +70,71 @@ export const WorkforcePlanner = () => {
         </button>
       </div>
 
+      {/* Live Workforce Counter Row */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className={`glass-panel p-4 rounded-2xl border transition-all duration-300 ${
+          pulseType === 'JOIN' ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/20' :
+          pulseType === 'LEFT' ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/20' : 'border-slate-800'
+        }`}>
+          <div className="flex items-center justify-between text-slate-400 mb-1">
+            <span className="text-xs font-medium">Live Staff Count</span>
+            <Users className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="text-2xl font-extrabold text-white font-outfit">{activeInOffice} Staff</div>
+          <div className="text-[11px] text-emerald-400 font-bold flex items-center gap-1 mt-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+            {pulseType === 'JOIN' ? `+1 ${latestEvent.name} clocked in` :
+             pulseType === 'LEFT' ? `-1 ${latestEvent.name} clocked out` :
+             'India Standard Time (IST)'}
+          </div>
+        </div>
+
+        <div className="glass-panel p-4 rounded-2xl border border-slate-800">
+          <div className="flex items-center justify-between text-slate-400 mb-1">
+            <span className="text-xs font-medium">Clocked-In Today</span>
+            <UserCheck className="w-4 h-4 text-indigo-400" />
+          </div>
+          <div className="text-2xl font-extrabold text-white font-outfit">{clockedInToday} Staff</div>
+          <div className="text-[11px] text-indigo-300 mt-1">IST Active Shift</div>
+        </div>
+
+        <div className="glass-panel p-4 rounded-2xl border border-slate-800">
+          <div className="flex items-center justify-between text-slate-400 mb-1">
+            <span className="text-xs font-medium">Total Enterprise Staff</span>
+            <Clock className="w-4 h-4 text-purple-400" />
+          </div>
+          <div className="text-2xl font-extrabold text-white font-outfit">{totalHeadcount.toLocaleString()}</div>
+          <div className="text-[11px] text-purple-300 mt-1">Global Workforce</div>
+        </div>
+
+        <div className="glass-panel p-4 rounded-2xl border border-slate-800">
+          <div className="flex items-center justify-between text-slate-400 mb-1">
+            <span className="text-xs font-medium">Attendance Rate</span>
+            <Activity className="w-4 h-4 text-amber-400" />
+          </div>
+          <div className="text-2xl font-extrabold text-white font-outfit">98.2%</div>
+          <div className="text-[11px] text-emerald-400 mt-1">+1.4% higher than avg</div>
+        </div>
+      </div>
+
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Attendance Log Table */}
         <div className="lg:col-span-2 space-y-4">
           <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="font-bold text-sm text-white flex items-center gap-2">
-                <UserCheck className="w-4 h-4 text-emerald-400" />
-                Today's Workforce Attendance Log
-              </h3>
-              <span className="text-xs text-slate-400">Date: July 27, 2026</span>
+              <div>
+                <h3 className="font-bold text-sm text-white flex items-center gap-2 font-outfit">
+                  <UserCheck className="w-4 h-4 text-emerald-400" />
+                  Live Real-Time Attendance & Clock-In Log (IST)
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">{getIndiaDateString()} • Real-Time India Standard Time</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span> Live IST Clock
+                </span>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
@@ -94,22 +142,41 @@ export const WorkforcePlanner = () => {
                 <thead className="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
                   <tr>
                     <th className="p-3">Employee</th>
+                    <th className="p-3">Department</th>
                     <th className="p-3">Shift</th>
-                    <th className="p-3">Check-In</th>
-                    <th className="p-3">Status</th>
+                    <th className="p-3">Time</th>
+                    <th className="p-3">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {attendance.map((a) => (
-                    <tr key={a.id} className="hover:bg-slate-900/40">
-                      <td className="p-3 font-semibold text-white">{a.userName}</td>
-                      <td className="p-3 text-slate-400">{a.shift}</td>
-                      <td className="p-3 font-mono">{a.checkInTime}</td>
-                      <td className="p-3">
-                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${
-                          a.status === 'Present' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                  {liveLog.map((a, idx) => (
+                    <tr key={a.id} className={`transition-all duration-300 ${
+                      idx === 0 && pulseType === 'JOIN' ? 'bg-emerald-500/10 font-bold' :
+                      idx === 0 && pulseType === 'LEFT' ? 'bg-amber-500/10 font-bold' : 'hover:bg-slate-900/40'
+                    }`}>
+                      <td className="p-3 font-semibold text-white flex items-center gap-2">
+                        <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] ${
+                          a.action === 'JOIN' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                         }`}>
-                          {a.status}
+                          {a.name.substring(0, 2).toUpperCase()}
+                        </div>
+                        {a.name}
+                        {idx === 0 && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold bg-indigo-500 text-white uppercase tracking-wider animate-pulse">
+                            Just Now
+                          </span>
+                        )}
+                      </td>
+                      <td className="p-3 text-slate-400">{a.department || 'Engineering'}</td>
+                      <td className="p-3 text-slate-400">{a.shift || 'Morning Shift'}</td>
+                      <td className="p-3 font-mono text-slate-200">{a.time}</td>
+                      <td className="p-3">
+                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1 ${
+                          a.action === 'JOIN' 
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
+                            : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                        }`}>
+                          {a.action === 'JOIN' ? '🟢 Clocked In' : '🟠 Clocked Out'}
                         </span>
                       </td>
                     </tr>

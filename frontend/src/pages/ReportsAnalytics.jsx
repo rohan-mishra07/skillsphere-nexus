@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { BarChart3, TrendingUp, Users, BookOpen, Award, Sparkles, CheckCircle2 } from 'lucide-react';
 import api from '../api/axios';
+import { useWorkforce } from '../context/WorkforceContext';
 
 export const ReportsAnalytics = () => {
+  const { activeInOffice, totalHeadcount } = useWorkforce();
   const [data, setData] = useState({
     totalEmployees: 480,
     activeCourses: 3,
@@ -57,7 +59,7 @@ export const ReportsAnalytics = () => {
             <TrendingUp className="w-4 h-4 text-purple-400" />
           </div>
           <div className="text-3xl font-extrabold text-white font-outfit">{data.workforceProductivityIndex}</div>
-          <div className="text-xs text-purple-400 font-semibold">Measured across 480 employees</div>
+          <div className="text-xs text-purple-400 font-semibold">Measured across {activeInOffice} active staff ({totalHeadcount.toLocaleString()} global)</div>
         </div>
 
         <div className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-2">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { WorkforceProvider } from './context/WorkforceContext';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { AiAssistantModal } from './components/AiAssistantModal';
@@ -13,15 +14,17 @@ import { WorkforcePlanner } from './pages/WorkforcePlanner';
 import { PerformanceHub } from './pages/PerformanceHub';
 import { RecruitmentBoard } from './pages/RecruitmentBoard';
 import { ReportsAnalytics } from './pages/ReportsAnalytics';
-import { StudentLoginPage } from './pages/StudentLoginPage';
+import { Milestone2Dashboard } from './pages/Milestone2Dashboard';
+import { CertificationManagement } from './pages/CertificationManagement';
 
 export function App() {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   return (
-    <AuthProvider>
-      <Router>
+    <WorkforceProvider>
+      <AuthProvider>
+        <Router>
         <div className="flex min-h-screen bg-slate-950 text-slate-100 font-sans">
           {/* Sidebar */}
           <Sidebar />
@@ -36,7 +39,8 @@ export function App() {
             <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl w-full mx-auto">
               <Routes>
                 <Route path="/" element={<DashboardRouter />} />
-                <Route path="/login" element={<StudentLoginPage />} />
+                <Route path="/milestone2" element={<Milestone2Dashboard />} />
+                <Route path="/certifications" element={<CertificationManagement />} />
                 <Route path="/courses" element={<LmsCatalog />} />
                 <Route path="/courses/:id" element={<CoursePlayer />} />
                 <Route path="/skills" element={<SkillManagementHub />} />
@@ -61,7 +65,8 @@ export function App() {
           />
         </div>
       </Router>
-    </AuthProvider>
+      </AuthProvider>
+    </WorkforceProvider>
   );
 }
 

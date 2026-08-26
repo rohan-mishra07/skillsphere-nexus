@@ -1,0 +1,13 @@
+<div class="container">
+  <h2>Certification Management</h2>
+  <div *ngFor="let cert of certifications" class="certification-card">
+    <h3>{{ cert.name }}</h3>
+    <p>Employee: {{ cert.employeeName }}</p>
+    <p>Issuer: {{ cert.issuingOrganization }}</p>
+    <p>Credential ID: {{ cert.credentialId }}</p>
+    <p>Issued: {{ cert.issued }}</p>
+    <p>Expiry: {{ cert.expiry }}</p>
+    <p>Status: <strong>{{ cert.status }}</strong></p>
+    <button (click)="onRenew(cert.certId)">Renew</button>
+  </div>
+</div>
