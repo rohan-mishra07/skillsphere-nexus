@@ -14,8 +14,8 @@ public class SkillSphereApplication {
         SpringApplication.run(SkillSphereApplication.class, args);
         System.out.println("\n=======================================================");
         System.out.println("  SkillSphere Platform Backend Started Successfully!   ");
-        System.out.println("  REST APIs available at: http://localhost:8082/api    ");
-        System.out.println("  H2 Console available at: http://localhost:8082/h2-console ");
+        System.out.println("  REST APIs available at: http://localhost:8080/api    ");
+        System.out.println("  H2 Console available at: http://localhost:8080/h2-console ");
         System.out.println("=======================================================\n");
     }
 }

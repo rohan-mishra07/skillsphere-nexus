@@ -1,15 +1,25 @@
 <h2>Certifications Expiring Within 30 Days</h2>
 <table>
-  <tr>
-    <th>Employee</th>
-    <th>Certification</th>
-    <th>Expiry</th>
-    <th>Status</th>
-  </tr>
-  <tr *ngFor="let cert of certifications">
-    <td>{{ cert.employeeName }}</td>
-    <td>{{ cert.name }}</td>
-    <td>{{ cert.expiry }}</td>
-    <td>{{ cert.status }}</td>
-  </tr>
+  <thead>
+    <tr>
+      <th>Employee</th>
+      <th>Certification</th>
+      <th>Issuer</th>
+      <th>Expiry</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let cert of certifications">
+      <td>{{ cert.employeeName }}</td>
+      <td>{{ cert.name }}</td>
+      <td>{{ cert.issuingOrganization }}</td>
+      <td>{{ cert.expiry }}</td>
+      <td><span class="badge badge-pending">{{ cert.status }}</span></td>
+      <td>
+        <button (click)="onRequestRenewal(cert.certId)">Request Renewal</button>
+      </td>
+    </tr>
+  </tbody>
 </table>

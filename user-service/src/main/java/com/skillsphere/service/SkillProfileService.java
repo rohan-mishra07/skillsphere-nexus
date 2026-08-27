@@ -84,7 +84,7 @@ public class SkillProfileService {
     public Map<String, Object> getSkillProfile(Long empId) {
         // Robust employee lookup: by ID -> by email -> first available
         User employee = userRepository.findById(empId)
-                .orElseGet(() -> userRepository.findByEmail("john.smith@skillsphere.com")
+                .orElseGet(() -> userRepository.findByEmail("rohan.mishra@skillsphere.com")
                 .orElseGet(() -> userRepository.findAll().stream().findFirst()
                 .orElseThrow(() -> new RuntimeException("Employee not found with ID: " + empId))));
 
@@ -147,7 +147,7 @@ public class SkillProfileService {
     @SuppressWarnings("null")
     public Assessment recordAssessmentScore(Long userId, Long skillId, int score, String testName) {
         User user = userRepository.findById(userId)
-                .orElseGet(() -> userRepository.findByEmail("john.smith@skillsphere.com").orElse(null));
+                .orElseGet(() -> userRepository.findByEmail("rohan.mishra@skillsphere.com").orElse(null));
         Long targetUserId = user != null ? user.getId() : userId;
 
         Skill skill = skillRepository.findById(skillId).orElse(null);

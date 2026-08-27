@@ -54,11 +54,11 @@ export const SkillManagementHub = () => {
     } catch (err) {
       console.warn("Using fallback demo data for Milestone 1", err);
       setProfileData({
-        outputScreenBanner: "Skill Service: John Smith, Developer. Skills: Java 8/10, Spring Boot 7/10. AWS SAA valid, Java OCP expired. Assessment: 87%.",
+        outputScreenBanner: "Skill Service: Rohan Mishra, Developer. Skills: Java 8/10, Spring Boot 7/10. AWS SAA valid, Java OCP expired. Assessment: 87%.",
         employee: {
           id: 4,
-          fullName: "John Smith",
-          email: "john.smith@skillsphere.com",
+          fullName: "Rohan Mishra",
+          email: "rohan.mishra@skillsphere.com",
           designation: "Developer",
           department: "Software Engineering",
           role: "ROLE_EMPLOYEE"

@@ -14,9 +14,11 @@ import java.util.List;
 public class CertificationReportService {
 
     private final CertificationRepository repository;
+    private final CertificationService certificationService;
 
     public CertificationReportDTO generate() {
         List<Certification> all = repository.findAll();
+        all.forEach(certificationService::refreshStatus);
         long total = all.size();
         long active = all.stream()
                 .filter(c -> c.getStatus() == Certification.Status.VALID)

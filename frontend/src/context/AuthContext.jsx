@@ -14,7 +14,7 @@ export const getInitials = (name) => {
 };
 
 export const MOCK_USERS = [
-  { id: 4, email: 'john.smith@skillsphere.com', fullName: 'John Smith', role: 'ROLE_EMPLOYEE', department: 'Software Engineering', designation: 'Developer' },
+  { id: 4, email: 'rohan.mishra@skillsphere.com', fullName: 'Rohan Mishra', role: 'ROLE_EMPLOYEE', department: 'Software Engineering', designation: 'Developer' },
   { id: 1, email: 'admin@skillsphere.com', fullName: 'Sarah Jenkins', role: 'ROLE_ADMIN', department: 'Executive Management', designation: 'Platform Director' },
   { id: 2, email: 'hr@skillsphere.com', fullName: 'Marcus Vance', role: 'ROLE_HR', department: 'Human Resources', designation: 'Head of People Operations' },
   { id: 3, email: 'manager@skillsphere.com', fullName: 'Elena Rostova', role: 'ROLE_MANAGER', department: 'Engineering & IT', designation: 'Engineering Manager' },
@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
   const workforce = useWorkforce();
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem('skillsphere_user');
-    return saved ? JSON.parse(saved) : MOCK_USERS[0]; // Default to John Smith (Developer)
+    return saved ? JSON.parse(saved) : MOCK_USERS[0]; // Default to Rohan Mishra (Developer)
   });
 
   const login = async (email, password, customName) => {

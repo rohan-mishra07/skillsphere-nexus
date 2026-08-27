@@ -48,12 +48,12 @@ Authorization: Bearer {{authToken}}
 
 
 ### 6. Request Renewal for a Certification
-POST {{baseUrl}}/renewals/12345678-1234-1234-1234-123456789abc?requestedBy=HR_Manager
+POST {{baseUrl}}/renewals/12345678-1234-1234-1234-123456789abc?requestedBy=Rohan+Mishra
 Authorization: Bearer {{authToken}}
 
 
 ### 7. Approve Renewal for a Certification
-PUT {{baseUrl}}/renewals/87654321-4321-4321-4321-cba987654321/approve?newExpiry=2031-03-15&approvedBy=HR_ADMIN
+PUT {{baseUrl}}/renewals/87654321-4321-4321-4321-cba987654321/approve?newExpiry=2031-03-15&approvedBy=Rohan+Mishra
 Authorization: Bearer {{authToken}}
 
 

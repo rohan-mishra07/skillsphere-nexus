@@ -112,12 +112,12 @@
 					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
 				],
 				"url": {
-					"raw": "http://localhost:8080/api/certifications/renewals/:certificationId?requestedBy=HR",
+					"raw": "http://localhost:8080/api/certifications/renewals/:certificationId?requestedBy=Rohan+Mishra",
 					"protocol": "http",
 					"host": [ "localhost" ],
 					"port": "8080",
 					"path": [ "api", "certifications", "renewals", ":certificationId" ],
-					"query": [ { "key": "requestedBy", "value": "HR" } ],
+					"query": [ { "key": "requestedBy", "value": "Rohan Mishra" } ],
 					"variable": [ { "key": "certificationId", "value": "CERT-UUID-HERE" } ]
 				}
 			}
@@ -130,14 +130,14 @@
 					{ "key": "Authorization", "value": "Bearer {{bearer_token}}" }
 				],
 				"url": {
-					"raw": "http://localhost:8080/api/certifications/renewals/:renewalId/approve?newExpiry=2031-03-15&approvedBy=HR_MANAGER",
+					"raw": "http://localhost:8080/api/certifications/renewals/:renewalId/approve?newExpiry=2031-03-15&approvedBy=Rohan+Mishra",
 					"protocol": "http",
 					"host": [ "localhost" ],
 					"port": "8080",
 					"path": [ "api", "certifications", "renewals", ":renewalId", "approve" ],
 					"query": [
 						{ "key": "newExpiry", "value": "2031-03-15" },
-						{ "key": "approvedBy", "value": "HR_MANAGER" }
+						{ "key": "approvedBy", "value": "Rohan Mishra" }
 					],
 					"variable": [ { "key": "renewalId", "value": "RENEWAL-UUID-HERE" } ]
 				}

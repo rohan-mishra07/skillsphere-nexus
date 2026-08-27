@@ -17,6 +17,7 @@ public class ComplianceService {
 
     private final EmployeeRepository employeeRepository;
     private final CertificationRepository certificationRepository;
+    private final CertificationService certificationService;
 
     public ComplianceDTO getCompliance(UUID empId) {
         Employee employee = employeeRepository.findById(empId)
@@ -24,6 +25,7 @@ public class ComplianceService {
                 .orElseThrow(() -> new RuntimeException("Employee not found")));
 
         List<Certification> certifications = certificationRepository.findByEmployeeEmpId(empId);
+        certifications.forEach(certificationService::refreshStatus);
 
         long total = certifications.size();
         long expired = certifications.stream()

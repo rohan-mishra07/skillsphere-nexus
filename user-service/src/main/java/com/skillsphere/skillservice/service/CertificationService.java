@@ -42,12 +42,14 @@ public class CertificationService {
     public CertificationDTO getById(UUID id) {
         Certification certification = certificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Certification not found"));
+        syncStatus(certification);
         return toDTO(certification);
     }
 
     public List<CertificationDTO> getByEmployee(UUID empId) {
         return certificationRepository.findByEmployeeEmpId(empId)
                 .stream()
+                .peek(this::syncStatus)
                 .map(this::toDTO)
                 .toList();
     }
@@ -76,26 +78,34 @@ public class CertificationService {
     public List<CertificationDTO> getExpiring() {
         LocalDate today = LocalDate.now();
         LocalDate end = today.plusDays(30);
-        return certificationRepository.findByExpiryBetween(today, end)
-                .stream()
-                .map(cert -> {
-                    cert.setStatus(Certification.Status.PENDING_RENEWAL);
-                    certificationRepository.save(cert);
-                    return toDTO(cert);
-                })
+        List<Certification> all = certificationRepository.findAll();
+        return all.stream()
+                .peek(this::syncStatus)
+                .filter(c -> c.getStatus() == Certification.Status.PENDING_RENEWAL || 
+                            (c.getExpiry() != null && !c.getExpiry().isBefore(today) && !c.getExpiry().isAfter(end)))
+                .map(this::toDTO)
                 .toList();
     }
 
     public List<CertificationDTO> getExpired() {
-        return certificationRepository.findByStatus(Certification.Status.EXPIRED)
-                .stream()
+        List<Certification> all = certificationRepository.findAll();
+        return all.stream()
+                .peek(this::syncStatus)
+                .filter(c -> c.getStatus() == Certification.Status.EXPIRED)
                 .map(this::toDTO)
                 .toList();
     }
 
     public void refreshStatus(Certification certification) {
-        certification.setStatus(calculateStatus(certification.getExpiry()));
-        certificationRepository.save(certification);
+        syncStatus(certification);
+    }
+
+    private void syncStatus(Certification cert) {
+        Certification.Status expected = calculateStatus(cert.getExpiry());
+        if (cert.getStatus() != expected) {
+            cert.setStatus(expected);
+            certificationRepository.save(cert);
+        }
     }
 
     private Certification.Status calculateStatus(LocalDate expiry) {

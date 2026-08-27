@@ -30,7 +30,7 @@ export const WorkforceProvider = ({ children }) => {
   const [pulseType, setPulseType] = useState(null); // 'JOIN' | 'LEFT' | null
   const [latestEvent, setLatestEvent] = useState({
     id: 1,
-    name: 'John Smith',
+    name: 'Rohan Mishra',
     action: 'JOIN',
     time: getIndiaTimeString(0),
     department: 'Software Engineering',

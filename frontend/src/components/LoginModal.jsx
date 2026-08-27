@@ -21,12 +21,12 @@ import {
 export const LoginModal = ({ isOpen, onClose }) => {
   const { user, login, register, logout, switchRole, MOCK_USERS } = useAuth();
   const [activeTab, setActiveTab] = useState('login'); // 'login' | 'quick' | 'register'
-  const [email, setEmail] = useState('john.smith@skillsphere.com');
-  const [password, setPassword] = useState('john1234');
+  const [email, setEmail] = useState('rohan.mishra@skillsphere.com');
+  const [password, setPassword] = useState('rohan1234');
   const [registerForm, setRegisterForm] = useState({
-    fullName: 'John Smith',
-    email: 'john.smith@skillsphere.com',
-    password: 'john1234',
+    fullName: 'Rohan Mishra',
+    email: 'rohan.mishra@skillsphere.com',
+    password: 'rohan1234',
     role: 'ROLE_EMPLOYEE',
     department: 'Software Engineering',
     designation: 'Developer'
@@ -187,10 +187,10 @@ export const LoginModal = ({ isOpen, onClose }) => {
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
-                  onClick={() => fillCredentials('john.smith@skillsphere.com', 'john1234')}
+                  onClick={() => fillCredentials('rohan.mishra@skillsphere.com', 'rohan1234')}
                   className="px-2.5 py-1 bg-slate-950 hover:bg-slate-800 border border-cyan-500/30 text-cyan-300 rounded-lg text-[10px] font-mono font-bold"
                 >
-                  John Smith (Developer)
+                  Rohan Mishra (Developer)
                 </button>
                 <button
                   type="button"
@@ -344,7 +344,7 @@ export const LoginModal = ({ isOpen, onClose }) => {
           <div className="flex items-center gap-2">
             <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
             <span className="text-[11px] text-slate-400 font-medium">
-              Active Session: <strong className="text-white">{user?.fullName || 'John Smith'}</strong> ({user?.role?.replace('ROLE_', '') || 'EMPLOYEE'})
+              Active Session: <strong className="text-white">{user?.fullName || 'Rohan Mishra'}</strong> ({user?.role?.replace('ROLE_', '') || 'EMPLOYEE'})
             </span>
           </div>
 

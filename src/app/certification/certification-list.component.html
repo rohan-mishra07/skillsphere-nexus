@@ -7,7 +7,20 @@
     <p>Credential ID: {{ cert.credentialId }}</p>
     <p>Issued: {{ cert.issued }}</p>
     <p>Expiry: {{ cert.expiry }}</p>
-    <p>Status: <strong>{{ cert.status }}</strong></p>
-    <button (click)="onRenew(cert.certId)">Renew</button>
+    <p>Status: <span class="badge" [ngClass]="getStatusClass(cert.status)">{{ cert.status }}</span></p>
+    <div class="card-actions">
+      <button (click)="onRenew(cert.certId)" class="btn-renew">Request Renewal</button>
+      <button (click)="viewAudit(cert)" class="btn-audit">View Audit Logs</button>
+    </div>
+  </div>
+
+  <div *ngIf="selectedAuditLogs.length > 0" class="audit-modal">
+    <h3>Audit History for {{ selectedCertName }}</h3>
+    <ul>
+      <li *ngFor="let log of selectedAuditLogs">
+        <strong>{{ log.action }}</strong> by {{ log.performedBy }} at {{ log.performedAt }}
+      </li>
+    </ul>
+    <button (click)="selectedAuditLogs = []">Close</button>
   </div>
 </div>

@@ -7,7 +7,9 @@ import { CertificationService } from './certification.service';
 })
 export class CertificationListComponent implements OnInit {
   certifications: any[] = [];
-  empId: string = 'PUT-EMPLOYEE-UUID-HERE';
+  empId: string = '550e8400-e29b-41d4-a716-446655440000';
+  selectedAuditLogs: any[] = [];
+  selectedCertName: string = '';
 
   constructor(private certificationService: CertificationService) {}
 
@@ -25,10 +27,28 @@ export class CertificationListComponent implements OnInit {
 
   onRenew(certId: string): void {
     this.certificationService
-      .requestRenewal(certId, 'HR')
+      .requestRenewal(certId, 'Rohan Mishra')
       .subscribe(() => {
         alert('Renewal requested successfully');
         this.loadCertifications();
       });
+  }
+
+  viewAudit(cert: any): void {
+    this.selectedCertName = cert.name;
+    this.certificationService
+      .getAudit(cert.certId)
+      .subscribe((logs: any) => {
+        this.selectedAuditLogs = logs;
+      });
+  }
+
+  getStatusClass(status: string): string {
+    switch (status) {
+      case 'VALID': return 'badge-valid';
+      case 'EXPIRED': return 'badge-expired';
+      case 'PENDING_RENEWAL': return 'badge-pending';
+      default: return '';
+    }
   }
 }

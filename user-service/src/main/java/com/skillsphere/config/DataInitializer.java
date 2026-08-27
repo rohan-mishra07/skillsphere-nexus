@@ -118,11 +118,11 @@ public class DataInitializer implements CommandLineRunner {
                                 .active(true)
                                 .build();
 
-                // Milestone 1 Featured Employee: John Smith
+                // Milestone 1 Featured Employee: Rohan Mishra
                 User johnSmith = User.builder()
-                                .fullName("John Smith")
-                                .email("john.smith@skillsphere.com")
-                                .password(encoder.encode("john1234"))
+                                .fullName("Rohan Mishra")
+                                .email("rohan.mishra@skillsphere.com")
+                                .password(encoder.encode("rohan1234"))
                                 .role(Role.ROLE_EMPLOYEE)
                                 .department("Software Engineering")
                                 .designation("Developer")
@@ -144,8 +144,8 @@ public class DataInitializer implements CommandLineRunner {
                 Employee emp1 = Employee.builder()
                                 .empId(java.util.UUID.randomUUID())
                                 .id(johnSmith.getId())
-                                .name("John Smith")
-                                .email("john.smith@skillsphere.com")
+                                .name("Rohan Mishra")
+                                .email("rohan.mishra@skillsphere.com")
                                 .role(Employee.Role.DEVELOPER)
                                 .department("Software Engineering")
                                 .designation("Developer")
@@ -267,7 +267,7 @@ public class DataInitializer implements CommandLineRunner {
                 // 6. Seed Certifications for John Smith (AWS SAA Valid, Java OCP Expired)
                 Certificate cert1 = Certificate.builder()
                                 .userId(johnSmith.getId())
-                                .userName("John Smith")
+                                .userName("Rohan Mishra")
                                 .courseId(course3.getId())
                                 .courseTitle("AWS Certified Solutions Architect Associate")
                                 .certificateCode("AWS SAA")
@@ -280,7 +280,7 @@ public class DataInitializer implements CommandLineRunner {
 
                 Certificate cert2 = Certificate.builder()
                                 .userId(johnSmith.getId())
-                                .userName("John Smith")
+                                .userName("Rohan Mishra")
                                 .courseId(course1.getId())
                                 .courseTitle("Oracle Certified Professional: Java SE Developer")
                                 .certificateCode("Java OCP")
@@ -293,10 +293,10 @@ public class DataInitializer implements CommandLineRunner {
 
                 certificateRepository.saveAll(Arrays.asList(cert1, cert2));
 
-                // 7. Seed Assessment for John Smith (87%)
+                // 7. Seed Assessment for Rohan Mishra (87%)
                 Assessment ass1 = Assessment.builder()
                                 .userId(johnSmith.getId())
-                                .userName("John Smith")
+                                .userName("Rohan Mishra")
                                 .skillId(s1.getId())
                                 .skillName("Java & Spring Boot Core Competency")
                                 .score(87)

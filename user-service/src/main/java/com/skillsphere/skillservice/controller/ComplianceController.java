@@ -3,6 +3,7 @@ package com.skillsphere.skillservice.controller;
 import com.skillsphere.skillservice.dto.ComplianceDTO;
 import com.skillsphere.skillservice.service.ComplianceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -16,6 +17,7 @@ public class ComplianceController {
     private final ComplianceService complianceService;
 
     @GetMapping("/{empId}")
+    @PreAuthorize("hasAnyRole('HR', 'ADMIN')")
     public ComplianceDTO getCompliance(@PathVariable UUID empId) {
         return complianceService.getCompliance(empId);
     }
