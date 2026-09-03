@@ -1,0 +1,77 @@
+### SkillSphere Nexus - Milestone 4 (Career & Analytics) REST API Collection
+@baseUrl = http://localhost:8083/api/career
+
+### 1. Create a Career Plan (Calculates promotion score & eligibility auto-set)
+POST {{baseUrl}}/plans
+Content-Type: application/json
+
+{
+  "empId": "11111111-1111-1111-1111-111111111111",
+  "employeeName": "John Smith",
+  "currentRole": "Developer",
+  "targetRole": "Tech Lead",
+  "progress": 67,
+  "mentor": "Jane Doe",
+  "skillGaps": "Angular +3",
+  "trainingPlan": "Angular Advanced Bootcamp"
+}
+
+
+### 2. Create another Career Plan (High score -> Promotion Eligible)
+POST {{baseUrl}}/plans
+Content-Type: application/json
+
+{
+  "empId": "22222222-2222-2222-2222-222222222222",
+  "employeeName": "Sarah Jenkins",
+  "currentRole": "Senior Engineer",
+  "targetRole": "Principal Architect",
+  "progress": 90,
+  "mentor": "Robert Chen",
+  "skillGaps": "",
+  "trainingPlan": "Executive Leadership Program"
+}
+
+
+### 3. Get All Career Plans
+GET {{baseUrl}}/plans
+
+
+### 4. Get Career Plan by ID
+GET {{baseUrl}}/plans/11111111-1111-1111-1111-111111111111
+
+
+### 5. Get Career Plans by Employee ID
+GET {{baseUrl}}/plans/employee/11111111-1111-1111-1111-111111111111
+
+
+### 6. Create Internal Job Posting
+POST {{baseUrl}}/jobs
+Content-Type: application/json
+
+{
+  "title": "Senior Java Developer",
+  "department": "Engineering",
+  "requiredSkills": "Java, Spring Boot, Microservices",
+  "minimumExperience": 3
+}
+
+
+### 7. Create another Job Posting
+POST {{baseUrl}}/jobs
+Content-Type: application/json
+
+{
+  "title": "Lead Angular Architect",
+  "department": "Frontend Platform",
+  "requiredSkills": "Angular 20, RxJS, TypeScript",
+  "minimumExperience": 5
+}
+
+
+### 8. Get All Active Internal Jobs
+GET {{baseUrl}}/jobs/active
+
+
+### 9. Get Executive Analytics Dashboard Data
+GET {{baseUrl}}/analytics

@@ -16,6 +16,7 @@ import { RecruitmentBoard } from './pages/RecruitmentBoard';
 import { ReportsAnalytics } from './pages/ReportsAnalytics';
 import { Milestone2Dashboard } from './pages/Milestone2Dashboard';
 import { CertificationManagement } from './pages/CertificationManagement';
+import { CareerAnalytics } from './pages/CareerAnalytics';
 
 export function App() {
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
@@ -39,6 +40,7 @@ export function App() {
             <main className="flex-1 p-6 md:p-8 overflow-y-auto max-w-7xl w-full mx-auto">
               <Routes>
                 <Route path="/" element={<DashboardRouter />} />
+                <Route path="/career-analytics" element={<CareerAnalytics />} />
                 <Route path="/milestone2" element={<Milestone2Dashboard />} />
                 <Route path="/certifications" element={<CertificationManagement />} />
                 <Route path="/courses" element={<LmsCatalog />} />

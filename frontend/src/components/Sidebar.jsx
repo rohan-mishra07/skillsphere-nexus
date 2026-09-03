@@ -20,6 +20,7 @@ export const Sidebar = () => {
   const { user } = useAuth();
 
   const navItems = [
+    { label: 'Milestone 4 Career & Analytics', icon: Sparkles, path: '/career-analytics', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
     { label: 'Overview Dashboard', icon: LayoutDashboard, path: '/', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
     { label: 'Milestone 3 Certifications', icon: Award, path: '/certifications', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
     { label: 'Milestone 2 LMS Output', icon: Award, path: '/milestone2', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },

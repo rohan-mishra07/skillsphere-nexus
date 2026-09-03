@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth, getInitials } from '../context/AuthContext';
 import { useWorkforce } from '../context/WorkforceContext';
 import { NotificationBar, INITIAL_NOTIFICATIONS } from './NotificationBar';
+import { ServiceStatusPills } from './ServiceStatusPills';
 import { 
   Sparkles, 
   Bell, 
@@ -75,6 +76,9 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
 
       {/* Right Controls */}
       <div className="flex items-center gap-3">
+        {/* Microservices Health & Reconnection Status Pills */}
+        <ServiceStatusPills />
+
         {/* Prominent Login Bar Button */}
         <button
           onClick={onOpenLoginModal}

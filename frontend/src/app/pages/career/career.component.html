@@ -1,0 +1,24 @@
+<div class="page">
+  <h1>Career Planning</h1>
+  <div class="cards">
+    <div class="career-card" *ngFor="let plan of plans">
+      <h2>{{ plan.employeeName }}</h2>
+      <p>
+        {{ plan.currentRole }} &rarr;
+        <strong>{{ plan.targetRole }}</strong>
+      </p>
+      <p>Progress: {{ plan.progress }}%</p>
+      <progress [value]="plan.progress" max="100"></progress>
+      <p>
+        <strong>Skill Gaps:</strong>
+        {{ plan.skillGaps || 'No major gaps' }}
+      </p>
+      <p><strong>Mentor:</strong> {{ plan.mentor }}</p>
+      <p><strong>Training:</strong> {{ plan.trainingPlan }}</p>
+      <p>Promotion Score: {{ plan.promotionScore }}</p>
+      <span *ngIf="plan.promotionEligible" class="eligible">
+        Promotion Eligible
+      </span>
+    </div>
+  </div>
+</div>

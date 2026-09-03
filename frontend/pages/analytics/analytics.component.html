@@ -1,0 +1,29 @@
+<div class="dashboard">
+  <h1>Executive Career Dashboard</h1>
+  <div class="stats" *ngIf="analytics">
+    <div class="stat-card">
+      <h3>Career Plans</h3>
+      <h2>{{ analytics.totalCareerPlans }}</h2>
+    </div>
+    <div class="stat-card">
+      <h3>Active Plans</h3>
+      <h2>{{ analytics.activeCareerPlans }}</h2>
+    </div>
+    <div class="stat-card">
+      <h3>Promotions</h3>
+      <h2>{{ analytics.promotionEligible }}</h2>
+    </div>
+    <div class="stat-card">
+      <h3>Skill Coverage</h3>
+      <h2>{{ analytics.skillCoverage }}%</h2>
+    </div>
+    <div class="stat-card">
+      <h3>Average Progress</h3>
+      <h2>{{ analytics.averageProgress }}%</h2>
+    </div>
+    <div class="stat-card">
+      <h3>Internal Jobs</h3>
+      <h2>{{ analytics.activeJobs }}</h2>
+    </div>
+  </div>
+</div>
