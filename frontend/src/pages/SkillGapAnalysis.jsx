@@ -3,6 +3,7 @@ import { Target, Sparkles, Award, Play, CheckCircle2, AlertCircle, RefreshCw } f
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
+import SkillAssessmentModal from '../components/SkillAssessmentModal';
 
 export const SkillGapAnalysis = () => {
   const { user } = useAuth();
@@ -180,44 +181,25 @@ export const SkillGapAnalysis = () => {
       </div>
 
       {/* Skill Assessment Test Modal */}
-      {assessmentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="w-full max-w-md glass-panel p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-4">
-            <h3 className="font-bold text-base text-white">Skill Assessment: {assessmentModal.skillName}</h3>
-            <p className="text-xs text-slate-400">Input your score from the standardized online assessment test (0 - 100%).</p>
-
-            <form onSubmit={handleAssessmentSubmit} className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-300">Assessment Score (%)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={scoreInput}
-                  onChange={(e) => setScoreInput(e.target.value)}
-                  className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div className="flex gap-2 justify-end">
-                <button
-                  type="button"
-                  onClick={() => setAssessmentModal(null)}
-                  className="px-4 py-2 bg-slate-800 text-xs font-semibold text-slate-300 rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-xs font-semibold text-white rounded-xl hover:bg-indigo-500"
-                >
-                  Submit Score
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <SkillAssessmentModal
+        isOpen={Boolean(assessmentModal)}
+        onClose={() => setAssessmentModal(null)}
+        skillName={assessmentModal?.skillName || "Software Engineering Competency"}
+        onComplete={(results) => {
+          if (assessmentModal) {
+            setSkills(prev => prev.map(sk => {
+              if (sk.skillName === assessmentModal.skillName) {
+                return {
+                  ...sk,
+                  currentProficiency: results.percentage,
+                  level: results.tier
+                };
+              }
+              return sk;
+            }));
+          }
+        }}
+      />
     </div>
   );
 };

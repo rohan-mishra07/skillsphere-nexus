@@ -1,0 +1,17 @@
+{
+  "short_name": "SkillSphere",
+  "name": "SkillSphere Nexus Platform",
+  "description": "Unified Enterprise Learning Management, Skill Matrix & Workforce Platform",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "type": "image/svg+xml",
+      "sizes": "192x192 512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#0b1120",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait"
+}

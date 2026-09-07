@@ -10,6 +10,10 @@ import java.util.UUID;
 
 @Repository
 public interface CertificateRepository extends JpaRepository<Certificate, UUID> {
-    List<Certificate> findByEmpId(UUID empId);
+
     Optional<Certificate> findByEnrollmentId(UUID enrollmentId);
+
+    List<Certificate> findByEmpId(UUID empId);
+
+    Optional<Certificate> findByCertificateNumber(String certificateNumber);
 }

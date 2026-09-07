@@ -3,9 +3,11 @@ package com.skillsphere.learningservice.controller;
 import com.skillsphere.learningservice.dto.AssessmentResultDTO;
 import com.skillsphere.learningservice.service.AssessmentResultService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @RestController
@@ -17,22 +19,23 @@ public class AssessmentResultController {
     private final AssessmentResultService assessmentResultService;
 
     @PostMapping
-    public AssessmentResultDTO submitResult(@RequestBody AssessmentResultDTO dto) {
-        return assessmentResultService.submitResult(dto);
+    public AssessmentResultDTO submitResult(@RequestBody @NonNull AssessmentResultDTO dto) {
+        return assessmentResultService.submitResult(Objects.requireNonNull(dto, "dto must not be null"));
     }
 
     @GetMapping("/employee/{empId}")
-    public List<AssessmentResultDTO> getResultsForEmployee(@PathVariable UUID empId) {
-        return assessmentResultService.getResultsForEmployee(empId);
+    public List<AssessmentResultDTO> getResultsForEmployee(@PathVariable @NonNull UUID empId) {
+        return assessmentResultService.getResultsForEmployee(Objects.requireNonNull(empId, "empId must not be null"));
     }
 
     @GetMapping("/enrollment/{enrollmentId}")
-    public List<AssessmentResultDTO> getResultsForEnrollment(@PathVariable UUID enrollmentId) {
-        return assessmentResultService.getResultsForEnrollment(enrollmentId);
+    public List<AssessmentResultDTO> getResultsForEnrollment(@PathVariable @NonNull UUID enrollmentId) {
+        return assessmentResultService.getResultsForEnrollment(Objects.requireNonNull(enrollmentId, "enrollmentId must not be null"));
     }
 
     @GetMapping("/{id}")
-    public AssessmentResultDTO getResult(@PathVariable UUID id) {
-        return assessmentResultService.getResult(id);
+    public AssessmentResultDTO getResult(@PathVariable @NonNull UUID id) {
+        return assessmentResultService.getResult(Objects.requireNonNull(id, "id must not be null"));
     }
 }
+

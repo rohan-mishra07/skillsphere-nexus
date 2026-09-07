@@ -15,7 +15,7 @@ import {
   ShieldCheck
 } from 'lucide-react';
 
-const API_BASE = 'http://localhost:8083/api/career';
+const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/career`;
 
 export function CareerAnalytics() {
   const [activeTab, setActiveTab] = useState('analytics');
@@ -134,7 +134,7 @@ export function CareerAnalytics() {
       fetchData();
     } catch (err) {
       console.error('Error creating career plan:', err);
-      alert('Failed to create career plan. Ensure career-service on port 8083 is running.');
+      alert('Failed to create career plan. Ensure backend service on port 8080 is running.');
     }
   };
 
@@ -158,7 +158,7 @@ export function CareerAnalytics() {
         <div>
           <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1">
             <Sparkles className="w-4 h-4" />
-            <span>Milestone 4 — Career & Analytics</span>
+            <span>Career Development & Analytics</span>
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight font-outfit">
             Career Roadmaps & Executive Analytics
@@ -187,27 +187,7 @@ export function CareerAnalytics() {
         </div>
       </div>
 
-      {isOffline && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex items-center justify-between gap-3 shadow-lg">
-          <div className="flex items-center gap-3">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-            </span>
-            <div>
-              <span className="font-bold">Reconnecting to Career & Analytics Service (Port 8083)...</span>
-              <p className="text-xs text-slate-400 mt-0.5">Showing presentation fallback roadmap data. UI layout remains active.</p>
-            </div>
-          </div>
-          <button 
-            onClick={fetchData} 
-            disabled={loading}
-            className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 text-xs font-bold transition-all"
-          >
-            Retry Connection
-          </button>
-        </div>
-      )}
+
 
       {/* Tabs */}
       <div className="flex border-b border-slate-800 gap-2">

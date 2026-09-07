@@ -272,7 +272,7 @@ export const LmsCatalog = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 text-indigo-300 text-xs font-semibold border border-indigo-500/20 mb-3">
-              <GraduationCap className="w-4 h-4 text-indigo-400" /> Milestone 2: Learning Management System (LMS)
+              <GraduationCap className="w-4 h-4 text-indigo-400" /> Enterprise Learning Management System (LMS)
             </div>
             <h1 className="text-3xl font-black text-white font-outfit tracking-tight">
               Enterprise Learning <span className="gradient-text">&amp; Skill Development</span>

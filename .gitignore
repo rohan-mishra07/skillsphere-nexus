@@ -1,3 +1,34 @@
-# Project exclude paths
-/backend/target/
-/backend/target/classes/
+# Dependencies
+node_modules/
+**/node_modules/
+frontend/node_modules/
+
+# Build outputs
+dist/
+**/dist/
+frontend/dist/
+build/
+**/build/
+target/
+**/target/
+
+# Embedded tools & binaries
+kafka_2.13-3.6.1/
+*.class
+*.jar
+*.tgz
+*.tar.gz
+*.zip
+
+# IDE & Editor files
+.vscode/
+.idea/
+.project
+.classpath
+.settings/
+
+# Environment & Misc
+.env*
+.vercel
+*.lock
+.DS_Store

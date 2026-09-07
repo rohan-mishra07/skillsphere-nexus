@@ -132,7 +132,7 @@ export function CertificationManagement() {
         <div>
           <h1 className="text-2xl font-bold text-slate-100 flex items-center gap-3">
             <Award className="w-8 h-8 text-indigo-400" />
-            Milestone 3 — Certification Management
+            Certification & Compliance Engine
           </h1>
           <p className="text-sm text-slate-400 mt-1">
             Track employee professional credentials, calculate expiration status, publish Kafka events, and monitor compliance.

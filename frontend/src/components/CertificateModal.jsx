@@ -21,11 +21,30 @@ export const CertificateModal = ({ isOpen, onClose, certificateData }) => {
     ? { name: certificateData.instructor, title: 'Lead Course Instructor' }
     : INSTRUCTOR_POOL[(certificateData?.courseTitle?.length || 4) % INSTRUCTOR_POOL.length];
 
+  const formatIssueDate = (dateInput, certCode) => {
+    let rawDate = dateInput || (certCode ? localStorage.getItem(`issuedCertDate_${certCode}`) : null);
+    if (!rawDate) {
+      rawDate = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      if (certCode) {
+        try { localStorage.setItem(`issuedCertDate_${certCode}`, rawDate); } catch(e) {}
+      }
+      return rawDate;
+    }
+
+    const d = new Date(rawDate);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    return rawDate;
+  };
+
+  const currentCertCode = certificateData?.certificateCode || 'SS-2026-0001';
+
   const cert = {
     userName: certificateData?.userName || user?.fullName || 'Rohan Sharma',
     courseTitle: certificateData?.courseTitle || 'Enterprise Java Spring Boot 3 & Security',
-    issueDate: certificateData?.issueDate || 'July 27, 2026',
-    certificateCode: certificateData?.certificateCode || 'SS-2026-0001',
+    issueDate: formatIssueDate(certificateData?.issueDate || certificateData?.issuedAt || certificateData?.completedAt, currentCertCode),
+    certificateCode: currentCertCode,
     courseDuration: certificateData?.courseDuration || '40 Hours',
     mode: 'Online (Self-Paced)',
     platform: 'SkillSphere Learning Platform',

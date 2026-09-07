@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { 
   User, Award, ShieldCheck, BookOpen, CheckCircle, AlertTriangle, 
   Search, Filter, Plus, RefreshCw, BarChart2, Star, CheckCircle2, 
-  Sparkles, Shield, ChevronRight, Layers, FileCheck, Key, Users
+  Sparkles, Shield, ChevronRight, Layers, FileCheck, Key, Users, TrendingUp
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useWorkforce } from '../context/WorkforceContext';
+import SkillAssessmentModal from '../components/SkillAssessmentModal';
 
 export const SkillManagementHub = () => {
   const { user } = useAuth();
@@ -53,30 +54,60 @@ export const SkillManagementHub = () => {
       showToast("Skill profile and enterprise catalog data refreshed successfully!");
     } catch (err) {
       console.warn("Using fallback demo data for Milestone 1", err);
+
+      let fallbackSkills = [
+        { id: 1, skillId: 1, skillName: "Java", category: "Technical", currentProficiency: 80, requiredProficiency: 90, ratingScore: 8, level: "Advanced", verified: true },
+        { id: 2, skillId: 2, skillName: "Spring Boot", category: "Technical", currentProficiency: 70, requiredProficiency: 85, ratingScore: 7, level: "Intermediate", verified: true },
+        { id: 3, skillId: 3, skillName: "AWS Cloud Infrastructure", category: "Technical", currentProficiency: 85, requiredProficiency: 80, ratingScore: 8, level: "Expert", verified: true },
+        { id: 4, skillId: 5, skillName: "Banking & Financial Systems", category: "Domain", currentProficiency: 90, requiredProficiency: 80, ratingScore: 9, level: "Expert", verified: true },
+        { id: 5, skillId: 7, skillName: "Agile Leadership & Collaboration", category: "Soft", currentProficiency: 75, requiredProficiency: 70, ratingScore: 7, level: "Intermediate", verified: true }
+      ];
+
+      let fallbackAssessments = [
+        { id: 1, skillName: "Java & Spring Boot Core Competency", score: 87, status: "VERIFIED", testName: "Enterprise Software Engineer Assessment 2026", evaluatedBy: "HR - Marcus Vance", testDate: "2026-07-24" }
+      ];
+
+      try {
+        const cached = localStorage.getItem('skillsphere_latest_assessment');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          fallbackSkills = fallbackSkills.map(sk => {
+            if (sk.skillName === "Java" || sk.skillName === "Spring Boot") {
+              return { ...sk, ratingScore: parsed.rating, currentProficiency: parsed.percentage, level: parsed.tier, verified: true };
+            }
+            return sk;
+          });
+          fallbackAssessments.unshift({
+            id: Date.now(),
+            skillName: parsed.skillName || "Java & Spring Boot Core Competency",
+            score: parsed.percentage,
+            status: "VERIFIED",
+            testName: "Standardized Software Engineer Assessment 2026",
+            evaluatedBy: `System Evaluator (${parsed.tier} Tier)`,
+            testDate: new Date(parsed.date || Date.now()).toISOString().split('T')[0]
+          });
+        }
+      } catch (e) {}
+
+      const currentUserName = user?.name || user?.fullName || "Rohan Mishra";
+      const currentUserPos = user?.position || user?.designation || "Developer";
+
       setProfileData({
-        outputScreenBanner: "Skill Service: Rohan Mishra, Developer. Skills: Java 8/10, Spring Boot 7/10. AWS SAA valid, Java OCP expired. Assessment: 87%.",
+        outputScreenBanner: `Skill Service: ${currentUserName}, ${currentUserPos}. Skills: Java 8/10, Spring Boot 7/10. AWS SAA valid, Java OCP expired. Assessment: 87%.`,
         employee: {
-          id: 4,
-          fullName: "Rohan Mishra",
-          email: "rohan.mishra@skillsphere.com",
-          designation: "Developer",
-          department: "Software Engineering",
-          role: "ROLE_EMPLOYEE"
+          id: user?.id || 4,
+          fullName: currentUserName,
+          email: user?.email || "rohan.mishra@skillsphere.com",
+          designation: currentUserPos,
+          department: user?.department || "Software Engineering",
+          role: user?.role || "ROLE_EMPLOYEE"
         },
-        skills: [
-          { id: 1, skillId: 1, skillName: "Java", category: "Technical", currentProficiency: 80, requiredProficiency: 90, ratingScore: 8, level: "Advanced", verified: true },
-          { id: 2, skillId: 2, skillName: "Spring Boot", category: "Technical", currentProficiency: 70, requiredProficiency: 85, ratingScore: 7, level: "Intermediate", verified: true },
-          { id: 3, skillId: 3, skillName: "AWS Cloud Infrastructure", category: "Technical", currentProficiency: 85, requiredProficiency: 80, ratingScore: 8, level: "Expert", verified: true },
-          { id: 4, skillId: 5, skillName: "Banking & Financial Systems", category: "Domain", currentProficiency: 90, requiredProficiency: 80, ratingScore: 9, level: "Expert", verified: true },
-          { id: 5, skillId: 7, skillName: "Agile Leadership & Collaboration", category: "Soft", currentProficiency: 75, requiredProficiency: 70, ratingScore: 7, level: "Intermediate", verified: true }
-        ],
+        skills: fallbackSkills,
         certifications: [
           { id: 1, certificateCode: "AWS SAA", courseTitle: "AWS Certified Solutions Architect Associate", issueDate: "2025-01-15", expiryDate: "2028-01-15", status: "VALID", issuingAuthority: "Amazon Web Services", verified: true },
           { id: 2, certificateCode: "Java OCP", courseTitle: "Oracle Certified Professional: Java SE Developer", issueDate: "2023-03-10", expiryDate: "2026-03-10", status: "EXPIRED", issuingAuthority: "Oracle Corporation", verified: true }
         ],
-        assessments: [
-          { id: 1, skillName: "Java & Spring Boot Core Competency", score: 87, status: "VERIFIED", testName: "Enterprise Software Engineer Assessment 2026", evaluatedBy: "HR - Marcus Vance", testDate: "2026-07-24" }
-        ],
+        assessments: fallbackAssessments,
         competencies: [
           { id: 1, roleTitle: "Developer", department: "Software Engineering", skillCategory: "Technical", requiredSkillName: "Java", targetProficiency: 80, competencyLevel: "Advanced", verificationRequirement: "Assessment (80%+) + Active Cert" },
           { id: 2, roleTitle: "Developer", department: "Software Engineering", skillCategory: "Technical", requiredSkillName: "Spring Boot", targetProficiency: 75, competencyLevel: "Intermediate", verificationRequirement: "Assessment (70%+)" },
@@ -125,6 +156,43 @@ export const SkillManagementHub = () => {
     setShowAssessmentModal(false);
   };
 
+  const handleAssessmentComplete = (results) => {
+    showToast(`Assessment Completed! Score: ${results.score}/15 (${results.percentage}%), Rating: ${results.rating}/10 (${results.tier} Tier)`);
+    if (profileData) {
+      const today = new Date().toISOString().split('T')[0];
+      const newAssessment = {
+        id: Date.now(),
+        skillName: selectedSkillForTest ? selectedSkillForTest.skillName : "Java & Spring Boot Core Competency",
+        score: results.percentage,
+        status: "VERIFIED",
+        testName: "Standardized Software Engineer Assessment 2026",
+        evaluatedBy: `System Evaluator (${results.tier} Tier)`,
+        testDate: today
+      };
+
+      const updatedSkills = (profileData.skills || []).map((sk) => {
+        if (!selectedSkillForTest || sk.skillName === selectedSkillForTest.skillName || sk.skillName === "Java" || sk.skillName === "Spring Boot") {
+          return {
+            ...sk,
+            ratingScore: results.rating,
+            currentProficiency: results.percentage,
+            level: results.tier,
+            verified: true
+          };
+        }
+        return sk;
+      });
+
+      setProfileData({
+        ...profileData,
+        outputScreenBanner: `Skill Service: ${profileData.employee?.fullName || 'Employee'}, Developer. Rating: ${results.rating}/10 (${results.tier}). Assessment Score: ${results.percentage}%.`,
+        skills: updatedSkills,
+        assessments: [newAssessment, ...(profileData.assessments || [])]
+      });
+    }
+  };
+
+
   const handleAddSkillToCatalog = async (e) => {
     e.preventDefault();
     try {
@@ -164,7 +232,7 @@ export const SkillManagementHub = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-400 text-xs font-semibold border border-cyan-500/20 mb-2">
-            <Layers className="w-3.5 h-3.5" /> Milestone 1 (Weeks 1-2) • Cloud-Native Enterprise Platform
+            <Layers className="w-3.5 h-3.5" /> Cloud-Native Enterprise Skill Platform
           </div>
           <h1 className="text-3xl font-extrabold text-white font-outfit tracking-tight">
             Employee Skill <span className="gradient-text">Management & Competency</span>
@@ -353,6 +421,51 @@ export const SkillManagementHub = () => {
                   <Sparkles className="w-3.5 h-3.5" /> Take Skill Assessment
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* DYNAMIC SKILL RATING GRAPH CARD */}
+          <div className="glass-panel p-5 md:p-6 rounded-2xl border border-slate-800 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-cyan-400" /> Dynamic Skill Rating Graph (Rating out of 10)
+                </h3>
+                <p className="text-xs text-slate-400">Assessed Skill Proficiency vs Enterprise Target Benchmark</p>
+              </div>
+              <span className="px-2.5 py-1 bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 text-[10px] font-bold rounded-lg font-mono">
+                Live Graph
+              </span>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              {(profileData?.skills || []).map((sk) => {
+                const rating = sk.ratingScore || Math.round(sk.currentProficiency / 10);
+                const reqRating = Math.round((sk.requiredProficiency || 80) / 10);
+
+                return (
+                  <div key={sk.id} className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-bold text-white">{sk.skillName} <span className="text-[10px] text-slate-400 font-normal">({sk.category})</span></span>
+                      <div className="flex items-center gap-3 font-mono text-xs">
+                        <span className="text-cyan-300 font-extrabold">{rating}/10 Rating</span>
+                        <span className="text-slate-500">Target: {reqRating}/10</span>
+                      </div>
+                    </div>
+
+                    <div className="relative w-full bg-slate-900 h-2.5 rounded-full overflow-hidden border border-slate-800">
+                      <div
+                        className="absolute top-0 bottom-0 bg-slate-700/60 rounded-full"
+                        style={{ width: `${sk.requiredProficiency || 80}%` }}
+                      ></div>
+                      <div
+                        className="absolute top-0 bottom-0 bg-gradient-to-r from-cyan-500 via-indigo-500 to-emerald-400 rounded-full transition-all duration-500"
+                        style={{ width: `${sk.currentProficiency}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -634,45 +747,13 @@ export const SkillManagementHub = () => {
         </div>
       )}
 
-      {/* MODAL: Skill Assessment Score Submission */}
-      {showAssessmentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md">
-          <div className="w-full max-w-md glass-panel p-6 rounded-2xl border border-slate-700 shadow-2xl space-y-4">
-            <h3 className="font-bold text-base text-white">Skill Assessment Test Scoring</h3>
-            <p className="text-xs text-slate-400">Record assessment result score (0 - 100%). Default score benchmark: 87%.</p>
-
-            <form onSubmit={handleAssessmentSubmit} className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-slate-300">Score (%)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={assessmentScoreInput}
-                  onChange={(e) => setAssessmentScoreInput(e.target.value)}
-                  className="w-full mt-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-cyan-500"
-                />
-              </div>
-
-              <div className="flex gap-2 justify-end pt-2">
-                <button
-                  type="button"
-                  onClick={() => setShowAssessmentModal(false)}
-                  className="px-4 py-2 bg-slate-800 text-xs font-semibold text-slate-300 rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-cyan-600 text-xs font-bold text-white rounded-xl hover:bg-cyan-500 shadow-lg"
-                >
-                  Submit Score (87%)
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {/* MODAL: Full-Featured Skill Assessment Test */}
+      <SkillAssessmentModal
+        isOpen={showAssessmentModal}
+        onClose={() => setShowAssessmentModal(false)}
+        skillName={selectedSkillForTest?.skillName || "Software Engineering Competency"}
+        onComplete={handleAssessmentComplete}
+      />
 
       {/* MODAL: HR Add Skill to Catalog */}
       {showAddSkillModal && (

@@ -24,6 +24,7 @@ export const CoursePlayer = () => {
   const [completedLessons, setCompletedLessons] = useState([1]);
   const [showCertModal, setShowCertModal] = useState(false);
   const [certCode, setCertCode] = useState('SKSP-89F2A90C');
+  const [certDate, setCertDate] = useState(null);
 
   useEffect(() => {
     fetchCourseDetails();
@@ -60,9 +61,17 @@ export const CoursePlayer = () => {
       const updated = [...completedLessons, lessonId];
       setCompletedLessons(updated);
       if (updated.length >= lessons.length) {
+        const currentDateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+        setCertDate(currentDateStr);
         try {
           const certRes = await api.post(`/lms/certificates/issue?userId=${user?.id || 4}&userName=${encodeURIComponent(user?.fullName || 'Alex Chen')}&courseId=${id || 1}`);
           if (certRes.data?.certificateCode) setCertCode(certRes.data.certificateCode);
+          if (certRes.data?.issueDate) {
+            const parsed = new Date(certRes.data.issueDate);
+            if (!isNaN(parsed.getTime())) {
+              setCertDate(parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
+            }
+          }
         } catch (e) {}
         setShowCertModal(true);
       }
@@ -192,7 +201,7 @@ export const CoursePlayer = () => {
         certificateData={{
           userName: user?.fullName || 'Alex Chen',
           courseTitle: course?.title || 'Enterprise Java Spring Boot 3 Security Certification',
-          issueDate: 'July 27, 2026',
+          issueDate: certDate || new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
           certificateCode: certCode,
           instructor: course?.trainerName || 'Prof. David Sterling',
           director: 'Sarah Jenkins'

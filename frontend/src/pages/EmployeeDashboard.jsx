@@ -24,6 +24,7 @@ export const EmployeeDashboard = () => {
   const [clockedIn, setClockedIn] = useState(false);
   const [clockInTime, setClockInTime] = useState('');
   const [showCertModal, setShowCertModal] = useState(false);
+  const [userCert, setUserCert] = useState(null);
 
   const handleToggleClockIn = () => {
     if (!clockedIn) {
@@ -44,6 +45,10 @@ export const EmployeeDashboard = () => {
       setCourses(cRes.data);
       const sRes = await api.get(`/skills/user/${user?.id || 4}`);
       setUserSkills(sRes.data);
+      const certRes = await api.get(`/lms/certificates/user/${user?.id || 4}`);
+      if (certRes.data && certRes.data.length > 0) {
+        setUserCert(certRes.data[certRes.data.length - 1]);
+      }
     } catch (err) {
       setCourses([
         { id: 1, title: 'Enterprise Java Spring Boot 3 & Security', category: 'Backend', level: 'Advanced', duration: '12 Hours', rating: 4.9, enrolledCount: 1240 },
@@ -226,7 +231,9 @@ export const EmployeeDashboard = () => {
             <p className="text-xs text-slate-300 font-semibold">
               Enterprise Java Spring Boot 3 Security Certification
             </p>
-            <div className="text-[10px] text-slate-400">Issued: July 2026 • Code: SKSP-89F2A90C</div>
+            <div className="text-[10px] text-slate-400">
+              Issued: {userCert?.issueDate ? new Date(userCert.issueDate).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })} • Code: {userCert?.certificateCode || 'SKSP-89F2A90C'}
+            </div>
             
             <button
               onClick={() => setShowCertModal(true)}
@@ -245,9 +252,9 @@ export const EmployeeDashboard = () => {
         onClose={() => setShowCertModal(false)}
         certificateData={{
           userName: user?.fullName || 'Alex Chen',
-          courseTitle: 'Enterprise Java Spring Boot 3 Security Certification',
-          issueDate: 'July 27, 2026',
-          certificateCode: 'SKSP-89F2A90C',
+          courseTitle: userCert?.courseTitle || 'Enterprise Java Spring Boot 3 Security Certification',
+          issueDate: userCert?.issueDate ? new Date(userCert.issueDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) : new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }),
+          certificateCode: userCert?.certificateCode || 'SKSP-89F2A90C',
           instructor: 'Prof. David Sterling',
           director: 'Sarah Jenkins'
         }}

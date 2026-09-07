@@ -6,10 +6,12 @@ import com.skillsphere.learningservice.entity.Enrollment;
 import com.skillsphere.learningservice.repository.AssessmentResultRepository;
 import com.skillsphere.learningservice.repository.EnrollmentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -19,7 +21,8 @@ public class AssessmentResultService {
     private final AssessmentResultRepository assessmentResultRepository;
     private final EnrollmentRepository enrollmentRepository;
 
-    public AssessmentResultDTO submitResult(AssessmentResultDTO dto) {
+    public AssessmentResultDTO submitResult(@NonNull AssessmentResultDTO dto) {
+        Objects.requireNonNull(dto, "dto must not be null");
         UUID enrollmentId = dto.getEnrollmentId();
         Enrollment enrollment = null;
 
@@ -41,38 +44,42 @@ public class AssessmentResultService {
                 .assessedAt(LocalDateTime.now())
                 .build();
 
-        AssessmentResult saved = assessmentResultRepository.save(result);
+        AssessmentResult saved = assessmentResultRepository.save(Objects.requireNonNull(result, "result must not be null"));
 
         // Update Enrollment score
         if (enrollment != null) {
             enrollment.setScore(score);
-            enrollmentRepository.save(enrollment);
+            enrollmentRepository.save(Objects.requireNonNull(enrollment, "enrollment must not be null"));
         }
 
         return toDTO(saved);
     }
 
-    public List<AssessmentResultDTO> getResultsForEmployee(UUID empId) {
+    public List<AssessmentResultDTO> getResultsForEmployee(@NonNull UUID empId) {
+        Objects.requireNonNull(empId, "empId must not be null");
         return assessmentResultRepository.findByEmpId(empId)
                 .stream()
                 .map(this::toDTO)
                 .toList();
     }
 
-    public List<AssessmentResultDTO> getResultsForEnrollment(UUID enrollmentId) {
+    public List<AssessmentResultDTO> getResultsForEnrollment(@NonNull UUID enrollmentId) {
+        Objects.requireNonNull(enrollmentId, "enrollmentId must not be null");
         return assessmentResultRepository.findByEnrollmentId(enrollmentId)
                 .stream()
                 .map(this::toDTO)
                 .toList();
     }
 
-    public AssessmentResultDTO getResult(UUID resultId) {
+    public AssessmentResultDTO getResult(@NonNull UUID resultId) {
+        Objects.requireNonNull(resultId, "resultId must not be null");
         AssessmentResult result = assessmentResultRepository.findById(resultId)
                 .orElseThrow(() -> new RuntimeException("Assessment Result not found with id: " + resultId));
         return toDTO(result);
     }
 
     private AssessmentResultDTO toDTO(AssessmentResult res) {
+        if (res == null) return null;
         return AssessmentResultDTO.builder()
                 .resultId(res.getResultId())
                 .empId(res.getEmpId())
@@ -84,3 +91,4 @@ public class AssessmentResultService {
                 .build();
     }
 }
+

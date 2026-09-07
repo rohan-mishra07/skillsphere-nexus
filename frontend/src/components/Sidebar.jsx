@@ -9,10 +9,8 @@ import {
   TrendingUp, 
   UserPlus, 
   BarChart3, 
-  ShieldCheck, 
   Sparkles,
   Layers,
-  GraduationCap,
   Award
 } from 'lucide-react';
 
@@ -20,20 +18,19 @@ export const Sidebar = () => {
   const { user } = useAuth();
 
   const navItems = [
-    { label: 'Milestone 4 Career & Analytics', icon: Sparkles, path: '/career-analytics', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
     { label: 'Overview Dashboard', icon: LayoutDashboard, path: '/', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
-    { label: 'Milestone 3 Certifications', icon: Award, path: '/certifications', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
-    { label: 'Milestone 2 LMS Output', icon: Award, path: '/milestone2', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
-    { label: 'Learning (LMS)', icon: BookOpen, path: '/courses', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
-    { label: 'Employee Skill Management', icon: Target, path: '/skills', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_STUDENT'] },
+    { label: 'Employee Skills', icon: Target, path: '/skills', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_STUDENT'] },
+    { label: 'Learning LMS', icon: BookOpen, path: '/courses', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
+    { label: 'Certifications', icon: Award, path: '/certifications', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
+    { label: 'Career Analytics', icon: Sparkles, path: '/career-analytics', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
+    { label: 'Internal Jobs', icon: UserPlus, path: '/recruitment', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
     { label: 'Workforce & Shifts', icon: Clock, path: '/workforce', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
     { label: 'Performance & KPIs', icon: TrendingUp, path: '/performance', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
-    { label: 'Recruitment & Onboarding', icon: UserPlus, path: '/recruitment', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER'] },
     { label: 'Reports & Analytics', icon: BarChart3, path: '/analytics', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER'] },
   ];
 
   return (
-    <aside className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between h-screen sticky top-0">
+    <aside className="hidden md:flex w-64 bg-slate-900 border-r border-slate-800 flex-col justify-between h-screen sticky top-0 shrink-0">
       {/* Brand Header */}
       <div>
         <div className="p-5 border-b border-slate-800/80 flex items-center gap-3">
@@ -41,10 +38,10 @@ export const Sidebar = () => {
             <Layers className="w-6 h-6 text-white" />
           </div>
           <div>
-            <h1 className="font-extrabold text-lg text-white tracking-tight flex items-center gap-1.5 font-outfit">
-              Skill<span className="gradient-text">Sphere</span>
+            <h1 className="font-extrabold text-lg text-white tracking-tight flex items-center gap-1 font-outfit">
+              SkillSphere <span className="text-cyan-400">Nexus</span>
             </h1>
-            <p className="text-[10px] text-slate-400 font-medium tracking-wide">Workforce & Student Engine</p>
+            <p className="text-[10px] text-slate-400 font-medium tracking-wide">Enterprise Talent Platform</p>
           </div>
         </div>
 
@@ -58,10 +55,11 @@ export const Sidebar = () => {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  end={item.path === '/'}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
+                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
                       isActive
-                        ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/20'
+                        ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30 scale-[1.02]'
                         : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
                     }`
                   }
@@ -83,7 +81,7 @@ export const Sidebar = () => {
             <span>AI Copilot Active</span>
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed">
-            Real-time skill gap analysis & student certificates connected.
+            Real-time skill gap analysis & verified certificates connected.
           </p>
         </div>
       </div>

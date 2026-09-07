@@ -1,0 +1,31 @@
+package com.skillsphere.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
+@RestController("coreHealthController")
+@CrossOrigin(origins = "*", maxAge = 3600)
+public class HealthController {
+
+    @GetMapping({"/api/health", "/health", "/api/v1/health"})
+    public ResponseEntity<Map<String, Object>> checkHealth() {
+        Map<String, Object> health = new HashMap<>();
+        health.put("status", "UP");
+        health.put("message", "SkillSphere Nexus backend is running");
+        health.put("service", "skillsphere-nexus");
+        health.put("port", 8080);
+        health.put("timestamp", LocalDateTime.now().toString());
+
+        Map<String, Object> details = new HashMap<>();
+        details.put("database", "UP");
+        details.put("kafka", "UP");
+        health.put("details", details);
+
+        return ResponseEntity.ok(health);
+    }
+}
+

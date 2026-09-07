@@ -4,9 +4,13 @@ import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class CareerService {
-  private baseUrl = 'http://localhost:8083/api/career';
+  private baseUrl = 'http://localhost:8080/api/career';
 
   constructor(private http: HttpClient) {}
+
+  getIntegratedCareerData(empId: string, targetRole: string = 'Senior Developer'): Observable<any> {
+    return this.http.get<any>(`${this.baseUrl}/integration/employee/${empId}?targetRole=${encodeURIComponent(targetRole)}`);
+  }
 
   getCareerPlans(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/plans`);

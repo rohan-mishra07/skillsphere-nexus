@@ -1,0 +1,161 @@
+<div class="dashboard-container">
+  <!-- Header Banner -->
+  <header class="dashboard-header">
+    <div class="header-title-area">
+      <div class="badge">SkillSphere Nexus Unified Platform</div>
+      <h1>Welcome back, <span class="highlight">{{ username }}</span></h1>
+      <p class="subtitle">Target Role Alignment: <strong>{{ targetRole }}</strong> | OAuth2 Keycloak Realm: <code>skillsphere</code></p>
+    </div>
+    <div class="header-actions">
+      <span class="status-indicator">
+        <span class="dot pulse"></span> Backend Port 8080 Active
+      </span>
+      <button class="logout-btn" (click)="authService.logout()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Summary Metric Cards -->
+  <section class="analytics-metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon skills-icon">⚡</div>
+      <div class="metric-info">
+        <span class="metric-value">{{ analyticsSummary.totalSkillsManaged }}</span>
+        <span class="metric-label">Skills Tracked</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon learning-icon">📚</div>
+      <div class="metric-info">
+        <span class="metric-value">{{ analyticsSummary.learningModulesCompleted }}</span>
+        <span class="metric-label">Learning Modules</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon certs-icon">🏆</div>
+      <div class="metric-info">
+        <span class="metric-value">{{ analyticsSummary.certificationsEarned }}</span>
+        <span class="metric-label">Certifications</span>
+      </div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-icon career-icon">🎯</div>
+      <div class="metric-info">
+        <span class="metric-value">{{ analyticsSummary.careerMilestoneProgress }}%</span>
+        <span class="metric-label">Career Readiness</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Module Navigation Cards (M1, M2, M3, M4, Jobs, Analytics) -->
+  <section class="modules-section">
+    <h2 class="section-title">Integrated Platform Navigation</h2>
+    <div class="cards-grid">
+
+      <!-- M1 Skill Card -->
+      <a routerLink="/skills" class="nav-card module-m1">
+        <div class="card-header">
+          <span class="module-tag">M1 Skill</span>
+          <span class="card-icon">🧠</span>
+        </div>
+        <h3>Skill Inventory & Matrix</h3>
+        <p>Manage employee competencies, skill proficiencies, gap analysis, and team matrices.</p>
+        <div class="card-footer">
+          <span class="action-link">Open Skills & Employees &rarr;</span>
+        </div>
+      </a>
+
+      <!-- M2 Learning Card -->
+      <a routerLink="/learning" class="nav-card module-m2">
+        <div class="card-header">
+          <span class="module-tag">M2 Learning</span>
+          <span class="card-icon">📖</span>
+        </div>
+        <h3>Learning & Courses</h3>
+        <p>Explore course catalogs, track learning path enrollments, and complete assessments.</p>
+        <div class="card-footer">
+          <span class="action-link">Open Learning Center &rarr;</span>
+        </div>
+      </a>
+
+      <!-- M3 Certification Card -->
+      <a routerLink="/certifications" class="nav-card module-m3">
+        <div class="card-header">
+          <span class="module-tag">M3 Certification</span>
+          <span class="card-icon">🎖️</span>
+        </div>
+        <h3>Certifications & Renewals</h3>
+        <p>Track professional certifications, manage expiry alerts, compliance audits, and renewals.</p>
+        <div class="card-footer">
+          <span class="action-link">Open Certifications &rarr;</span>
+        </div>
+      </a>
+
+      <!-- M4 Career Card -->
+      <a routerLink="/career" class="nav-card module-m4">
+        <div class="card-header">
+          <span class="module-tag">M4 Career</span>
+          <span class="card-icon">🚀</span>
+        </div>
+        <h3>Career Growth & Pathways</h3>
+        <p>Formulate career progression plans, target roles, and automated upskilling paths.</p>
+        <div class="card-footer">
+          <span class="action-link">Open Career Portal &rarr;</span>
+        </div>
+      </a>
+
+      <!-- Jobs Card -->
+      <a routerLink="/jobs" class="nav-card module-jobs">
+        <div class="card-header">
+          <span class="module-tag">Opportunities</span>
+          <span class="card-icon">💼</span>
+        </div>
+        <h3>Internal Job Postings</h3>
+        <p>Explore internal job openings matched against your verified skills and certifications.</p>
+        <div class="card-footer">
+          <span class="action-link">Browse Job Board &rarr;</span>
+        </div>
+      </a>
+
+      <!-- Analytics Card -->
+      <a routerLink="/analytics" class="nav-card module-analytics">
+        <div class="card-header">
+          <span class="module-tag">Intelligence</span>
+          <span class="card-icon">📊</span>
+        </div>
+        <h3>Skill & Workforce Analytics</h3>
+        <p>Visualize organizational skill gap closure rates, workforce trends, and AI analytics.</p>
+        <div class="card-footer">
+          <span class="action-link">View Analytics &rarr;</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- Skill Progress Bars & Competency Matrix -->
+  <section class="skills-progress-section">
+    <div class="section-header">
+      <h2>Visual Skill Competency & Growth Matrix</h2>
+      <span class="section-subtitle">Real-time telemetry synchronized across M1-M4 backend services</span>
+    </div>
+
+    <div class="progress-bars-container">
+      <div class="skill-progress-item" *ngFor="let item of skillMetrics">
+        <div class="skill-meta">
+          <div class="skill-name-group">
+            <span class="skill-name">{{ item.name }}</span>
+            <span class="skill-category">{{ item.category }}</span>
+          </div>
+          <div class="skill-score">
+            <span class="status-badge" [ngClass]="item.status.toLowerCase()">{{ item.status }}</span>
+            <span class="percent">{{ item.proficiency }}%</span>
+          </div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" [style.width.%]="item.proficiency" [style.background]="getSkillColor(item.proficiency)"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>

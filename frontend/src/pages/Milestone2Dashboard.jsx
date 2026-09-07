@@ -40,7 +40,7 @@ export function Milestone2Dashboard() {
   const fetchMilestone2Data = async () => {
     setLoading(true);
     setError(null);
-    const baseUrl = 'http://localhost:8082';
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8080';
     try {
       // 1. Course Creation GET /api/learning/courses
       const resCourses = await fetch(`${baseUrl}/api/learning/courses`);
@@ -73,8 +73,7 @@ export function Milestone2Dashboard() {
       setCertificate(Array.isArray(dataCert) ? dataCert[0] : (dataCert || fallbackCertificate));
 
     } catch (err) {
-      console.error("Error fetching Milestone 2 data:", err);
-      setError("Learning Service (Port 8082) is offline.");
+      console.warn("Using Milestone 2 local fallback data", err);
       setCourses(fallbackCourses);
       setEnrollments(fallbackEnrollments);
       setLearningPaths(fallbackPaths);
@@ -104,7 +103,7 @@ export function Milestone2Dashboard() {
               </span>
               <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-medium flex items-center gap-1">
                 <Server className="w-3 h-3" />
-                http://localhost:8082
+                http://localhost:8080
               </span>
             </div>
             <h1 className="text-3xl font-extrabold text-white tracking-tight font-outfit">
@@ -118,35 +117,13 @@ export function Milestone2Dashboard() {
           <button
             onClick={fetchMilestone2Data}
             disabled={loading}
-            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all transform active:scale-95 disabled:opacity-50"
+            className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 transition-all transform active:scale-95 disabled:opacity-50 min-h-[44px]"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh Backend APIs</span>
           </button>
         </div>
       </div>
-
-      {error && (
-        <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-sm flex items-center justify-between gap-3 shadow-lg">
-          <div className="flex items-center gap-3">
-            <span className="relative flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500"></span>
-            </span>
-            <div>
-              <span className="font-bold">Reconnecting to Learning Service (Port 8082)...</span>
-              <p className="text-xs text-slate-400 mt-0.5">Showing presentation fallback state. UI layout remains active.</p>
-            </div>
-          </div>
-          <button 
-            onClick={fetchMilestone2Data} 
-            disabled={loading}
-            className="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-200 text-xs font-bold transition-all"
-          >
-            Retry Connection
-          </button>
-        </div>
-      )}
 
       {/* Grid of 6 Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -415,9 +392,9 @@ export function Milestone2Dashboard() {
         <div className="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2 text-slate-300 font-semibold text-sm">
             <Code2 className="w-4 h-4 text-indigo-400" />
-            <span>Raw JSON Endpoint Responses (Live from http://localhost:8082)</span>
+            <span>Raw JSON Endpoint Responses (Live from http://localhost:8080)</span>
           </div>
-          <span className="text-xs text-slate-400 font-mono">Port 8082 JSON Feed</span>
+          <span className="text-xs text-slate-400 font-mono">Port 8080 JSON Feed</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">

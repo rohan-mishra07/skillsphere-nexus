@@ -3,12 +3,13 @@ package com.skillsphere.learningservice.controller;
 import com.skillsphere.learningservice.dto.CertificateDTO;
 import com.skillsphere.learningservice.service.CertificateService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
-
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/learning/certificates")
@@ -31,16 +32,17 @@ public class CertificateController {
         if (id == null) {
             throw new IllegalArgumentException("enrollmentId must be provided in request body or request parameters");
         }
-        return certificateService.generateCertificate(id);
+        return certificateService.generateCertificate(Objects.requireNonNull(id, "id must not be null"));
     }
 
     @GetMapping("/{id}")
-    public CertificateDTO getCertificate(@PathVariable UUID id) {
-        return certificateService.getCertificate(id);
+    public CertificateDTO getCertificate(@PathVariable @NonNull UUID id) {
+        return certificateService.getCertificate(Objects.requireNonNull(id, "id must not be null"));
     }
 
     @GetMapping("/employee/{empId}")
-    public List<CertificateDTO> getCertificatesForEmployee(@PathVariable UUID empId) {
-        return certificateService.getCertificatesForEmployee(empId);
+    public List<CertificateDTO> getCertificatesForEmployee(@PathVariable @NonNull UUID empId) {
+        return certificateService.getCertificatesForEmployee(Objects.requireNonNull(empId, "empId must not be null"));
     }
 }
+

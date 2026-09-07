@@ -1,15 +1,14 @@
 # ==============================================================================
-# SkillSphere Microservices Shutdown Orchestrator
+# SkillSphere Shutdown Orchestrator
 # ==============================================================================
-# Gracefully identifies and terminates processes bound to ports 8082, 8083, and 5173
-# to prevent port locks and release resources during live demo presentations.
+# Gracefully identifies and terminates processes bound to ports 8080 and 4200.
 # ==============================================================================
 
 Write-Host "`n========================================================" -ForegroundColor Yellow
 Write-Host "   SKILLSPHERE CLEAN SHUTDOWN ORCHESTRATOR" -ForegroundColor Yellow
 Write-Host "========================================================`n" -ForegroundColor Yellow
 
-$targetPorts = @(8082, 8083, 5173)
+$targetPorts = @(8080, 4200)
 $killedPids = @()
 
 foreach ($port in $targetPorts) {
@@ -17,17 +16,13 @@ foreach ($port in $targetPorts) {
     
     $pidsToKill = @()
     
-    # Method 1: Get-NetTCPConnection (Preferred PowerShell cmdlet)
     try {
         $conns = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue
         if ($conns) {
             $pidsToKill += ($conns | Select-Object -ExpandProperty OwningProcess -Unique)
         }
-    } catch {
-        # Fallback if Get-NetTCPConnection is unavailable
-    }
+    } catch {}
 
-    # Method 2: Netstat fallback
     if ($pidsToKill.Count -eq 0) {
         $netstatOutput = netstat -ano | Select-String ":$port\s"
         foreach ($line in $netstatOutput) {

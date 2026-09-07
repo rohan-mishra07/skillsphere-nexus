@@ -31,6 +31,7 @@ com\skillsphere\learningservice\config\SecurityConfig.class
 com\skillsphere\learningservice\repository\LearningPathRepository.class
 com\skillsphere\learningservice\dto\AssessmentResultDTO$AssessmentResultDTOBuilder.class
 com\skillsphere\learningservice\service\AssessmentResultService.class
+com\skillsphere\learningservice\repository\LmsCertificateRepository.class
 com\skillsphere\learningservice\entity\LearningPathCourse.class
 com\skillsphere\learningservice\entity\LearningPath$LearningPathBuilder.class
 com\skillsphere\learningservice\exception\GlobalExceptionHandler.class

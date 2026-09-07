@@ -1,11 +1,8 @@
 import { Routes } from '@angular/router';
-import { CareerComponent } from './pages/career/career.component';
-import { JobsComponent } from './pages/jobs/jobs.component';
-import { AnalyticsComponent } from './pages/analytics/analytics.component';
+import { DashboardComponent } from './pages/dashboard/dashboard.component';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: 'career', component: CareerComponent },
-  { path: 'jobs', component: JobsComponent },
-  { path: 'analytics', component: AnalyticsComponent },
-  { path: '', redirectTo: 'analytics', pathMatch: 'full' }
+  { path: 'dashboard', component: DashboardComponent, canActivate: [authGuard] },
+  { path: '', redirectTo: 'dashboard', pathMatch: 'full' }
 ];

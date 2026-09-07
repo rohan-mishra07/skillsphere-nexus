@@ -6,10 +6,12 @@ import com.skillsphere.learningservice.entity.Enrollment;
 import com.skillsphere.learningservice.repository.CourseRepository;
 import com.skillsphere.learningservice.repository.EnrollmentRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -19,7 +21,9 @@ public class EnrollmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final CourseRepository courseRepository;
 
-    public EnrollmentDTO enroll(UUID empId, UUID courseId) {
+    public EnrollmentDTO enroll(@NonNull UUID empId, @NonNull UUID courseId) {
+        Objects.requireNonNull(empId, "empId must not be null");
+        Objects.requireNonNull(courseId, "courseId must not be null");
         Course course = courseRepository.findById(courseId)
                 .orElseGet(() -> courseRepository.findAll().stream().findFirst()
                 .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId)));
@@ -33,10 +37,11 @@ public class EnrollmentService {
                 .score(0.0f)
                 .build();
 
-        return toDTO(enrollmentRepository.save(enrollment));
+        return toDTO(enrollmentRepository.save(Objects.requireNonNull(enrollment, "enrollment must not be null")));
     }
 
-    public List<EnrollmentDTO> getEmployeeEnrollments(UUID empId) {
+    public List<EnrollmentDTO> getEmployeeEnrollments(@NonNull UUID empId) {
+        Objects.requireNonNull(empId, "empId must not be null");
         return enrollmentRepository.findByEmpId(empId)
                 .stream()
                 .map(this::toDTO)
@@ -50,13 +55,15 @@ public class EnrollmentService {
                 .toList();
     }
 
-    public EnrollmentDTO getEnrollmentById(UUID enrollmentId) {
+    public EnrollmentDTO getEnrollmentById(@NonNull UUID enrollmentId) {
+        Objects.requireNonNull(enrollmentId, "enrollmentId must not be null");
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new RuntimeException("Enrollment not found with id: " + enrollmentId));
         return toDTO(enrollment);
     }
 
-    public EnrollmentDTO updateProgress(UUID enrollmentId, Integer progress, Float score) {
+    public EnrollmentDTO updateProgress(@NonNull UUID enrollmentId, Integer progress, Float score) {
+        Objects.requireNonNull(enrollmentId, "enrollmentId must not be null");
         if (progress != null && (progress < 0 || progress > 100)) {
             throw new IllegalArgumentException("Invalid progress percentage. Progress must be between 0 and 100.");
         }
@@ -81,10 +88,11 @@ public class EnrollmentService {
             enrollment.setScore(score);
         }
 
-        return toDTO(enrollmentRepository.save(enrollment));
+        return toDTO(enrollmentRepository.save(Objects.requireNonNull(enrollment, "enrollment must not be null")));
     }
 
     private EnrollmentDTO toDTO(Enrollment e) {
+        if (e == null) return null;
         return EnrollmentDTO.builder()
                 .enrollmentId(e.getEnrollmentId())
                 .empId(e.getEmpId())
@@ -97,3 +105,4 @@ public class EnrollmentService {
                 .build();
     }
 }
+
