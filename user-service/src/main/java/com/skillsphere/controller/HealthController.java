@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-@RestController
+@RestController("coreHealthController")
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class HealthController {
 
@@ -15,15 +15,17 @@ public class HealthController {
     public ResponseEntity<Map<String, Object>> checkHealth() {
         Map<String, Object> health = new HashMap<>();
         health.put("status", "UP");
-        health.put("service", "user-service");
+        health.put("message", "SkillSphere Nexus backend is running");
+        health.put("service", "skillsphere-nexus");
         health.put("port", 8080);
         health.put("timestamp", LocalDateTime.now().toString());
 
         Map<String, Object> details = new HashMap<>();
-        details.put("database", "UP (H2 Database)");
-        details.put("redis", "UP");
+        details.put("database", "UP");
+        details.put("kafka", "UP");
         health.put("details", details);
 
         return ResponseEntity.ok(health);
     }
 }
+

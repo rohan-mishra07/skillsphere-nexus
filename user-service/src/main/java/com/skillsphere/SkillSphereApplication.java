@@ -5,7 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.kafka.annotation.EnableKafka;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.skillsphere")
 @EnableCaching
 @EnableKafka
 public class SkillSphereApplication {

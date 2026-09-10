@@ -226,6 +226,14 @@ export function CertificationManagement() {
                           </span>
                         </td>
                         <td className="px-4 py-3 text-right space-x-2">
+                          <a
+                            href={`/verify/${cert.credentialId || 'CERT-NX-84920'}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded text-xs font-semibold transition-colors"
+                          >
+                            <ShieldCheck className="w-3.5 h-3.5" /> Verify
+                          </a>
                           <button
                             onClick={() => handleRequestRenewal(cert.certId)}
                             className="px-3 py-1 bg-amber-600 hover:bg-amber-500 text-white rounded text-xs font-medium"

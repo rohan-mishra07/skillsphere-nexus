@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { WorkforceProvider } from './context/WorkforceContext';
+import { FeedbackProvider } from './context/FeedbackContext';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
-import { AiAssistantModal } from './components/AiAssistantModal';
+import { AICopilotDrawer } from './components/AICopilotDrawer';
 import { LoginModal } from './components/LoginModal';
+import { UserFeedbackModal } from './components/UserFeedbackModal';
+import { FeedbackFloatingPill } from './components/FeedbackFloatingPill';
+import { FeedbackView } from './components/FeedbackView';
+import VerifyCertificateView from './views/VerifyCertificateView';
 import { Login } from './pages/Login';
 import { DashboardRouter } from './pages/DashboardRouter';
 import { LmsCatalog } from './pages/LmsCatalog';
@@ -32,7 +37,7 @@ const ProtectedLayout = ({ onOpenAiModal, onOpenLoginModal }) => {
   return (
     <div className="flex min-h-screen bg-[#0b1120] text-slate-100 font-sans pb-16 md:pb-0">
       {/* Sidebar Navigation */}
-      <Sidebar />
+      <Sidebar onOpenAiCopilot={onOpenAiModal} />
 
       {/* Main Content Workspace Area */}
       <div className="flex-1 flex flex-col min-w-0">
@@ -48,6 +53,12 @@ const ProtectedLayout = ({ onOpenAiModal, onOpenLoginModal }) => {
 
       {/* Mobile Bottom Navigation */}
       <MobileBottomNav />
+
+      {/* Persistent Floating Feedback Pill */}
+      <FeedbackFloatingPill />
+
+      {/* Post-Usage Feedback Modal */}
+      <UserFeedbackModal />
     </div>
   );
 };
@@ -59,7 +70,10 @@ export function AppContent() {
   return (
     <Router>
       <Routes>
+        {/* Unprotected Public Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/verify/:certId" element={<VerifyCertificateView />} />
+        <Route path="/verify" element={<VerifyCertificateView />} />
         
         {/* Protected Dashboard Workspace Routes */}
         <Route element={<ProtectedLayout onOpenAiModal={() => setIsAiModalOpen(true)} onOpenLoginModal={() => setIsLoginModalOpen(true)} />}>
@@ -78,12 +92,13 @@ export function AppContent() {
           <Route path="/recruitment" element={<RecruitmentBoard />} />
           <Route path="/jobs" element={<RecruitmentBoard />} />
           <Route path="/analytics" element={<ReportsAnalytics />} />
+          <Route path="/feedback" element={<FeedbackView />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
       </Routes>
 
-      {/* AI Assistant Modal */}
-      <AiAssistantModal
+      {/* AI Copilot Slide-Out Drawer */}
+      <AICopilotDrawer
         isOpen={isAiModalOpen}
         onClose={() => setIsAiModalOpen(false)}
       />
@@ -101,10 +116,13 @@ export function App() {
   return (
     <WorkforceProvider>
       <AuthProvider>
-        <AppContent />
+        <FeedbackProvider>
+          <AppContent />
+        </FeedbackProvider>
       </AuthProvider>
     </WorkforceProvider>
   );
 }
 
 export default App;
+

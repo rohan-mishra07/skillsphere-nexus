@@ -10,13 +10,17 @@ import {
   Lock,
   Database,
   CheckCircle,
-  AlertTriangle
+  AlertTriangle,
+  MessageSquare,
+  Star
 } from 'lucide-react';
 import api from '../api/axios';
 import { useWorkforce } from '../context/WorkforceContext';
+import { useFeedback } from '../context/FeedbackContext';
 
 export const AdminDashboard = () => {
   const { activeInOffice, pulseType, latestEvent } = useWorkforce();
+  const { totalFeedbackCount, feedbacks } = useFeedback();
   const [users, setUsers] = useState([]);
   const [metrics, setMetrics] = useState({
     totalEmployees: 5,
@@ -68,7 +72,7 @@ export const AdminDashboard = () => {
       </div>
 
       {/* Metrics Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
         <div className={`glass-panel p-4 rounded-2xl border transition-all duration-300 ${
           pulseType === 'JOIN' ? 'border-emerald-500 bg-emerald-500/10 shadow-lg shadow-emerald-500/20' :
           pulseType === 'LEFT' ? 'border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/20' : 'border-slate-800'
@@ -111,6 +115,19 @@ export const AdminDashboard = () => {
           </div>
           <div className="text-2xl font-extrabold text-white font-outfit">99.98%</div>
           <div className="text-[11px] text-emerald-400 mt-1">Zero latency issues</div>
+        </div>
+
+        <div className="glass-panel p-4 rounded-2xl border border-purple-500/30 bg-purple-950/10">
+          <div className="flex items-center justify-between text-slate-400 mb-2">
+            <span className="text-xs font-medium text-purple-300">User Feedbacks</span>
+            <MessageSquare className="w-4 h-4 text-purple-400" />
+          </div>
+          <div className="text-2xl font-extrabold text-white font-outfit flex items-center gap-1.5">
+            {totalFeedbackCount} <span className="text-xs text-slate-400 font-normal">Entries</span>
+          </div>
+          <div className="text-[11px] text-amber-400 font-bold mt-1 flex items-center gap-1">
+            <Star className="w-3 h-3 fill-amber-400" /> 4.9 ★ Rating Avg
+          </div>
         </div>
       </div>
 

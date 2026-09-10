@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useFeedback } from '../context/FeedbackContext';
 import {
   Clock,
   CheckCircle2,
@@ -228,6 +229,7 @@ export default function SkillAssessmentModal({
   onComplete
 }) {
   const { user } = useAuth();
+  const { triggerAutoFeedback } = useFeedback();
   // Screen states: 'INSTRUCTIONS' | 'TEST' | 'RESULT'
   const [currentScreen, setCurrentScreen] = useState('INSTRUCTIONS');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -417,6 +419,9 @@ export default function SkillAssessmentModal({
 
     setResults(evalResults);
     setCurrentScreen('RESULT');
+    if (triggerAutoFeedback) {
+      triggerAutoFeedback('Assessment Quality');
+    }
   };
 
   // Share score or trigger native mobile web share

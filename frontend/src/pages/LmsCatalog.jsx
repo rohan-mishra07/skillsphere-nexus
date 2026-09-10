@@ -7,9 +7,11 @@ import {
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useFeedback } from '../context/FeedbackContext';
 
 export const LmsCatalog = () => {
   const { user } = useAuth();
+  const { triggerAutoFeedback } = useFeedback();
   const [activeTab, setActiveTab] = useState('catalog'); // catalog | enrollments | paths | completion | assessments | certificates
 
   // Courses & Filters State
@@ -214,6 +216,9 @@ export const LmsCatalog = () => {
       };
       setEnrollments([newEnr, ...enrollments]);
       showToast(`Enrolled successfully in "${title}"!`);
+    }
+    if (triggerAutoFeedback) {
+      triggerAutoFeedback('Learning Content');
     }
   };
 

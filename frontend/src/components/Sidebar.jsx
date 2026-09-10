@@ -11,10 +11,11 @@ import {
   BarChart3, 
   Sparkles,
   Layers,
-  Award
+  Award,
+  MessageSquare
 } from 'lucide-react';
 
-export const Sidebar = () => {
+export const Sidebar = ({ onOpenAiCopilot }) => {
   const { user } = useAuth();
 
   const navItems = [
@@ -26,6 +27,7 @@ export const Sidebar = () => {
     { label: 'Internal Jobs', icon: UserPlus, path: '/recruitment', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
     { label: 'Workforce & Shifts', icon: Clock, path: '/workforce', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
     { label: 'Performance & KPIs', icon: TrendingUp, path: '/performance', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
+    { label: 'User Feedback', icon: MessageSquare, path: '/feedback', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
     { label: 'Reports & Analytics', icon: BarChart3, path: '/analytics', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER'] },
   ];
 
@@ -72,16 +74,26 @@ export const Sidebar = () => {
         </nav>
       </div>
 
-      {/* Footer Banner */}
+      {/* Footer Banner - Clickable AI Copilot Card */}
       <div className="p-4 border-t border-slate-800/80">
-        <div className="glass-panel p-3 rounded-xl border border-indigo-500/20 relative overflow-hidden">
-          <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-indigo-500/10 blur-xl"></div>
-          <div className="flex items-center gap-2 text-xs font-bold text-indigo-400 mb-1">
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>AI Copilot Active</span>
+        <div 
+          onClick={onOpenAiCopilot}
+          className="glass-panel p-3.5 rounded-2xl border border-indigo-500/30 hover:border-purple-500/50 bg-gradient-to-br from-slate-900 via-indigo-950/20 to-slate-900 relative overflow-hidden cursor-pointer hover:scale-[1.02] transition-all duration-200 shadow-lg group"
+          title="Open Nexus Talent Copilot"
+        >
+          <div className="absolute -right-3 -bottom-3 w-16 h-16 rounded-full bg-purple-500/20 blur-xl group-hover:bg-purple-500/40 transition-colors"></div>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <div className="flex items-center gap-2 text-xs font-extrabold text-indigo-300">
+              <Sparkles className="w-3.5 h-3.5 text-purple-400 animate-spin" style={{ animationDuration: '6s' }} />
+              <span>AI Copilot Active</span>
+            </div>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
           </div>
-          <p className="text-[11px] text-slate-400 leading-relaxed">
-            Real-time skill gap analysis & verified certificates connected.
+          <p className="text-[11px] text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
+            Real-time skill gap analysis & verified certificates connected. <strong className="text-purple-300">Click to launch Copilot →</strong>
           </p>
         </div>
       </div>

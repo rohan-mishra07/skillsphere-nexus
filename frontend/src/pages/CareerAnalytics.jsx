@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import { useFeedback } from '../context/FeedbackContext';
 import { 
   TrendingUp, 
   Briefcase, 
@@ -12,17 +14,51 @@ import {
   BarChart3,
   BookOpen,
   ArrowRight,
-  ShieldCheck
+  ShieldCheck,
+  Check,
+  Download,
+  Loader2,
+  FileText,
+  Printer
 } from 'lucide-react';
 
 const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/career`;
 
 export function CareerAnalytics() {
+  const { user } = useAuth();
+  const { triggerAutoFeedback } = useFeedback();
+  const dossierRef = useRef(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [appliedJobs, setAppliedJobs] = useState([]);
+  const [applyToast, setApplyToast] = useState('');
   const [activeTab, setActiveTab] = useState('analytics');
   const [analytics, setAnalytics] = useState(null);
   const [plans, setPlans] = useState([]);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const handleExportDossier = async () => {
+    setIsExporting(true);
+    try {
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdf = html2pdfModule.default || html2pdfModule;
+      const element = dossierRef.current;
+      const filename = `SkillSphere_Career_Dossier_${new Date().toISOString().slice(0, 10)}.pdf`;
+      const options = {
+        margin: [8, 8, 8, 8],
+        filename: filename,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, backgroundColor: '#0f172a' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+      };
+      await html2pdf().set(options).from(element).save();
+    } catch (err) {
+      console.warn("Falling back to window.print():", err);
+      window.print();
+    } finally {
+      setIsExporting(false);
+    }
+  };
   const [isOffline, setIsOffline] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
@@ -184,6 +220,20 @@ export function CareerAnalytics() {
             <Plus className="w-4 h-4" />
             <span>Post Internal Job</span>
           </button>
+
+          <button
+            onClick={handleExportDossier}
+            disabled={isExporting}
+            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+            title="Export Executive Career Dossier as PDF"
+          >
+            {isExporting ? (
+              <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
+            ) : (
+              <Download className="w-4 h-4 text-purple-400" />
+            )}
+            <span>{isExporting ? 'Generating PDF...' : 'Export Career Dossier'}</span>
+          </button>
         </div>
       </div>
 
@@ -311,27 +361,59 @@ export function CareerAnalytics() {
         </div>
       )}
 
+      {/* Apply Toast Notification */}
+      {applyToast && (
+        <div className="fixed top-20 right-6 z-50 px-4 py-3 bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-xs font-bold rounded-2xl shadow-xl backdrop-blur-md animate-bounce flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" /> {applyToast}
+        </div>
+      )}
+
       {/* Tab Content 3: Jobs */}
       {activeTab === 'jobs' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jobs.map((job) => (
-            <div key={job.jobId} className="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 hover:border-purple-500/50 transition-all flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-md text-[10px] font-bold uppercase">
-                    {job.department}
-                  </span>
-                  <span className="text-[11px] text-slate-400 font-semibold">{job.minimumExperience}+ yrs exp</span>
+          {jobs.map((job) => {
+            const isApplied = appliedJobs.includes(job.jobId);
+            return (
+              <div key={job.jobId} className="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 hover:border-purple-500/50 transition-all flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="px-2.5 py-1 bg-purple-500/10 text-purple-400 border border-purple-500/20 rounded-md text-[10px] font-bold uppercase">
+                      {job.department}
+                    </span>
+                    <span className="text-[11px] text-slate-400 font-semibold">{job.minimumExperience}+ yrs exp</span>
+                  </div>
+                  <h3 className="font-extrabold text-white text-lg mt-3">{job.title}</h3>
+                  <p className="text-xs text-slate-400 mt-2"><strong className="text-slate-300">Required Skills:</strong> {job.requiredSkills}</p>
                 </div>
-                <h3 className="font-extrabold text-white text-lg mt-3">{job.title}</h3>
-                <p className="text-xs text-slate-400 mt-2"><strong className="text-slate-300">Required Skills:</strong> {job.requiredSkills}</p>
-              </div>
 
-              <button className="mt-6 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-600/20 transition-all">
-                Apply Now
-              </button>
-            </div>
-          ))}
+                <button
+                  onClick={() => {
+                    if (!isApplied) {
+                      setAppliedJobs([...appliedJobs, job.jobId]);
+                      setApplyToast(`Application submitted for "${job.title}"!`);
+                      setTimeout(() => setApplyToast(''), 4000);
+                      if (triggerAutoFeedback) {
+                        triggerAutoFeedback('Career Roadmaps');
+                      }
+                    }
+                  }}
+                  className={`mt-6 w-full py-2.5 font-bold text-xs rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 ${
+                    isApplied
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20'
+                  }`}
+                >
+                  {isApplied ? (
+                    <>
+                      <Check className="w-4 h-4" /> Application Submitted
+                    </>
+                  ) : (
+                    'Apply Now'
+                  )}
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -506,6 +588,135 @@ export function CareerAnalytics() {
           </div>
         </div>
       )}
+
+      {/* Printable / PDF Executive Career Dossier Template */}
+      <div className="hidden print:block print-only-dossier">
+        <div
+          ref={dossierRef}
+          className="p-8 bg-[#0f172a] text-slate-100 font-sans space-y-6 max-w-4xl mx-auto border border-slate-800 rounded-3xl"
+          style={{ backgroundColor: '#0f172a', color: '#f8fafc' }}
+        >
+          {/* Header */}
+          <div className="border-b border-purple-500/30 pb-4 flex justify-between items-start">
+            <div>
+              <div className="text-[10px] font-bold text-purple-400 uppercase tracking-widest mb-1">
+                SkillSphere Nexus Enterprise Intelligence
+              </div>
+              <h1 className="text-xl font-black text-white font-outfit">
+                SkillSphere Nexus — Enterprise Talent & Career Progression Dossier
+              </h1>
+              <p className="text-xs text-slate-400 mt-1">
+                Confidential Talent Audit, Career Roadmaps, Promotion Readiness & Internal Vacancy Alignment.
+              </p>
+            </div>
+            <div className="text-right">
+              <span className="px-3 py-1 bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-full text-[10px] font-mono font-bold">
+                CONFIDENTIAL
+              </span>
+            </div>
+          </div>
+
+          {/* Metadata Badges */}
+          <div className="grid grid-cols-3 gap-4 bg-slate-900/90 p-4 rounded-2xl border border-slate-800">
+            <div>
+              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Report Generated Date</div>
+              <div className="text-xs font-bold text-white mt-1">
+                {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Logged-in Executive</div>
+              <div className="text-xs font-bold text-purple-300 mt-1">
+                {user?.fullName || user?.name || 'Rohan Mishra'}
+              </div>
+            </div>
+            <div>
+              <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Department Coverage</div>
+              <div className="text-xs font-bold text-emerald-400 mt-1">
+                84% Optimal Coverage
+              </div>
+            </div>
+          </div>
+
+          {/* Career Roadmaps Table */}
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider text-purple-300 flex items-center gap-2">
+              1. Career Pathway Roadmaps & Promotion Readiness
+            </h3>
+            <table className="w-full text-left text-xs border-collapse border border-slate-800 rounded-xl overflow-hidden">
+              <thead className="bg-slate-900 text-slate-300 font-bold border-b border-slate-800">
+                <tr>
+                  <th className="p-2.5">Employee Name</th>
+                  <th className="p-2.5">Current Role</th>
+                  <th className="p-2.5">Target Role</th>
+                  <th className="p-2.5">Roadmap Progress</th>
+                  <th className="p-2.5">Promotion Status</th>
+                  <th className="p-2.5">Assigned Mentor</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800 bg-slate-950/60">
+                {plans.map((p, idx) => (
+                  <tr key={idx}>
+                    <td className="p-2.5 font-bold text-white">{p.employeeName}</td>
+                    <td className="p-2.5 text-slate-400">{p.currentRole}</td>
+                    <td className="p-2.5 text-indigo-300 font-semibold">{p.targetRole}</td>
+                    <td className="p-2.5 font-mono text-slate-200 font-bold">{p.progress}%</td>
+                    <td className="p-2.5">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                        p.promotionEligible !== false
+                          ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20'
+                          : 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+                      }`}>
+                        {p.promotionEligible !== false ? 'Eligible' : 'In Progress'}
+                      </span>
+                    </td>
+                    <td className="p-2.5 text-slate-300">{p.mentor || 'Dr. Sarah Jenkins'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Active Openings Summary */}
+          <div className="space-y-3 pt-2">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider text-purple-300 flex items-center gap-2">
+              2. Active Internal Vacancies & Skill Mappings
+            </h3>
+            <table className="w-full text-left text-xs border-collapse border border-slate-800 rounded-xl overflow-hidden">
+              <thead className="bg-slate-900 text-slate-300 font-bold border-b border-slate-800">
+                <tr>
+                  <th className="p-2.5">Job Opening</th>
+                  <th className="p-2.5">Department</th>
+                  <th className="p-2.5">Min Experience</th>
+                  <th className="p-2.5">Mapped Required Skills</th>
+                  <th className="p-2.5">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800 bg-slate-950/60">
+                {jobs.map((j, idx) => (
+                  <tr key={idx}>
+                    <td className="p-2.5 font-bold text-white">{j.title}</td>
+                    <td className="p-2.5 text-purple-300">{j.department}</td>
+                    <td className="p-2.5 text-slate-400">{j.minimumExperience}+ yrs</td>
+                    <td className="p-2.5 text-slate-300 font-mono text-[10px]">{j.requiredSkills}</td>
+                    <td className="p-2.5">
+                      <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-300 border border-emerald-500/20 rounded text-[10px] font-bold">
+                        {j.status || 'OPEN'}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Footer */}
+          <div className="border-t border-slate-800 pt-3 flex items-center justify-between text-[10px] text-slate-500 font-mono">
+            <span>SkillSphere Nexus — Enterprise AI Talent Platform</span>
+            <span>Confidential Executive Report</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

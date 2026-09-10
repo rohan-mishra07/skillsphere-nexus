@@ -13,11 +13,13 @@ import {
 } from 'lucide-react';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useFeedback } from '../context/FeedbackContext';
 import { CertificateModal } from '../components/CertificateModal';
 
 export const CoursePlayer = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const { triggerAutoFeedback } = useFeedback();
   const [course, setCourse] = useState(null);
   const [lessons, setLessons] = useState([]);
   const [activeLesson, setActiveLesson] = useState(null);
@@ -74,6 +76,9 @@ export const CoursePlayer = () => {
           }
         } catch (e) {}
         setShowCertModal(true);
+      }
+      if (triggerAutoFeedback) {
+        triggerAutoFeedback('Learning Content');
       }
     }
   };

@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
-@RestController
-@RequestMapping("/api/learning/courses")
+@RestController("coreCourseController")
+@RequestMapping("/api/courses")
 @RequiredArgsConstructor
 @CrossOrigin(origins = "*", maxAge = 3600)
 public class CourseController {

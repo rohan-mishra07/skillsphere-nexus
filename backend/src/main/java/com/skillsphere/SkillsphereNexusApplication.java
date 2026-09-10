@@ -6,7 +6,7 @@ import org.springframework.boot.autoconfigure.data.redis.RedisRepositoriesAutoCo
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-@SpringBootApplication(exclude = { RedisRepositoriesAutoConfiguration.class })
+@SpringBootApplication(scanBasePackages = "com.skillsphere", exclude = { RedisRepositoriesAutoConfiguration.class })
 @EnableJpaRepositories(basePackages = {
     "com.skillsphere.repository",
     "com.skillsphere.careerservice.repository",

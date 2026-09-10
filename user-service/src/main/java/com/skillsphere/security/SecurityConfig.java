@@ -59,6 +59,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> 
                 auth.requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/career/**").permitAll()
                     .requestMatchers("/h2-console/**").permitAll()
                     .requestMatchers("/api/public/**").permitAll()
                     .anyRequest().permitAll() // Permit all for smooth local demo testing across all modules
