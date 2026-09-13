@@ -15,9 +15,11 @@ public class CareerPlanDTO {
     private String targetRole;
     private Integer progress;
     private String mentor;
+    private String employeeSkills;
     private String skillGaps;
     private String trainingPlan;
     private Integer promotionScore;
     private Boolean promotionEligible;
     private String status;
+    private String lastAutoUpdate;
 }

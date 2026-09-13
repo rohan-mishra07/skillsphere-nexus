@@ -8,6 +8,10 @@ export class CareerService {
 
   constructor(private http: HttpClient) {}
 
+  getRoles(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/roles`);
+  }
+
   getIntegratedCareerData(empId: string, targetRole: string = 'Senior Developer'): Observable<any> {
     return this.http.get<any>(`${this.baseUrl}/integration/employee/${empId}?targetRole=${encodeURIComponent(targetRole)}`);
   }

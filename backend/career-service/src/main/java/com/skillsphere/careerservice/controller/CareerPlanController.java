@@ -1,6 +1,8 @@
 package com.skillsphere.careerservice.controller;
 
 import com.skillsphere.careerservice.dto.CareerPlanDTO;
+import com.skillsphere.careerservice.event.TrainingCompletedEvent;
+import com.skillsphere.careerservice.listener.TrainingCompletedEventListener;
 import com.skillsphere.careerservice.service.CareerPlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import java.util.UUID;
 public class CareerPlanController {
 
     private final CareerPlanService service;
+    private final TrainingCompletedEventListener kafkaListener;
 
     @PostMapping
     public CareerPlanDTO create(@RequestBody CareerPlanDTO dto) {
@@ -44,5 +47,14 @@ public class CareerPlanController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
         service.delete(id);
+    }
+
+    @PostMapping("/trigger-completion")
+    public String triggerCompletionEvent(@RequestBody TrainingCompletedEvent event) {
+        if (event == null || event.getEmpId() == null || event.getCourseSkill() == null) {
+            return "Invalid payload";
+        }
+        kafkaListener.processEvent(event.getEmpId(), event.getCourseSkill());
+        return "Auto-progress triggered successfully for empId: " + event.getEmpId();
     }
 }

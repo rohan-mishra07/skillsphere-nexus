@@ -1,5 +1,6 @@
 C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\controller\JobController.java
 C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\service\CareerPlanService.java
+C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\listener\TrainingCompletedEventListener.java
 C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\dto\JobDTO.java
 C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\entity\CareerPlan.java
 C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\service\AnalyticsService.java
@@ -10,5 +11,10 @@ C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com
 C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\controller\CareerPlanController.java
 C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\repository\CareerPlanRepository.java
 C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\dto\CareerPlanDTO.java
+C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\config\RoleRequirementSeeder.java
+C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\event\TrainingCompletedEvent.java
+C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\controller\RoleRequirementController.java
 C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\repository\JobRepository.java
+C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\repository\RoleRequirementRepository.java
 C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\service\JobService.java
+C:\Users\mishr\OneDrive\Desktop\infosys\backend\career-service\src\main\java\com\skillsphere\careerservice\entity\RoleRequirement.java

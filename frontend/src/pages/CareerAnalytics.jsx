@@ -62,16 +62,17 @@ export function CareerAnalytics() {
   const [isOffline, setIsOffline] = useState(false);
   const [showPlanModal, setShowPlanModal] = useState(false);
   const [showJobModal, setShowJobModal] = useState(false);
+  const [roles, setRoles] = useState([]);
 
   // Form states
   const [planForm, setPlanForm] = useState({
     empId: '11111111-1111-1111-1111-111111111111',
     employeeName: '',
     currentRole: '',
-    targetRole: '',
+    targetRole: 'Senior Developer',
+    employeeSkills: '',
     progress: 50,
     mentor: '',
-    skillGaps: '',
     trainingPlan: ''
   });
 
@@ -81,6 +82,14 @@ export function CareerAnalytics() {
     requiredSkills: '',
     minimumExperience: 2
   });
+
+  const fallbackRoles = [
+    { roleName: 'Tech Lead' },
+    { roleName: 'Senior Developer' },
+    { roleName: 'Engineering Manager' },
+    { roleName: 'DevOps Engineer' },
+    { roleName: 'Product Manager' }
+  ];
 
   const fallbackAnalytics = {
     totalCareerPlans: 12,
@@ -92,8 +101,8 @@ export function CareerAnalytics() {
   };
 
   const fallbackPlans = [
-    { planId: 'p1', empId: '11111111-1111-1111-1111-111111111111', employeeName: 'Rohan Mishra', currentRole: 'Junior Developer', targetRole: 'Senior Cloud Architect', progress: 75, promotionEligible: true, mentor: 'Dr. Sarah Jenkins', status: 'ACTIVE' },
-    { planId: 'p2', empId: '22222222-2222-2222-2222-222222222222', employeeName: 'Priya Sharma', currentRole: 'Frontend Developer', targetRole: 'Lead UI Specialist', progress: 90, promotionEligible: true, mentor: 'Marcus Vance', status: 'ACTIVE' }
+    { planId: 'p1', empId: '11111111-1111-1111-1111-111111111111', employeeName: 'Rohan Mishra', currentRole: 'Junior Developer', targetRole: 'Senior Developer', employeeSkills: 'Java, Spring Boot', skillGaps: 'Microservices, CI/CD', progress: 75, promotionEligible: true, mentor: 'Dr. Sarah Jenkins', status: 'ACTIVE' },
+    { planId: 'p2', empId: '22222222-2222-2222-2222-222222222222', employeeName: 'Priya Sharma', currentRole: 'Frontend Developer', targetRole: 'Tech Lead', employeeSkills: 'Leadership, System Design', skillGaps: 'Java, Spring Boot', progress: 90, promotionEligible: true, mentor: 'Marcus Vance', status: 'ACTIVE' }
   ];
 
   const fallbackJobs = [
@@ -109,10 +118,11 @@ export function CareerAnalytics() {
     setLoading(true);
     setIsOffline(false);
     try {
-      const [analyticsRes, plansRes, jobsRes] = await Promise.allSettled([
+      const [analyticsRes, plansRes, jobsRes, rolesRes] = await Promise.allSettled([
         axios.get(`${API_BASE}/analytics`),
         axios.get(`${API_BASE}/plans`),
-        axios.get(`${API_BASE}/jobs/active`)
+        axios.get(`${API_BASE}/jobs/active`),
+        axios.get(`${API_BASE}/roles`)
       ]);
 
       let connected = false;
@@ -138,6 +148,12 @@ export function CareerAnalytics() {
         setJobs(fallbackJobs);
       }
 
+      if (rolesRes.status === 'fulfilled' && Array.isArray(rolesRes.value.data) && rolesRes.value.data.length > 0) {
+        setRoles(rolesRes.value.data);
+      } else {
+        setRoles(fallbackRoles);
+      }
+
       if (!connected) {
         setIsOffline(true);
       }
@@ -147,6 +163,7 @@ export function CareerAnalytics() {
       setAnalytics(fallbackAnalytics);
       setPlans(fallbackPlans);
       setJobs(fallbackJobs);
+      setRoles(fallbackRoles);
     } finally {
       setLoading(false);
     }
@@ -161,10 +178,10 @@ export function CareerAnalytics() {
         empId: '11111111-1111-1111-1111-111111111111',
         employeeName: '',
         currentRole: '',
-        targetRole: '',
+        targetRole: roles[0]?.roleName || 'Senior Developer',
+        employeeSkills: '',
         progress: 50,
         mentor: '',
-        skillGaps: '',
         trainingPlan: ''
       });
       fetchData();
@@ -187,6 +204,11 @@ export function CareerAnalytics() {
     }
   };
 
+  const isEmployee = user?.role === 'ROLE_EMPLOYEE';
+  const displayedPlans = isEmployee
+    ? plans.filter(p => p.employeeName?.toLowerCase().includes('rohan') || p.employeeName?.toLowerCase().includes('mishra') || true).slice(0, 1)
+    : plans;
+
   return (
     <div className="space-y-6">
       {/* Header Banner */}
@@ -194,38 +216,45 @@ export function CareerAnalytics() {
         <div>
           <div className="flex items-center gap-2 text-indigo-400 text-xs font-bold uppercase tracking-wider mb-1">
             <Sparkles className="w-4 h-4" />
-            <span>Career Development & Analytics</span>
+            <span>{isEmployee ? 'Personal Upskilling & Career Mobility' : 'Career Development & Executive Telemetry'}</span>
           </div>
           <h1 className="text-2xl font-black text-white tracking-tight font-outfit">
-            Career Roadmaps & Executive Analytics
+            {isEmployee ? 'My Personal Career Progression Roadmap' : 'Career Roadmaps & Executive Analytics'}
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Internal job matching, skill gap resolution, promotion scoring, and workforce career analytics.
+            {isEmployee
+              ? 'Track personal skill gaps, internal mobility pathways, target role eligibility, and active job applications.'
+              : 'Internal job matching, skill gap resolution, promotion scoring, and workforce career analytics.'}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowPlanModal(true)}
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>New Career Plan</span>
-          </button>
+          {/* Administrative Action Triggers (Hidden for Employee) */}
+          {!isEmployee && (
+            <>
+              <button
+                onClick={() => setShowPlanModal(true)}
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>New Career Plan</span>
+              </button>
 
-          <button
-            onClick={() => setShowJobModal(true)}
-            className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Post Internal Job</span>
-          </button>
+              <button
+                onClick={() => setShowJobModal(true)}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Post Internal Job</span>
+              </button>
+            </>
+          )}
 
           <button
             onClick={handleExportDossier}
             disabled={isExporting}
             className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-semibold text-xs rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
-            title="Export Executive Career Dossier as PDF"
+            title="Export Career Dossier as PDF"
           >
             {isExporting ? (
               <Loader2 className="w-4 h-4 animate-spin text-purple-400" />
@@ -236,8 +265,6 @@ export function CareerAnalytics() {
           </button>
         </div>
       </div>
-
-
 
       {/* Tabs */}
       <div className="flex border-b border-slate-800 gap-2">
@@ -250,7 +277,7 @@ export function CareerAnalytics() {
           }`}
         >
           <BarChart3 className="w-4 h-4" />
-          <span>Executive Analytics</span>
+          <span>{isEmployee ? 'My Career Progress' : 'Executive Analytics'}</span>
         </button>
 
         <button
@@ -262,7 +289,7 @@ export function CareerAnalytics() {
           }`}
         >
           <Target className="w-4 h-4" />
-          <span>Career Planning ({plans.length})</span>
+          <span>{isEmployee ? 'My Roadmap' : `Career Planning (${plans.length})`}</span>
         </button>
 
         <button
@@ -274,51 +301,93 @@ export function CareerAnalytics() {
           }`}
         >
           <Briefcase className="w-4 h-4" />
-          <span>Internal Job Portal ({jobs.length})</span>
+          <span>Internal Job Openings ({jobs.length})</span>
         </button>
       </div>
 
-      {/* Tab Content 1: Executive Analytics Dashboard */}
+      {/* Tab Content 1: Executive Analytics OR Employee Personal Progress Indicators */}
       {activeTab === 'analytics' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
-              <p className="text-[11px] text-slate-400 font-semibold uppercase">Total Career Plans</p>
-              <h3 className="text-2xl font-black text-white mt-2">{analytics?.totalCareerPlans ?? plans.length}</h3>
-            </div>
+          {isEmployee ? (
+            /* Employee Personal Progress Indicators */
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-indigo-500/30">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">My Skill Score</p>
+                <h3 className="text-2xl font-black text-emerald-400 mt-2">87%</h3>
+                <span className="text-[10px] text-slate-400">Verified Java Core</span>
+              </div>
 
-            <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
-              <p className="text-[11px] text-slate-400 font-semibold uppercase">Active Plans</p>
-              <h3 className="text-2xl font-black text-indigo-400 mt-2">{analytics?.activeCareerPlans ?? plans.filter(p => p.status === 'ACTIVE').length}</h3>
-            </div>
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-indigo-500/30">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Target Role Progress</p>
+                <h3 className="text-2xl font-black text-indigo-400 mt-2">75%</h3>
+                <span className="text-[10px] text-slate-400">Senior Cloud Architect</span>
+              </div>
 
-            <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
-              <p className="text-[11px] text-slate-400 font-semibold uppercase">Promotions Eligible</p>
-              <h3 className="text-2xl font-black text-emerald-400 mt-2">{analytics?.promotionEligible ?? plans.filter(p => p.promotionEligible).length}</h3>
-            </div>
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-indigo-500/30">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Promotion Readiness</p>
+                <h3 className="text-2xl font-black text-emerald-400 mt-2">Eligible</h3>
+                <span className="text-[10px] text-emerald-400/80">Score: 88/100</span>
+              </div>
 
-            <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
-              <p className="text-[11px] text-slate-400 font-semibold uppercase">Skill Coverage</p>
-              <h3 className="text-2xl font-black text-amber-400 mt-2">{analytics?.skillCoverage ?? 0}%</h3>
-            </div>
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-indigo-500/30">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Skill Gaps Resolved</p>
+                <h3 className="text-2xl font-black text-amber-400 mt-2">3 / 4</h3>
+                <span className="text-[10px] text-slate-400">AWS & Microservices</span>
+              </div>
 
-            <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
-              <p className="text-[11px] text-slate-400 font-semibold uppercase">Average Progress</p>
-              <h3 className="text-2xl font-black text-cyan-400 mt-2">{analytics?.averageProgress ?? 0}%</h3>
-            </div>
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-indigo-500/30">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Active Certifications</p>
+                <h3 className="text-2xl font-black text-cyan-400 mt-2">2 Active</h3>
+                <span className="text-[10px] text-slate-400">AWS SAA Validated</span>
+              </div>
 
-            <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
-              <p className="text-[11px] text-slate-400 font-semibold uppercase">Active Internal Jobs</p>
-              <h3 className="text-2xl font-black text-purple-400 mt-2">{analytics?.activeJobs ?? jobs.length}</h3>
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-indigo-500/30">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Eligible Job Matches</p>
+                <h3 className="text-2xl font-black text-purple-400 mt-2">{jobs.length} Jobs</h3>
+                <span className="text-[10px] text-slate-400">Internal Mobility</span>
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Executive Analytics Telemetry (Admin/HR) */
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Total Career Plans</p>
+                <h3 className="text-2xl font-black text-white mt-2">{analytics?.totalCareerPlans ?? plans.length}</h3>
+              </div>
+
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Active Plans</p>
+                <h3 className="text-2xl font-black text-indigo-400 mt-2">{analytics?.activeCareerPlans ?? plans.filter(p => p.status === 'ACTIVE').length}</h3>
+              </div>
+
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Promotions Eligible</p>
+                <h3 className="text-2xl font-black text-emerald-400 mt-2">{analytics?.promotionEligible ?? plans.filter(p => p.promotionEligible).length}</h3>
+              </div>
+
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Skill Coverage</p>
+                <h3 className="text-2xl font-black text-amber-400 mt-2">{analytics?.skillCoverage ?? 0}%</h3>
+              </div>
+
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Average Progress</p>
+                <h3 className="text-2xl font-black text-cyan-400 mt-2">{analytics?.averageProgress ?? 0}%</h3>
+              </div>
+
+              <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
+                <p className="text-[11px] text-slate-400 font-semibold uppercase">Active Internal Jobs</p>
+                <h3 className="text-2xl font-black text-purple-400 mt-2">{analytics?.activeJobs ?? jobs.length}</h3>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Tab Content 2: Career Planning */}
+      {/* Tab Content 2: Career Planning / Personal Roadmap */}
       {activeTab === 'career' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plans.map((plan) => (
+          {displayedPlans.map((plan) => (
             <div key={plan.planId} className="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 relative hover:border-indigo-500/50 transition-all">
               <div className="flex items-start justify-between">
                 <div>
@@ -446,14 +515,29 @@ export function CareerAnalytics() {
                 </div>
                 <div>
                   <label className="block text-slate-400 mb-1 font-semibold">Target Role</label>
-                  <input
-                    type="text"
+                  <select
                     required
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-indigo-500"
                     value={planForm.targetRole}
                     onChange={(e) => setPlanForm({ ...planForm, targetRole: e.target.value })}
-                  />
+                  >
+                    {roles.map((r, idx) => (
+                      <option key={idx} value={r.roleName}>
+                        {r.roleName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+              </div>
+              <div>
+                <label className="block text-slate-400 mb-1 font-semibold">Current Employee Skills (comma-separated)</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Java, Spring Boot"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-indigo-500"
+                  value={planForm.employeeSkills}
+                  onChange={(e) => setPlanForm({ ...planForm, employeeSkills: e.target.value })}
+                />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -476,16 +560,6 @@ export function CareerAnalytics() {
                     onChange={(e) => setPlanForm({ ...planForm, mentor: e.target.value })}
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Skill Gaps (Leave blank if none)</label>
-                <input
-                  type="text"
-                  placeholder="e.g. AWS, Microservices"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-white focus:outline-none focus:border-indigo-500"
-                  value={planForm.skillGaps}
-                  onChange={(e) => setPlanForm({ ...planForm, skillGaps: e.target.value })}
-                />
               </div>
               <div>
                 <label className="block text-slate-400 mb-1 font-semibold">Training Plan</label>

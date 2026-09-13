@@ -15,21 +15,55 @@ services:
       - skillsphere-net
     restart: unless-stopped
 
-  # 2. Backend Service (user-service)
-  backend:
-    build: ./user-service
-    container_name: skillsphere-backend
-    ports:
-      - "8082:8082" # Change to match your Spring Boot port if different
+  # 2. Zookeeper Service
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    depends_on:
-      - keycloak
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
     networks:
       - skillsphere-net
     restart: unless-stopped
 
-  # 3. Frontend Service
+  # 3. Kafka Service
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - skillsphere-net
+    restart: unless-stopped
+
+  # 4. Backend Service (user-service)
+  backend:
+    build: ./user-service
+    container_name: skillsphere-backend
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      - keycloak
+      - kafka
+    networks:
+      - skillsphere-net
+    restart: unless-stopped
+
+  # 5. Frontend Service
   frontend:
     build: ./frontend
     container_name: skillsphere-frontend

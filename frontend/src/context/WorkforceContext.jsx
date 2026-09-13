@@ -1,6 +1,41 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const WorkforceContext = createContext();
+
+export const DEFAULT_LEAVES = [
+  {
+    id: 'LV-101',
+    employeeName: 'Alex Chen',
+    employeeEmail: 'employee@skillsphere.com',
+    role: 'Senior Software Engineer',
+    employeeRole: 'Senior Software Engineer',
+    leaveType: 'Annual Vacation',
+    startDate: '2026-08-10',
+    endDate: '2026-08-14',
+    duration: '5 Days',
+    daysCount: '5 Days',
+    reason: 'Attending International Tech Summit',
+    status: 'PENDING',
+    submittedAt: '2026-08-01',
+    submissionDate: 'Aug 1, 2026'
+  },
+  {
+    id: 'LV-102',
+    employeeName: 'Rohan Mishra',
+    employeeEmail: 'rohan.mishra@skillsphere.com',
+    role: 'Software Engineer',
+    employeeRole: 'Software Engineer',
+    leaveType: 'Wedding / Earned Leave',
+    startDate: '2026-09-18',
+    endDate: '2026-09-22',
+    duration: '4 Days',
+    daysCount: '4 Days',
+    reason: 'Attending sibling wedding in Rajasthan',
+    status: 'PENDING',
+    submittedAt: '2026-09-11',
+    submissionDate: 'Sept 11, 2026'
+  }
+];
 
 export const getIndiaTimeString = (offsetMinutes = 0) => {
   const date = new Date(Date.now() - offsetMinutes * 60 * 1000);
@@ -45,6 +80,45 @@ export const WorkforceProvider = ({ children }) => {
     { id: 4, name: 'Sarah Jenkins', action: 'JOIN', time: getIndiaTimeString(18), department: 'Executive', shift: 'IST Live Shift', status: 'Logged In' },
     { id: 5, name: 'Marcus Vance', action: 'JOIN', time: getIndiaTimeString(25), department: 'Human Resources', shift: 'IST Live Shift', status: 'Logged In' }
   ]);
+
+  // Centralized Leave Management state with localStorage persistence
+  const [leaveRequests, setLeaveRequests] = useState(() => {
+    const saved = localStorage.getItem('skillsphere_leave_requests');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error("Failed to parse leaves:", e);
+      }
+    }
+    return DEFAULT_LEAVES;
+  });
+
+  // Sync leaveRequests to localStorage on change
+  useEffect(() => {
+    localStorage.setItem('skillsphere_leave_requests', JSON.stringify(leaveRequests));
+  }, [leaveRequests]);
+
+  const addLeaveRequest = (newLeave) => {
+    setLeaveRequests((prev) => [newLeave, ...prev]);
+  };
+
+  const approveLeaveRequest = (reqId) => {
+    setLeaveRequests((prev) =>
+      prev.map((req) => (req.id === reqId ? { ...req, status: 'APPROVED' } : req))
+    );
+  };
+
+  const rejectLeaveRequest = (reqId, reason) => {
+    setLeaveRequests((prev) =>
+      prev.map((req) =>
+        req.id === reqId
+          ? { ...req, status: 'REJECTED', rejectionReason: reason }
+          : req
+      )
+    );
+  };
 
   // Record user login event (Called when someone logs in or switches role)
   const recordLogin = (userData) => {
@@ -115,6 +189,10 @@ export const WorkforceProvider = ({ children }) => {
       pulseType,
       latestEvent,
       liveLog,
+      leaveRequests,
+      addLeaveRequest,
+      approveLeaveRequest,
+      rejectLeaveRequest,
       recordLogin,
       recordLogout,
       getIndiaTimeString,

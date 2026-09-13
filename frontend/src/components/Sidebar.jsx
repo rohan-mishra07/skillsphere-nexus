@@ -12,7 +12,8 @@ import {
   Sparkles,
   Layers,
   Award,
-  MessageSquare
+  MessageSquare,
+  ShieldCheck
 } from 'lucide-react';
 
 export const Sidebar = ({ onOpenAiCopilot }) => {
@@ -28,6 +29,7 @@ export const Sidebar = ({ onOpenAiCopilot }) => {
     { label: 'Workforce & Shifts', icon: Clock, path: '/workforce', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
     { label: 'Performance & KPIs', icon: TrendingUp, path: '/performance', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
     { label: 'User Feedback', icon: MessageSquare, path: '/feedback', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
+    { label: 'Audit & Governance', icon: ShieldCheck, path: '/audit-logs', roles: ['ROLE_ADMIN', 'ROLE_HR'] },
     { label: 'Reports & Analytics', icon: BarChart3, path: '/analytics', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER'] },
   ];
 

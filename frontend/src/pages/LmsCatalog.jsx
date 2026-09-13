@@ -288,12 +288,14 @@ export const LmsCatalog = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/25 flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
-            >
-              <Plus className="w-4 h-4" /> Create Course
-            </button>
+            {user?.role !== 'ROLE_EMPLOYEE' && (
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/25 flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
+              >
+                <Plus className="w-4 h-4" /> Create Course
+              </button>
+            )}
             <button
               onClick={fetchEnrollments}
               className="px-3.5 py-2.5 glass-panel text-slate-300 hover:text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-all"

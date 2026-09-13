@@ -28,6 +28,8 @@ kafka_2.13-3.6.1/
 .settings/
 
 # Environment & Misc
+.env
+.env.local
 .env*
 .vercel
 *.lock

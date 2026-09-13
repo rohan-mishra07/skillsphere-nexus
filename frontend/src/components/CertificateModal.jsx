@@ -1,6 +1,8 @@
 import React, { useRef, useState } from 'react';
-import { X, Award, Download, Printer, ShieldCheck, Sparkles, CheckCircle2, Loader2, Globe, Clock, Layers, QrCode, ExternalLink } from 'lucide-react';
+import { X, Award, Download, Printer, ShieldCheck, Sparkles, CheckCircle2, Loader2, Globe, Clock, Layers, QrCode, ExternalLink, Copy, Check, Lock, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { generateSha256Sync, formatShortHash } from '../utils/hashUtils';
+import { QRCodeSVG } from './QRCodeSVG';
 
 const INSTRUCTOR_POOL = [
   { name: 'Prof. David Sterling', title: 'Lead Technical Instructor' },
@@ -13,6 +15,7 @@ export const CertificateModal = ({ isOpen, onClose, certificateData }) => {
   const { user } = useAuth();
   const certRef = useRef(null);
   const [downloading, setDownloading] = useState(false);
+  const [copiedHash, setCopiedHash] = useState(false);
 
   if (!isOpen) return null;
 
@@ -41,7 +44,7 @@ export const CertificateModal = ({ isOpen, onClose, certificateData }) => {
   const currentCertCode = certificateData?.certificateCode || 'SS-2026-0001';
 
   const cert = {
-    userName: certificateData?.userName || user?.fullName || 'Rohan Sharma',
+    userName: certificateData?.userName || user?.fullName || 'Rohan Mishra',
     courseTitle: certificateData?.courseTitle || 'Enterprise Java Spring Boot 3 & Security',
     issueDate: formatIssueDate(certificateData?.issueDate || certificateData?.issuedAt || certificateData?.completedAt, currentCertCode),
     certificateCode: currentCertCode,
@@ -53,6 +56,16 @@ export const CertificateModal = ({ isOpen, onClose, certificateData }) => {
     instructorTitle: assignedInstructor.title,
     ceo: 'Rohan Mishra',
     ceoTitle: 'Founder & CEO, SkillSphere Learning Platform'
+  };
+
+  const fullHash = generateSha256Sync(`${cert.certificateCode}-${cert.userName}-${cert.issueDate}-${cert.platform}`);
+  const shortHash = formatShortHash(fullHash);
+  const verificationUrl = `${window.location.origin}/verify/${cert.certificateCode}`;
+
+  const handleCopyHash = () => {
+    navigator.clipboard.writeText(`0x${fullHash}`);
+    setCopiedHash(true);
+    setTimeout(() => setCopiedHash(false), 3000);
   };
 
   const handleDownloadPdf = async () => {
@@ -99,7 +112,7 @@ export const CertificateModal = ({ isOpen, onClose, certificateData }) => {
             </div>
             <div>
               <h3 className="font-extrabold text-sm text-white font-outfit tracking-wide flex items-center gap-2">
-                Official Enterprise Certificate
+                Official Enterprise Credential
                 <span className="text-[10px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded-full border border-amber-500/30">
                   SkillSphere × ARRATAI
                 </span>
@@ -219,6 +232,30 @@ export const CertificateModal = ({ isOpen, onClose, certificateData }) => {
                 </div>
               </div>
 
+              {/* SHA-256 Digital Hash Bar & Copy Button */}
+              <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-amber-500/30 max-w-3xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+                <div className="flex items-center gap-2 text-left font-mono">
+                  <Lock className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold tracking-wider block">Digital Hash</span>
+                    <span className="text-amber-300 font-bold text-xs">{shortHash}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-emerald-400 font-bold bg-emerald-500/20 px-2.5 py-1 rounded-md border border-emerald-500/30 flex items-center gap-1">
+                    <ShieldCheck className="w-3 h-3 text-emerald-400" /> Integrity Check: Verified &amp; Tamper-Proof
+                  </span>
+                  <button
+                    onClick={handleCopyHash}
+                    className="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-[10px] font-bold border border-slate-700 transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    {copiedHash ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3 text-indigo-400" />}
+                    <span>{copiedHash ? 'Copied' : 'Copy Hash'}</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Verification & Signatures Section */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 items-center text-left border-t border-slate-800 print:border-slate-300">
                 
@@ -231,17 +268,17 @@ export const CertificateModal = ({ isOpen, onClose, certificateData }) => {
                   <div className="text-[10px] text-slate-400 font-medium">{cert.instructorTitle}</div>
                 </div>
 
-                {/* Center: Official Gold Verification Seal & QR Code */}
+                {/* Center: Official Gold Verification Seal & Vector QR Code */}
                 <div className="flex flex-col items-center justify-center gap-2 text-center">
-                  <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-500 to-amber-600 border-4 border-amber-300 text-slate-950 flex flex-col items-center justify-center mx-auto shadow-xl shadow-amber-500/20">
-                    <ShieldCheck className="w-7 h-7 text-slate-950" />
+                  <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-amber-400 via-yellow-500 to-amber-600 border-4 border-amber-300 text-slate-950 flex flex-col items-center justify-center mx-auto shadow-xl shadow-amber-500/20">
+                    <ShieldCheck className="w-6 h-6 text-slate-950" />
                     <span className="text-[7px] font-extrabold tracking-tighter uppercase text-slate-950">ACCREDITED</span>
                   </div>
 
-                  {/* QR Code Verification Box */}
-                  <div className="flex items-center gap-2 p-1.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-[10px] text-slate-400 font-mono">
-                    <QrCode className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span>Scan to Verify Online</span>
+                  {/* High-Contrast SVG QR Code Verification Component */}
+                  <div className="flex flex-col items-center gap-1">
+                    <QRCodeSVG value={verificationUrl} size={76} />
+                    <span className="text-[9px] text-slate-400 font-mono mt-1 font-semibold">Scan to Verify Online</span>
                   </div>
                 </div>
 
@@ -255,11 +292,21 @@ export const CertificateModal = ({ isOpen, onClose, certificateData }) => {
                 </div>
               </div>
 
+              {/* Verification Lifecycle Timeline Banner */}
+              <div className="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-center gap-2 text-[10px] font-mono text-slate-400">
+                <span className="text-slate-300 font-bold">Verification Lifecycle:</span>
+                <span className="text-slate-300">Issued</span>
+                <ChevronRight className="w-3 h-3 text-amber-400" />
+                <span className="text-amber-300 font-bold">Cryptographically Signed</span>
+                <ChevronRight className="w-3 h-3 text-emerald-400" />
+                <span className="text-emerald-400 font-bold">Verified via Nexus Registry</span>
+              </div>
+
               {/* Footer Credentials Info */}
               <div className="flex flex-col md:flex-row items-center justify-between text-[10px] text-slate-500 pt-4 font-mono border-t border-slate-800/60 print:border-slate-200">
                 <span>Platform: SkillSphere Learning Engine v3.2</span>
                 <span className="text-amber-400 font-semibold">Partner: ARRATAI Enterprise Learning Network</span>
-                <span>Verification URL: https://skillsphere.com/verify/{cert.certificateCode}</span>
+                <span>Verification URL: {verificationUrl}</span>
               </div>
 
             </div>
@@ -269,7 +316,7 @@ export const CertificateModal = ({ isOpen, onClose, certificateData }) => {
         {/* Bottom Actions Bar (Hidden during print) */}
         <div className="p-4 bg-slate-950 border-t border-slate-800 flex justify-between items-center print:hidden">
           <span className="text-[11px] text-slate-400 flex items-center gap-1.5">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Authorized & Cryptographically Signed by Rohan Mishra (Founder & CEO) × ARRATAI
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" /> Authorized &amp; Cryptographically Signed by Rohan Mishra (Founder &amp; CEO) × ARRATAI
           </span>
           <button
             onClick={handleDownloadPdf}

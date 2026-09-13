@@ -51,6 +51,7 @@ com\skillsphere\skillservice\controller\RenewalController.class
 com\skillsphere\dto\SkillDTO.class
 com\skillsphere\learningservice\repository\LearningPathCourseRepository.class
 com\skillsphere\skillservice\config\KafkaCertificationProducer.class
+com\skillsphere\controller\UserFeedbackController.class
 com\skillsphere\controller\WorkforceController.class
 com\skillsphere\learningservice\repository\CourseContentRepository.class
 com\skillsphere\skillservice\entity\CertificationRenewal.class

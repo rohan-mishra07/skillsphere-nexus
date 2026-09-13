@@ -144,21 +144,49 @@ export const AuthProvider = ({ children }) => {
     return studentUser;
   };
 
+  const [roleToast, setRoleToast] = useState('');
+
+  // Synchronize stored active role from localStorage
+  const savedActiveRole = localStorage.getItem('skillsphere_active_role');
+  if (user && savedActiveRole && user.role !== savedActiveRole) {
+    user.role = savedActiveRole;
+  }
+
   const switchRole = (newRole, customName) => {
+    const roleMapNames = {
+      ROLE_ADMIN: 'Admin',
+      ROLE_HR: 'HR Executive',
+      ROLE_EMPLOYEE: 'Employee',
+      ROLE_MANAGER: 'Manager',
+      ROLE_STUDENT: 'Student'
+    };
+
     const target = MOCK_USERS.find(u => u.role === newRole) || MOCK_USERS[0];
     const token = 'mock-jwt-token-role-' + Date.now();
     const updatedUser = { 
       ...target, 
-      fullName: customName || target.fullName,
+      role: newRole,
+      fullName: customName || (newRole === 'ROLE_EMPLOYEE' ? 'Rohan Mishra' : newRole === 'ROLE_HR' ? 'Priya Sharma' : target.fullName),
+      name: customName || (newRole === 'ROLE_EMPLOYEE' ? 'Rohan Mishra' : newRole === 'ROLE_HR' ? 'Priya Sharma' : target.fullName),
       token: token 
     };
+
     setUser(updatedUser);
     localStorage.setItem('auth_user', JSON.stringify(updatedUser));
     localStorage.setItem('auth_token', token);
     localStorage.setItem('skillsphere_user', JSON.stringify(updatedUser));
     localStorage.setItem('token', token);
-    localStorage.setItem('role', updatedUser.role);
+    localStorage.setItem('role', newRole);
+    localStorage.setItem('skillsphere_active_role', newRole);
+
     if (workforce?.recordLogin) workforce.recordLogin(updatedUser);
+
+    // Trigger Toast Notification
+    const roleDisplayName = roleMapNames[newRole] || 'Role';
+    setRoleToast(`Active session switched to ${roleDisplayName}`);
+    setTimeout(() => {
+      setRoleToast('');
+    }, 4000);
   };
 
   const logout = () => {
@@ -170,6 +198,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     localStorage.removeItem('role');
+    localStorage.removeItem('skillsphere_active_role');
     sessionStorage.clear();
 
     const keycloak = window.keycloak;
@@ -181,7 +210,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, loginAsStudent, logout, switchRole, MOCK_USERS, getInitials }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, register, loginAsStudent, logout, switchRole, roleToast, setRoleToast, MOCK_USERS, getInitials }}>
       {children}
     </AuthContext.Provider>
   );

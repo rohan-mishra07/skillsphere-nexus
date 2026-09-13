@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import api from '../api/axios';
 import { CertificateModal } from '../components/CertificateModal';
+import { ApplyLeaveModal } from '../components/ApplyLeaveModal';
 import { getIndiaTimeString } from '../context/WorkforceContext';
 
 export const EmployeeDashboard = () => {
@@ -25,6 +26,8 @@ export const EmployeeDashboard = () => {
   const [clockInTime, setClockInTime] = useState('');
   const [showCertModal, setShowCertModal] = useState(false);
   const [userCert, setUserCert] = useState(null);
+  const [isLeaveModalOpen, setIsLeaveModalOpen] = useState(false);
+  const [leaveToast, setLeaveToast] = useState('');
 
   const handleToggleClockIn = () => {
     if (!clockedIn) {
@@ -33,6 +36,20 @@ export const EmployeeDashboard = () => {
     } else {
       setClockedIn(false);
     }
+  };
+
+  const handleLeaveSubmitted = (req) => {
+    try {
+      const existing = JSON.parse(localStorage.getItem('skillsphere_leave_requests') || '[]');
+      localStorage.setItem('skillsphere_leave_requests', JSON.stringify([req, ...existing]));
+    } catch (e) {
+      console.warn('Could not store leave request:', e);
+    }
+
+    setLeaveToast('Leave request submitted to reporting manager.');
+    setTimeout(() => {
+      setLeaveToast('');
+    }, 4500);
   };
 
   useEffect(() => {
@@ -64,7 +81,16 @@ export const EmployeeDashboard = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      
+      {/* Leave Submission Toast */}
+      {leaveToast && (
+        <div className="fixed top-20 right-6 z-50 px-4 py-3 bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-xs font-bold rounded-2xl shadow-xl backdrop-blur-md animate-bounce flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{leaveToast}</span>
+        </div>
+      )}
+
       {/* Top Welcome Banner */}
       <div className="glass-panel p-6 rounded-3xl border border-slate-800 relative overflow-hidden bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900">
         <div className="absolute right-0 top-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
@@ -74,31 +100,41 @@ export const EmployeeDashboard = () => {
               <Sparkles className="w-3.5 h-3.5" /> Welcome Back, Learner
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-white font-outfit">
-              Hello, <span className="gradient-text">{user?.fullName}</span> 👋
+              Hello, <span className="gradient-text">{user?.fullName || 'Rohan Mishra'}</span> 👋
             </h1>
             <p className="text-xs text-slate-400 mt-1 max-w-xl">
               You are currently on track for your Q3 Upskilling Goals. Complete 1 module to earn your next digital certificate!
             </p>
           </div>
 
-          {/* Quick Workforce Clock-In Widget */}
-          <div className="glass-panel p-4 rounded-2xl border border-slate-800 flex items-center gap-4 bg-slate-900/90">
-            <div>
-              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Workforce Shift</div>
-              <div className="text-xs font-semibold text-white flex items-center gap-1.5 mt-0.5">
-                <Clock className="w-3.5 h-3.5 text-indigo-400" /> Morning (09:00 - 17:00)
-              </div>
-            </div>
+          {/* Quick Workforce & Leave Action Widgets */}
+          <div className="flex flex-wrap items-center gap-3">
             <button
-              onClick={handleToggleClockIn}
-              className={`px-4 py-2 text-xs font-bold rounded-xl transition-all shadow-md ${
-                clockedIn
-                  ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-500'
-              }`}
+              onClick={() => setIsLeaveModalOpen(true)}
+              className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition-all flex items-center gap-2 shadow-md cursor-pointer"
             >
-              {clockedIn ? `✓ Clocked In (${clockInTime})` : 'Clock In Now'}
+              <Calendar className="w-3.5 h-3.5 text-amber-400" />
+              <span>Apply for Leave</span>
             </button>
+
+            <div className="glass-panel p-3.5 rounded-2xl border border-slate-800 flex items-center gap-3 bg-slate-900/90">
+              <div>
+                <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Workforce Shift</div>
+                <div className="text-xs font-semibold text-white flex items-center gap-1.5 mt-0.5">
+                  <Clock className="w-3.5 h-3.5 text-indigo-400" /> Morning (09:00 - 17:00)
+                </div>
+              </div>
+              <button
+                onClick={handleToggleClockIn}
+                className={`px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all shadow-md ${
+                  clockedIn
+                    ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-500'
+                }`}
+              >
+                {clockedIn ? `✓ Clocked In (${clockInTime})` : 'Clock In Now'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -258,6 +294,13 @@ export const EmployeeDashboard = () => {
           instructor: 'Prof. David Sterling',
           director: 'Sarah Jenkins'
         }}
+      />
+
+      {/* Apply for Leave Modal */}
+      <ApplyLeaveModal
+        isOpen={isLeaveModalOpen}
+        onClose={() => setIsLeaveModalOpen(false)}
+        onLeaveSubmitted={handleLeaveSubmitted}
       />
     </div>
   );

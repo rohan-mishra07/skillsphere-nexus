@@ -1,23 +1,89 @@
 <div class="page">
-  <h1>Career Planning</h1>
+  <h1>Career Planning & Skill Gap Analytics</h1>
+
+  <!-- Form for creating a new career plan -->
+  <div class="form-container">
+    <h2>Create Career Plan</h2>
+    <form (ngSubmit)="createPlan()" class="career-form">
+      <div class="form-group">
+        <label>Employee Name</label>
+        <input type="text" [(ngModel)]="newPlan.employeeName" name="employeeName" required placeholder="e.g. Rohan Mishra" />
+      </div>
+
+      <div class="form-group">
+        <label>Current Role</label>
+        <input type="text" [(ngModel)]="newPlan.currentRole" name="currentRole" placeholder="e.g. Junior Developer" />
+      </div>
+
+      <div class="form-group">
+        <label>Target Role</label>
+        <select [(ngModel)]="newPlan.targetRole" name="targetRole" required>
+          <option *ngFor="let role of roles" [value]="role.roleName">
+            {{ role.roleName }}
+          </option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Employee Current Skills (comma-separated)</label>
+        <input type="text" [(ngModel)]="newPlan.employeeSkills" name="employeeSkills" placeholder="e.g. Java, Spring Boot" />
+      </div>
+
+      <div class="form-group">
+        <label>Mentor</label>
+        <input type="text" [(ngModel)]="newPlan.mentor" name="mentor" placeholder="e.g. Dr. Sarah Jenkins" />
+      </div>
+
+      <div class="form-group">
+        <label>Training Plan</label>
+        <input type="text" [(ngModel)]="newPlan.trainingPlan" name="trainingPlan" placeholder="e.g. Microservices Bootcamp" />
+      </div>
+
+      <button type="submit" class="btn-primary">Save Career Plan</button>
+    </form>
+  </div>
+
+  <hr />
+
+  <!-- List of Career Plan Cards -->
   <div class="cards">
     <div class="career-card" *ngFor="let plan of plans">
-      <h2>{{ plan.employeeName }}</h2>
+      <div class="card-header">
+        <h2>{{ plan.employeeName }}</h2>
+        <!-- Last updated automatically badge -->
+        <span *ngIf="plan.lastAutoUpdate" class="auto-update-badge" title="Auto-updated via Kafka">
+          ⚡ Last updated automatically: {{ plan.lastAutoUpdate }}
+        </span>
+      </div>
+
       <p>
         {{ plan.currentRole }} &rarr;
-        <strong>{{ plan.targetRole }}</strong>
+        <strong class="target-role">{{ plan.targetRole }}</strong>
       </p>
+
       <p>Progress: {{ plan.progress }}%</p>
       <progress [value]="plan.progress" max="100"></progress>
-      <p>
-        <strong>Skill Gaps:</strong>
-        {{ plan.skillGaps || 'No major gaps' }}
-      </p>
-      <p><strong>Mentor:</strong> {{ plan.mentor }}</p>
-      <p><strong>Training:</strong> {{ plan.trainingPlan }}</p>
-      <p>Promotion Score: {{ plan.promotionScore }}</p>
+
+      <!-- Auto-detected Skill Gaps as read-only orange badges -->
+      <div class="skill-gaps-section">
+        <strong>Auto-detected Skill Gaps:</strong>
+        <div class="badge-list" *ngIf="getSkillGapBadges(plan.skillGaps).length > 0; else noGaps">
+          <span class="gap-badge" *ngFor="let gap of getSkillGapBadges(plan.skillGaps)">
+            {{ gap }}
+          </span>
+        </div>
+        <ng-template #noGaps>
+          <span class="no-gaps-badge">✓ All Required Skills Matched</span>
+        </ng-template>
+      </div>
+
+      <p><strong>Employee Skills:</strong> {{ plan.employeeSkills || 'None listed' }}</p>
+      <p><strong>Mentor:</strong> {{ plan.mentor || 'Assigned Lead' }}</p>
+      <p><strong>Training Plan:</strong> {{ plan.trainingPlan || 'Standard Track' }}</p>
+      <p>Promotion Score: <strong>{{ plan.promotionScore }}</strong>/100</p>
+
       <span *ngIf="plan.promotionEligible" class="eligible">
-        Promotion Eligible
+        ★ Promotion Eligible
       </span>
     </div>
   </div>

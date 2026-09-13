@@ -17,10 +17,50 @@ import {
 import api from '../api/axios';
 import { useWorkforce } from '../context/WorkforceContext';
 import { useFeedback } from '../context/FeedbackContext';
+import { ProvisionUserModal } from '../components/ProvisionUserModal';
+import { Calendar, CheckCircle2, XCircle, Clock, FileText } from 'lucide-react';
+
+const PRE_SEEDED_LEAVES = [
+  {
+    id: 'LEAVE-8012',
+    employeeName: 'Rohan Mishra',
+    employeeEmail: 'rohan.mishra@skillsphere.com',
+    employeeRole: 'Software Engineer',
+    leaveType: 'Wedding / Earned Leave',
+    startDate: '2026-09-18',
+    endDate: '2026-09-22',
+    daysCount: '4 Days',
+    reason: 'Attending sibling wedding in Rajasthan',
+    submissionDate: 'Sept 11, 2026',
+    status: 'PENDING'
+  },
+  {
+    id: 'LEAVE-8013',
+    employeeName: 'Alex Chen',
+    employeeEmail: 'employee@skillsphere.com',
+    employeeRole: 'Senior Full Stack Engineer',
+    leaveType: 'Sick Leave',
+    startDate: '2026-09-14',
+    endDate: '2026-09-16',
+    daysCount: '2 Days',
+    reason: 'Viral fever & rest advice by doctor',
+    submissionDate: 'Sept 12, 2026',
+    status: 'PENDING'
+  }
+];
 
 export const AdminDashboard = () => {
-  const { activeInOffice, pulseType, latestEvent } = useWorkforce();
+  const { 
+    activeInOffice, 
+    pulseType, 
+    latestEvent, 
+    leaveRequests, 
+    approveLeaveRequest, 
+    rejectLeaveRequest 
+  } = useWorkforce();
   const { totalFeedbackCount, feedbacks } = useFeedback();
+  const [isProvisionModalOpen, setIsProvisionModalOpen] = useState(false);
+  const [provisionToast, setProvisionToast] = useState('');
   const [users, setUsers] = useState([]);
   const [metrics, setMetrics] = useState({
     totalEmployees: 5,
@@ -28,6 +68,21 @@ export const AdminDashboard = () => {
     certificatesIssued: 12,
     workforceProductivityIndex: '94.2%'
   });
+
+  const handleApproveLeave = (reqId) => {
+    approveLeaveRequest(reqId);
+    setProvisionToast('Leave request approved successfully.');
+    setTimeout(() => setProvisionToast(''), 4000);
+  };
+
+  const handleRejectLeave = (reqId) => {
+    const reasonPrompt = window.prompt('Reason for rejection:', 'Insufficient team coverage during sprint');
+    if (reasonPrompt === null) return;
+
+    rejectLeaveRequest(reqId, reasonPrompt);
+    setProvisionToast('Leave request rejected.');
+    setTimeout(() => setProvisionToast(''), 4000);
+  };
 
   useEffect(() => {
     fetchUsers();
@@ -48,8 +103,29 @@ export const AdminDashboard = () => {
     }
   };
 
+  const handleUserProvisioned = (newUser) => {
+    setUsers(prev => [newUser, ...prev]);
+    setMetrics(prev => ({ ...prev, totalEmployees: prev.totalEmployees + 1 }));
+
+    // Trigger Toast Notification
+    const toastMsg = `User ${newUser.fullName} successfully provisioned with role ${newUser.roleLabel}`;
+    setProvisionToast(toastMsg);
+    setTimeout(() => {
+      setProvisionToast('');
+    }, 4500);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      
+      {/* Toast Notification */}
+      {provisionToast && (
+        <div className="fixed top-20 right-6 z-50 px-4 py-3 bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-xs font-bold rounded-2xl shadow-xl backdrop-blur-md animate-bounce flex items-center gap-2">
+          <CheckCircle className="w-4 h-4 text-emerald-400" />
+          <span>{provisionToast}</span>
+        </div>
+      )}
+
       {/* Top Banner */}
       <div className="glass-panel p-6 rounded-3xl border border-rose-500/20 bg-gradient-to-r from-slate-900 via-rose-950/20 to-slate-900 flex items-center justify-between">
         <div>
@@ -65,7 +141,10 @@ export const AdminDashboard = () => {
         </div>
 
         <div className="flex gap-3">
-          <button className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl transition-colors shadow-lg shadow-rose-600/20">
+          <button
+            onClick={() => setIsProvisionModalOpen(true)}
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold rounded-xl transition-colors shadow-lg shadow-rose-600/20 cursor-pointer flex items-center gap-1.5"
+          >
             + Provision User
           </button>
         </div>
@@ -136,7 +215,7 @@ export const AdminDashboard = () => {
         <div className="flex items-center justify-between">
           <h3 className="font-bold text-sm text-white flex items-center gap-2">
             <Users className="w-4 h-4 text-rose-400" />
-            Global User Directory & Permissions
+            Global User Directory &amp; Permissions
           </h3>
           <span className="text-xs text-slate-400">Total Records: {users.length}</span>
         </div>
@@ -185,6 +264,107 @@ export const AdminDashboard = () => {
           </table>
         </div>
       </div>
+
+      {/* Leave Management & Approvals Queue */}
+      <div className="glass-panel p-5 rounded-2xl border border-amber-500/20 bg-slate-900/80 space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-amber-400" />
+            <h3 className="font-bold text-sm text-white">
+              Pending Leave Approvals Queue
+            </h3>
+            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold">
+              {leaveRequests.filter(r => r.status === 'PENDING').length} Pending
+            </span>
+          </div>
+          <span className="text-xs text-slate-400">Total Requests: {leaveRequests.length}</span>
+        </div>
+
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-300">
+            <thead className="bg-slate-950 text-slate-400 font-semibold border-b border-slate-800">
+              <tr>
+                <th className="p-3">Employee</th>
+                <th className="p-3">Leave Type</th>
+                <th className="p-3">Duration</th>
+                <th className="p-3">Dates</th>
+                <th className="p-3">Reason / Note</th>
+                <th className="p-3">Status</th>
+                <th className="p-3 text-right">Approval Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60">
+              {leaveRequests.map((req) => (
+                <tr key={req.id} className="hover:bg-slate-900/50">
+                  <td className="p-3 font-semibold text-white">
+                    <div>{req.employeeName}</div>
+                    <div className="text-[10px] text-slate-400 font-normal">{req.employeeRole}</div>
+                  </td>
+                  <td className="p-3">
+                    <span className="px-2.5 py-1 rounded-md bg-purple-500/10 text-purple-300 border border-purple-500/20 text-[10px] font-bold">
+                      {req.leaveType}
+                    </span>
+                  </td>
+                  <td className="p-3 font-bold text-amber-400">{req.daysCount}</td>
+                  <td className="p-3 text-slate-300 font-mono text-[11px]">
+                    {req.startDate} → {req.endDate}
+                  </td>
+                  <td className="p-3 max-w-xs text-slate-300">
+                    <div className="truncate" title={req.reason}>{req.reason}</div>
+                    {req.rejectionReason && (
+                      <div className="text-[10px] text-rose-400 mt-0.5">Reason: {req.rejectionReason}</div>
+                    )}
+                  </td>
+                  <td className="p-3">
+                    {req.status === 'PENDING' && (
+                      <span className="px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-extrabold inline-flex items-center gap-1">
+                        <Clock className="w-3 h-3 text-amber-400" /> PENDING
+                      </span>
+                    )}
+                    {req.status === 'APPROVED' && (
+                      <span className="px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[10px] font-extrabold inline-flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" /> APPROVED
+                      </span>
+                    )}
+                    {req.status === 'REJECTED' && (
+                      <span className="px-2.5 py-1 rounded-md bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-extrabold inline-flex items-center gap-1">
+                        <XCircle className="w-3 h-3 text-rose-400" /> REJECTED
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-3 text-right">
+                    {req.status === 'PENDING' ? (
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleApproveLeave(req.id)}
+                          className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-[11px] font-bold shadow-md transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Approve
+                        </button>
+                        <button
+                          onClick={() => handleRejectLeave(req.id)}
+                          className="px-3 py-1.5 bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 border border-rose-800/60 rounded-xl text-[11px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                        >
+                          <XCircle className="w-3.5 h-3.5" /> Reject
+                        </button>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-slate-500 font-mono">Decision Processed</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Provision User Modal */}
+      <ProvisionUserModal
+        isOpen={isProvisionModalOpen}
+        onClose={() => setIsProvisionModalOpen(false)}
+        onUserProvisioned={handleUserProvisioned}
+      />
     </div>
   );
 };

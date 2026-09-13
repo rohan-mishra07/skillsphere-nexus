@@ -1,8 +1,11 @@
 package com.skillsphere.learningservice.service;
 
 import com.skillsphere.learningservice.entity.Enrollment;
+import com.skillsphere.learningservice.event.TrainingCompletedEvent;
 import com.skillsphere.learningservice.repository.EnrollmentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,10 +14,12 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 @SuppressWarnings("null")
 public class ProgressService {
 
     private final EnrollmentRepository enrollmentRepository;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Transactional
     public Enrollment updateProgress(UUID enrollmentId, Integer progress) {
@@ -25,12 +30,16 @@ public class ProgressService {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new RuntimeException("Enrollment not found with id: " + enrollmentId));
 
+        boolean wasCompleted = Boolean.TRUE.equals(enrollment.getCompleted());
         enrollment.setProgress(progress);
 
         if (progress == 100) {
             enrollment.setCompleted(true);
             if (enrollment.getCompletedAt() == null) {
                 enrollment.setCompletedAt(LocalDateTime.now());
+            }
+            if (!wasCompleted) {
+                publishCompletionEvent(enrollment);
             }
         }
 
@@ -55,10 +64,33 @@ public class ProgressService {
         Enrollment enrollment = enrollmentRepository.findById(enrollmentId)
                 .orElseThrow(() -> new RuntimeException("Enrollment not found with id: " + enrollmentId));
 
+        boolean wasCompleted = Boolean.TRUE.equals(enrollment.getCompleted());
         enrollment.setProgress(100);
         enrollment.setCompleted(true);
         enrollment.setCompletedAt(LocalDateTime.now());
 
-        return enrollmentRepository.save(enrollment);
+        Enrollment saved = enrollmentRepository.save(enrollment);
+        if (!wasCompleted) {
+            publishCompletionEvent(saved);
+        }
+        return saved;
+    }
+
+    private void publishCompletionEvent(Enrollment enrollment) {
+        if (kafkaTemplate == null || enrollment == null) return;
+        try {
+            String skill = (enrollment.getCourse() != null && enrollment.getCourse().getTitle() != null)
+                    ? enrollment.getCourse().getTitle()
+                    : "General Technical Upskilling";
+            TrainingCompletedEvent event = TrainingCompletedEvent.builder()
+                    .empId(enrollment.getEmpId())
+                    .courseSkill(skill)
+                    .completedAt(enrollment.getCompletedAt() != null ? enrollment.getCompletedAt().toString() : LocalDateTime.now().toString())
+                    .build();
+            kafkaTemplate.send("training-completed", event.getEmpId() != null ? event.getEmpId().toString() : "unknown", event);
+            log.info("[KAFKA-PRODUCER] Published training-completed event for empId: {}, courseSkill: {}", event.getEmpId(), skill);
+        } catch (Exception e) {
+            log.error("Failed to publish training-completed Kafka event: {}", e.getMessage());
+        }
     }
 }

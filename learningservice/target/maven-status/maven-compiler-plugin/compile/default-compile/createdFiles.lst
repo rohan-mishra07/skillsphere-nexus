@@ -37,8 +37,10 @@ com\skillsphere\learningservice\entity\LearningPath$LearningPathBuilder.class
 com\skillsphere\learningservice\exception\GlobalExceptionHandler.class
 com\skillsphere\learningservice\repository\EnrollmentRepository.class
 com\skillsphere\learningservice\entity\LearningPathCourse$LearningPathCourseBuilder.class
+com\skillsphere\learningservice\event\TrainingCompletedEvent$TrainingCompletedEventBuilder.class
 com\skillsphere\learningservice\entity\CourseContent$CourseContentBuilder.class
 com\skillsphere\learningservice\entity\LearningPath.class
+com\skillsphere\learningservice\event\TrainingCompletedEvent.class
 com\skillsphere\learningservice\config\DataInitializer.class
 com\skillsphere\learningservice\dto\CourseContentDTO.class
 com\skillsphere\learningservice\service\CertificateService.class

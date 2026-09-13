@@ -12,6 +12,7 @@ import { UserFeedbackModal } from './components/UserFeedbackModal';
 import { FeedbackFloatingPill } from './components/FeedbackFloatingPill';
 import { FeedbackView } from './components/FeedbackView';
 import VerifyCertificateView from './views/VerifyCertificateView';
+import { AuditLogsView } from './views/AuditLogsView';
 import { Login } from './pages/Login';
 import { DashboardRouter } from './pages/DashboardRouter';
 import { LmsCatalog } from './pages/LmsCatalog';
@@ -91,6 +92,8 @@ export function AppContent() {
           <Route path="/performance" element={<PerformanceHub />} />
           <Route path="/recruitment" element={<RecruitmentBoard />} />
           <Route path="/jobs" element={<RecruitmentBoard />} />
+          <Route path="/audit-logs" element={<AuditLogsView />} />
+          <Route path="/audit" element={<AuditLogsView />} />
           <Route path="/analytics" element={<ReportsAnalytics />} />
           <Route path="/feedback" element={<FeedbackView />} />
           <Route path="*" element={<Navigate to="/" replace />} />

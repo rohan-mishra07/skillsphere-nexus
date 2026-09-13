@@ -2,20 +2,53 @@ package com.skillsphere.careerservice.service;
 
 import com.skillsphere.careerservice.dto.CareerPlanDTO;
 import com.skillsphere.careerservice.entity.CareerPlan;
+import com.skillsphere.careerservice.entity.RoleRequirement;
 import com.skillsphere.careerservice.repository.CareerPlanRepository;
+import com.skillsphere.careerservice.repository.RoleRequirementRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CareerPlanService {
 
     private final CareerPlanRepository repository;
+    private final RoleRequirementRepository roleRequirementRepository;
+
+    public String computeSkillGaps(String employeeSkills, String targetRole) {
+        if (targetRole == null || targetRole.isBlank()) {
+            return "";
+        }
+        RoleRequirement req = roleRequirementRepository.findByRoleNameIgnoreCase(targetRole.trim()).orElse(null);
+        if (req == null || req.getRequiredSkills() == null || req.getRequiredSkills().isBlank()) {
+            return "";
+        }
+
+        Set<String> empSkillSet = new HashSet<>();
+        if (employeeSkills != null && !employeeSkills.isBlank()) {
+            Arrays.stream(employeeSkills.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isEmpty())
+                    .map(String::toLowerCase)
+                    .forEach(empSkillSet::add);
+        }
+
+        List<String> missingSkills = Arrays.stream(req.getRequiredSkills().split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .filter(reqSkill -> !empSkillSet.contains(reqSkill.toLowerCase()))
+                .collect(Collectors.toList());
+
+        return String.join(", ", missingSkills);
+    }
 
     public CareerPlanDTO create(CareerPlanDTO dto) {
+        String computedSkillGaps = computeSkillGaps(dto.getEmployeeSkills(), dto.getTargetRole());
+        dto.setSkillGaps(computedSkillGaps);
+
         int score = calculatePromotionScore(dto);
         CareerPlan.PlanStatus status = CareerPlan.PlanStatus.ACTIVE;
         if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
@@ -33,11 +66,13 @@ public class CareerPlanService {
                 .targetRole(dto.getTargetRole())
                 .progress(dto.getProgress() != null ? dto.getProgress() : 0)
                 .mentor(dto.getMentor())
-                .skillGaps(dto.getSkillGaps())
+                .employeeSkills(dto.getEmployeeSkills())
+                .skillGaps(computedSkillGaps)
                 .trainingPlan(dto.getTrainingPlan())
                 .promotionScore(score)
                 .promotionEligible(score >= 80)
                 .status(status)
+                .lastAutoUpdate(dto.getLastAutoUpdate())
                 .build();
 
         return toDTO(repository.save(plan));
@@ -66,7 +101,7 @@ public class CareerPlanService {
         if (dto.getTargetRole() != null) plan.setTargetRole(dto.getTargetRole());
         if (dto.getProgress() != null) plan.setProgress(dto.getProgress());
         if (dto.getMentor() != null) plan.setMentor(dto.getMentor());
-        if (dto.getSkillGaps() != null) plan.setSkillGaps(dto.getSkillGaps());
+        if (dto.getEmployeeSkills() != null) plan.setEmployeeSkills(dto.getEmployeeSkills());
         if (dto.getTrainingPlan() != null) plan.setTrainingPlan(dto.getTrainingPlan());
         if (dto.getStatus() != null && !dto.getStatus().isBlank()) {
             try {
@@ -76,7 +111,12 @@ public class CareerPlanService {
             }
         }
 
-        int score = calculatePromotionScore(toDTO(plan));
+        // Recompute skill gaps based on current employeeSkills and targetRole
+        String computedSkillGaps = computeSkillGaps(plan.getEmployeeSkills(), plan.getTargetRole());
+        plan.setSkillGaps(computedSkillGaps);
+
+        CareerPlanDTO tempDto = toDTO(plan);
+        int score = calculatePromotionScore(tempDto);
         plan.setPromotionScore(score);
         plan.setPromotionEligible(score >= 80);
 
@@ -90,7 +130,7 @@ public class CareerPlanService {
         repository.deleteById(id);
     }
 
-    private int calculatePromotionScore(CareerPlanDTO dto) {
+    public int calculatePromotionScore(CareerPlanDTO dto) {
         if (dto == null) return 0;
         int score = 0;
         if (dto.getProgress() != null) {
@@ -105,7 +145,7 @@ public class CareerPlanService {
         return Math.min(score, 100);
     }
 
-    private CareerPlanDTO toDTO(CareerPlan p) {
+    public CareerPlanDTO toDTO(CareerPlan p) {
         if (p == null) return null;
         return CareerPlanDTO.builder()
                 .planId(p.getPlanId())
@@ -115,11 +155,13 @@ public class CareerPlanService {
                 .targetRole(p.getTargetRole())
                 .progress(p.getProgress())
                 .mentor(p.getMentor())
+                .employeeSkills(p.getEmployeeSkills())
                 .skillGaps(p.getSkillGaps())
                 .trainingPlan(p.getTrainingPlan())
                 .promotionScore(p.getPromotionScore())
                 .promotionEligible(p.getPromotionEligible())
                 .status(p.getStatus() != null ? p.getStatus().name() : null)
+                .lastAutoUpdate(p.getLastAutoUpdate())
                 .build();
     }
 }

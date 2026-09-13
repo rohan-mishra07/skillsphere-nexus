@@ -28,10 +28,12 @@ public class CareerPlan {
     private String targetRole;
     private Integer progress;
     private String mentor;
+    private String employeeSkills;
     private String skillGaps;
     private String trainingPlan;
     private Integer promotionScore;
     private Boolean promotionEligible;
+    private String lastAutoUpdate;
 
     @Enumerated(EnumType.STRING)
     private PlanStatus status;

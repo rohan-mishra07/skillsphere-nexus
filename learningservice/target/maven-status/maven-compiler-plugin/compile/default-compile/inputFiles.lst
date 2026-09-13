@@ -22,6 +22,7 @@ C:\Users\mishr\OneDrive\Desktop\infosys\learningservice\src\main\java\com\skills
 C:\Users\mishr\OneDrive\Desktop\infosys\learningservice\src\main\java\com\skillsphere\learningservice\entity\Enrollment.java
 C:\Users\mishr\OneDrive\Desktop\infosys\learningservice\src\main\java\com\skillsphere\learningservice\entity\LearningPath.java
 C:\Users\mishr\OneDrive\Desktop\infosys\learningservice\src\main\java\com\skillsphere\learningservice\entity\LearningPathCourse.java
+C:\Users\mishr\OneDrive\Desktop\infosys\learningservice\src\main\java\com\skillsphere\learningservice\event\TrainingCompletedEvent.java
 C:\Users\mishr\OneDrive\Desktop\infosys\learningservice\src\main\java\com\skillsphere\learningservice\exception\GlobalExceptionHandler.java
 C:\Users\mishr\OneDrive\Desktop\infosys\learningservice\src\main\java\com\skillsphere\learningservice\LearningServiceApplication.java
 C:\Users\mishr\OneDrive\Desktop\infosys\learningservice\src\main\java\com\skillsphere\learningservice\repository\AssessmentResultRepository.java
