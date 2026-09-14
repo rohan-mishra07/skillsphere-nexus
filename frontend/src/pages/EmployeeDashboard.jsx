@@ -104,7 +104,7 @@ export const EmployeeDashboard = () => {
               <Sparkles className="w-3.5 h-3.5" /> Welcome Back, Learner
             </div>
             <h1 className="text-2xl md:text-3xl font-extrabold text-white font-outfit">
-              Hello, <span className="gradient-text">{user?.fullName || 'Rohan Mishra'}</span> 👋
+              Hello, <span className="gradient-text">{user?.name || user?.fullName || 'Learner'}</span> 👋
             </h1>
             <p className="text-xs text-slate-400 mt-1 max-w-xl">
               You are currently on track for your Q3 Upskilling Goals. Complete 1 module to earn your next digital certificate!

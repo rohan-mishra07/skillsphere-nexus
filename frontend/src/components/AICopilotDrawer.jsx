@@ -30,7 +30,7 @@ export const AICopilotDrawer = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
-  const activeUserName = user?.fullName || user?.name || 'Rohan Mishra';
+  const activeUserName = user?.name || user?.fullName || 'Learner';
 
   const [messages, setMessages] = useState([
     {

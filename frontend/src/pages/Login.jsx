@@ -55,14 +55,16 @@ export const Login = () => {
 
     setLoading(true);
     try {
+      const finalName = fullName.trim() || 'Learner';
+      const initials = finalName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
       const loggedUser = await login(
         email.trim(), 
         password.trim(), 
-        fullName.trim() || 'Rohan Mishra', 
+        finalName, 
         designation.trim() || 'Software Engineer', 
         role
       );
-      setSuccessMsg(`Authenticated as ${loggedUser.fullName || loggedUser.name} (${loggedUser.designation || loggedUser.position})!`);
+      setSuccessMsg(`Authenticated as ${loggedUser.name || loggedUser.fullName} (${loggedUser.designation || loggedUser.position})!`);
       setTimeout(() => {
         navigate(from, { replace: true });
       }, 400);

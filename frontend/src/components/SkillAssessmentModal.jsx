@@ -1028,7 +1028,7 @@ export default function SkillAssessmentModal({
 
                 <div className="text-center space-y-2 py-2">
                   <p className="text-[11px] text-slate-400 uppercase tracking-widest font-semibold">THIS IS PROUDLY PRESENTED TO</p>
-                  <h2 className="text-2xl font-black text-white font-outfit">{user?.name || user?.fullName || 'Rohan Mishra'}</h2>
+                  <h2 className="text-2xl font-black text-white font-outfit">{user?.name || user?.fullName || 'Learner'}</h2>
                   <p className="text-xs text-cyan-300 font-bold">{user?.position || user?.designation || 'Software Engineering Competency'}</p>
                   <div className="pt-2 flex items-center justify-center gap-3">
                     <span className="text-2xl font-black text-emerald-400 font-mono">{results.score}/15</span>

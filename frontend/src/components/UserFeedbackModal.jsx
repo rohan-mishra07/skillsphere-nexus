@@ -69,7 +69,7 @@ export const UserFeedbackModal = () => {
 
   if (!isModalOpen) return null;
 
-  const activeUserName = user?.fullName || user?.name || 'Rohan Mishra';
+  const activeUserName = user?.name || user?.fullName || 'Learner';
   const activeUserRole = user?.designation || user?.position || user?.role?.replace('ROLE_', '') || 'Software Engineer';
   const currentDateFormatted = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 

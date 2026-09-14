@@ -46,7 +46,7 @@ export const ApplyLeaveModal = ({ isOpen, onClose, onLeaveSubmitted }) => {
 
     const newSubmission = {
       id: `LV-${Date.now().toString().slice(-4)}`,
-      employeeName: user?.name || user?.fullName || 'Rohan Mishra',
+      employeeName: user?.name || user?.fullName || 'Learner',
       employeeEmail: user?.email || 'rohan.mishra@skillsphere.com',
       role: user?.position || user?.designation || 'Software Engineer',
       employeeRole: user?.position || user?.designation || 'Software Engineer',

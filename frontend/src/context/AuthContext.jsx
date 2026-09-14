@@ -5,21 +5,18 @@ import { useWorkforce } from './WorkforceContext';
 const AuthContext = createContext();
 
 export const getInitials = (name) => {
-  if (!name) return 'RM';
-  const parts = name.trim().split(/\s+/);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
+  if (!name) return 'L';
+  const finalName = name.trim() || 'Learner';
+  return finalName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 };
 
 export const MOCK_USERS = [
-  { id: 4, email: 'employee@skillsphere.com', fullName: 'Rohan Mishra (Software Engineer)', role: 'ROLE_EMPLOYEE', department: 'Software Engineering', designation: 'Software Engineer' },
-  { id: 1, email: 'admin@skillsphere.com', fullName: 'Sarah Jenkins (Platform Director)', role: 'ROLE_ADMIN', department: 'Executive Management', designation: 'Platform Director' },
-  { id: 2, email: 'hr@skillsphere.com', fullName: 'Priya Sharma (HR Manager)', role: 'ROLE_HR', department: 'Human Resources', designation: 'HR Manager' },
+  { id: 4, email: 'employee@skillsphere.com', fullName: 'Software Engineer', role: 'ROLE_EMPLOYEE', department: 'Software Engineering', designation: 'Software Engineer' },
+  { id: 1, email: 'admin@skillsphere.com', fullName: 'Sarah Jenkins', role: 'ROLE_ADMIN', department: 'Executive Management', designation: 'Platform Director' },
+  { id: 2, email: 'hr@skillsphere.com', fullName: 'Priya Sharma', role: 'ROLE_HR', department: 'Human Resources', designation: 'HR Manager' },
   { id: 3, email: 'manager@skillsphere.com', fullName: 'Elena Rostova', role: 'ROLE_MANAGER', department: 'Engineering & IT', designation: 'Engineering Manager' },
   { id: 5, email: 'alex@skillsphere.com', fullName: 'Alex Chen', role: 'ROLE_EMPLOYEE', department: 'Engineering & IT', designation: 'Senior Full Stack Engineer' },
-  { id: 6, email: 'student@skillsphere.com', fullName: 'Rohan Mishra', role: 'ROLE_STUDENT', department: 'Computer Science & Engineering', designation: 'Enrolled Student' },
+  { id: 6, email: 'student@skillsphere.com', fullName: 'Enrolled Student', role: 'ROLE_STUDENT', department: 'Computer Science & Engineering', designation: 'Enrolled Student' },
   { id: 7, email: 'trainer@skillsphere.com', fullName: 'Prof. David Sterling', role: 'ROLE_TRAINER', department: 'Learning & Development', designation: 'Lead Technical Instructor' },
 ];
 
@@ -32,10 +29,13 @@ export const AuthProvider = ({ children }) => {
     if (savedUser && savedToken) {
       try {
         const parsed = JSON.parse(savedUser);
+        const name = parsed.name || parsed.fullName || 'Learner';
+        const initials = parsed.initials || getInitials(name);
         return {
           ...parsed,
-          name: parsed.name || parsed.fullName || 'Rohan Mishra',
-          fullName: parsed.fullName || parsed.name || 'Rohan Mishra',
+          name: name,
+          fullName: name,
+          initials: initials,
           position: parsed.position || parsed.designation || 'Software Engineer',
           designation: parsed.designation || parsed.position || 'Software Engineer',
         };
@@ -51,37 +51,33 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password, customName, customDesignation, customRole) => {
     let userData;
     const token = 'mock-jwt-token-skillsphere-nexus-' + Date.now();
+    const finalName = (typeof customName === 'string' && customName.trim()) ? customName.trim() : 'Learner';
+    const initials = finalName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+
     try {
       const res = await api.post('/auth/login', { email, password });
-      userData = res.data;
-      if (customName) {
-        userData.fullName = customName;
-        userData.name = customName;
-      }
+      userData = res.data || {};
+      userData.name = finalName;
+      userData.fullName = finalName;
+      userData.initials = initials;
       if (customDesignation) {
         userData.designation = customDesignation;
         userData.position = customDesignation;
       }
       if (customRole) userData.role = customRole;
     } catch (err) {
-      const found = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase()) || {
-        id: Date.now(),
-        email: email,
-        fullName: customName || 'Rohan Mishra',
-        name: customName || 'Rohan Mishra',
-        role: customRole || 'ROLE_EMPLOYEE',
-        department: 'Software Engineering',
-        designation: customDesignation || 'Software Engineer',
-        position: customDesignation || 'Software Engineer',
-      };
+      const found = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
 
       userData = { 
-        ...found, 
-        fullName: customName || found.fullName || found.name,
-        name: customName || found.name || found.fullName,
-        designation: customDesignation || found.designation || found.position,
-        position: customDesignation || found.position || found.designation,
-        role: customRole || found.role,
+        ...(found || {}), 
+        id: found?.id || Date.now(),
+        email: email,
+        fullName: finalName,
+        name: finalName,
+        initials: initials,
+        designation: customDesignation || found?.designation || found?.position || 'Software Engineer',
+        position: customDesignation || found?.position || found?.designation || 'Software Engineer',
+        role: customRole || found?.role || 'ROLE_EMPLOYEE',
         token: token
       };
     }
@@ -104,13 +100,18 @@ export const AuthProvider = ({ children }) => {
       console.warn("Backend register notice:", err);
     }
     const token = 'mock-jwt-token-registered-' + Date.now();
+    const finalName = registerData.fullName?.trim() || 'Learner';
+    const initials = getInitials(finalName);
     const newUser = {
       id: Date.now(),
       email: registerData.email,
-      fullName: registerData.fullName,
+      name: finalName,
+      fullName: finalName,
+      initials: initials,
       role: registerData.role || 'ROLE_EMPLOYEE',
       department: registerData.department || 'Software Engineering',
       designation: registerData.designation || 'Software Engineer',
+      position: registerData.designation || 'Software Engineer',
       token: token
     };
     setUser(newUser);
@@ -125,13 +126,18 @@ export const AuthProvider = ({ children }) => {
 
   const loginAsStudent = (studentName, studentEmail) => {
     const token = 'mock-jwt-token-student-' + Date.now();
+    const finalName = studentName?.trim() || 'Learner';
+    const initials = getInitials(finalName);
     const studentUser = {
       id: Date.now(),
       email: studentEmail || 'student@skillsphere.com',
-      fullName: studentName || 'Rohan Mishra',
+      name: finalName,
+      fullName: finalName,
+      initials: initials,
       role: 'ROLE_STUDENT',
       department: 'Computer Science & Engineering',
       designation: 'Enrolled Student',
+      position: 'Enrolled Student',
       token: token
     };
     setUser(studentUser);
@@ -163,11 +169,17 @@ export const AuthProvider = ({ children }) => {
 
     const target = MOCK_USERS.find(u => u.role === newRole) || MOCK_USERS[0];
     const token = 'mock-jwt-token-role-' + Date.now();
+    const currentName = user?.name || user?.fullName;
+    const finalName = (customName || currentName || target.fullName || 'Learner').trim();
+    const initials = getInitials(finalName);
+
     const updatedUser = { 
       ...target, 
+      ...user,
       role: newRole,
-      fullName: customName || (newRole === 'ROLE_EMPLOYEE' ? 'Rohan Mishra' : newRole === 'ROLE_HR' ? 'Priya Sharma' : target.fullName),
-      name: customName || (newRole === 'ROLE_EMPLOYEE' ? 'Rohan Mishra' : newRole === 'ROLE_HR' ? 'Priya Sharma' : target.fullName),
+      fullName: finalName,
+      name: finalName,
+      initials: initials,
       token: token 
     };
 

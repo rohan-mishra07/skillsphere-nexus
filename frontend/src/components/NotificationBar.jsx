@@ -91,33 +91,33 @@ export const NotificationBar = ({ isOpen, onClose }) => {
   const filtered = filter === 'UNREAD' ? notifications.filter(n => !n.read) : notifications;
 
   return (
-    <div className="absolute right-0 top-14 w-96 z-50 glass-panel rounded-3xl border border-slate-700 shadow-2xl overflow-hidden bg-slate-900/95 animate-fade-in">
+    <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-14 w-auto sm:w-96 max-w-[calc(100vw-24px)] z-50 glass-panel rounded-3xl border border-slate-700 shadow-2xl overflow-hidden bg-slate-900/95 animate-fade-in flex flex-col max-h-[80vh]">
       {/* Header Bar */}
-      <div className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border-b border-slate-800 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 flex items-center justify-center">
+      <div className="px-4 py-3 bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border-b border-slate-800 flex items-center justify-between gap-2 shrink-0">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-xl bg-indigo-600/30 border border-indigo-500/40 text-indigo-300 flex items-center justify-center shrink-0">
             <Bell className="w-4 h-4" />
           </div>
-          <div>
-            <h3 className="font-bold text-sm text-white flex items-center gap-2 font-outfit">
-              Notification Center
+          <div className="min-w-0">
+            <h3 className="font-bold text-xs sm:text-sm text-white flex items-center gap-2 font-outfit truncate">
+              <span className="truncate">Notification Center</span>
               {unreadCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold shrink-0">
                   {unreadCount} new
                 </span>
               )}
             </h3>
-            <p className="text-[10px] text-slate-400">LMS, Workforce & AI Real-Time Activity</p>
+            <p className="text-[10px] text-slate-400 truncate">LMS, Workforce &amp; AI Real-Time Activity</p>
           </div>
         </div>
 
-        <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+        <button onClick={onClose} className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 shrink-0" title="Close notifications">
           <X className="w-4 h-4" />
         </button>
       </div>
 
       {/* Control Filter Bar */}
-      <div className="flex items-center justify-between p-2.5 px-4 bg-slate-950/60 border-b border-slate-800/80 text-xs">
+      <div className="flex items-center justify-between p-2.5 px-4 bg-slate-950/60 border-b border-slate-800/80 text-xs shrink-0">
         <div className="flex gap-1">
           <button
             onClick={() => setFilter('ALL')}
@@ -159,7 +159,7 @@ export const NotificationBar = ({ isOpen, onClose }) => {
       </div>
 
       {/* Notification Items List */}
-      <div className="max-h-[380px] overflow-y-auto divide-y divide-slate-800/60">
+      <div className="max-h-[60vh] sm:max-h-[380px] overflow-y-auto divide-y divide-slate-800/60 flex-1">
         {filtered.length === 0 ? (
           <div className="p-8 text-center text-slate-500 text-xs space-y-1">
             <Bell className="w-6 h-6 mx-auto opacity-40 mb-2 text-indigo-400" />

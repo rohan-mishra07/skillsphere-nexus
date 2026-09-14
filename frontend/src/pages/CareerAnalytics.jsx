@@ -704,7 +704,7 @@ export function CareerAnalytics() {
             <div>
               <div className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Logged-in Executive</div>
               <div className="text-xs font-bold text-purple-300 mt-1">
-                {user?.fullName || user?.name || 'Rohan Mishra'}
+                {user?.name || user?.fullName || 'Learner'}
               </div>
             </div>
             <div>
