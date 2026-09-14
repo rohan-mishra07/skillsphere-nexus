@@ -5,9 +5,10 @@ import { useWorkforce } from './WorkforceContext';
 const AuthContext = createContext();
 
 export const getInitials = (name) => {
-  if (!name) return 'L';
-  const finalName = name.trim() || 'Learner';
-  return finalName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+  if (!name) return 'U';
+  const finalName = name.trim();
+  if (!finalName) return 'U';
+  return finalName.split(' ').filter(Boolean).map(n => n[0]).join('').slice(0, 2).toUpperCase();
 };
 
 export const MOCK_USERS = [
@@ -24,21 +25,19 @@ export const AuthProvider = ({ children }) => {
   const workforce = useWorkforce();
   
   const [user, setUser] = useState(() => {
-    const savedUser = localStorage.getItem('auth_user') || localStorage.getItem('skillsphere_user');
-    const savedToken = localStorage.getItem('auth_token') || localStorage.getItem('token');
-    if (savedUser && savedToken) {
+    const saved = localStorage.getItem('nexus_user') || localStorage.getItem('auth_user') || localStorage.getItem('skillsphere_user');
+    if (saved) {
       try {
-        const parsed = JSON.parse(savedUser);
-        const name = parsed.name || parsed.fullName || 'Learner';
-        const initials = parsed.initials || getInitials(name);
-        return {
-          ...parsed,
-          name: name,
-          fullName: name,
-          initials: initials,
-          position: parsed.position || parsed.designation || 'Software Engineer',
-          designation: parsed.designation || parsed.position || 'Software Engineer',
-        };
+        const parsed = JSON.parse(saved);
+        if (parsed && (parsed.name || parsed.fullName)) {
+          const name = parsed.name || parsed.fullName;
+          return {
+            ...parsed,
+            name: name,
+            fullName: name,
+            initials: parsed.initials || getInitials(name),
+          };
+        }
       } catch (e) {
         return null;
       }
@@ -48,46 +47,43 @@ export const AuthProvider = ({ children }) => {
 
   const isAuthenticated = !!user;
 
-  const login = async (email, password, customName, customDesignation, customRole) => {
+  const login = async (userDataOrEmail, password, customName, customDesignation, customRole) => {
     let userData;
-    const token = 'mock-jwt-token-skillsphere-nexus-' + Date.now();
-    const finalName = (typeof customName === 'string' && customName.trim()) ? customName.trim() : 'Learner';
-    const initials = finalName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-
-    try {
-      const res = await api.post('/auth/login', { email, password });
-      userData = res.data || {};
-      userData.name = finalName;
-      userData.fullName = finalName;
-      userData.initials = initials;
-      if (customDesignation) {
-        userData.designation = customDesignation;
-        userData.position = customDesignation;
-      }
-      if (customRole) userData.role = customRole;
-    } catch (err) {
-      const found = MOCK_USERS.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (typeof userDataOrEmail === 'object' && userDataOrEmail !== null) {
+      const name = userDataOrEmail.name || userDataOrEmail.fullName;
+      const initials = userDataOrEmail.initials || getInitials(name);
+      userData = {
+        ...userDataOrEmail,
+        name: name,
+        fullName: name,
+        initials: initials,
+        token: userDataOrEmail.token || ('mock-jwt-token-skillsphere-nexus-' + Date.now())
+      };
+    } else {
+      const email = userDataOrEmail;
+      const token = 'mock-jwt-token-skillsphere-nexus-' + Date.now();
+      const finalName = (typeof customName === 'string' && customName.trim()) ? customName.trim() : 'Learner';
+      const initials = getInitials(finalName);
 
       userData = { 
-        ...(found || {}), 
-        id: found?.id || Date.now(),
         email: email,
         fullName: finalName,
         name: finalName,
         initials: initials,
-        designation: customDesignation || found?.designation || found?.position || 'Software Engineer',
-        position: customDesignation || found?.position || found?.designation || 'Software Engineer',
-        role: customRole || found?.role || 'ROLE_EMPLOYEE',
+        designation: customDesignation || 'Software Engineer',
+        position: customDesignation || 'Software Engineer',
+        role: customRole || 'ROLE_EMPLOYEE',
         token: token
       };
     }
 
     setUser(userData);
+    localStorage.setItem('nexus_user', JSON.stringify(userData));
     localStorage.setItem('auth_user', JSON.stringify(userData));
-    localStorage.setItem('auth_token', userData.token || token);
     localStorage.setItem('skillsphere_user', JSON.stringify(userData));
-    localStorage.setItem('token', userData.token || token);
-    localStorage.setItem('role', userData.role);
+    localStorage.setItem('auth_token', userData.token);
+    localStorage.setItem('token', userData.token);
+    if (userData.role) localStorage.setItem('role', userData.role);
 
     if (workforce?.recordLogin) workforce.recordLogin(userData);
     return userData;
@@ -100,7 +96,7 @@ export const AuthProvider = ({ children }) => {
       console.warn("Backend register notice:", err);
     }
     const token = 'mock-jwt-token-registered-' + Date.now();
-    const finalName = registerData.fullName?.trim() || 'Learner';
+    const finalName = registerData.fullName?.trim() || registerData.name?.trim() || 'Learner';
     const initials = getInitials(finalName);
     const newUser = {
       id: Date.now(),
@@ -115,9 +111,10 @@ export const AuthProvider = ({ children }) => {
       token: token
     };
     setUser(newUser);
+    localStorage.setItem('nexus_user', JSON.stringify(newUser));
     localStorage.setItem('auth_user', JSON.stringify(newUser));
-    localStorage.setItem('auth_token', token);
     localStorage.setItem('skillsphere_user', JSON.stringify(newUser));
+    localStorage.setItem('auth_token', token);
     localStorage.setItem('token', token);
     localStorage.setItem('role', newUser.role);
     if (workforce?.recordLogin) workforce.recordLogin(newUser);
@@ -141,9 +138,10 @@ export const AuthProvider = ({ children }) => {
       token: token
     };
     setUser(studentUser);
+    localStorage.setItem('nexus_user', JSON.stringify(studentUser));
     localStorage.setItem('auth_user', JSON.stringify(studentUser));
-    localStorage.setItem('auth_token', token);
     localStorage.setItem('skillsphere_user', JSON.stringify(studentUser));
+    localStorage.setItem('auth_token', token);
     localStorage.setItem('token', token);
     localStorage.setItem('role', studentUser.role);
     if (workforce?.recordLogin) workforce.recordLogin(studentUser);
@@ -170,11 +168,10 @@ export const AuthProvider = ({ children }) => {
     const target = MOCK_USERS.find(u => u.role === newRole) || MOCK_USERS[0];
     const token = 'mock-jwt-token-role-' + Date.now();
     const currentName = user?.name || user?.fullName;
-    const finalName = (customName || currentName || target.fullName || 'Learner').trim();
+    const finalName = (customName || currentName || 'Learner').trim();
     const initials = getInitials(finalName);
 
     const updatedUser = { 
-      ...target, 
       ...user,
       role: newRole,
       fullName: finalName,
@@ -184,6 +181,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     setUser(updatedUser);
+    localStorage.setItem('nexus_user', JSON.stringify(updatedUser));
     localStorage.setItem('auth_user', JSON.stringify(updatedUser));
     localStorage.setItem('auth_token', token);
     localStorage.setItem('skillsphere_user', JSON.stringify(updatedUser));
@@ -204,6 +202,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     if (user && workforce?.recordLogout) workforce.recordLogout(user);
     setUser(null);
+    localStorage.removeItem('nexus_user');
     localStorage.removeItem('auth_user');
     localStorage.removeItem('auth_token');
     localStorage.removeItem('skillsphere_user');

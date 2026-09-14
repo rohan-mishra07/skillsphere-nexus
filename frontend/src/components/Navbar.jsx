@@ -38,7 +38,7 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
   const activeRoleBadge = roleLabels[user?.role] || roleLabels.ROLE_ADMIN;
   const userName = user?.name || user?.fullName || 'Learner';
   const userPosition = user?.position || user?.designation || 'Software Engineer';
-  const avatarInitials = user?.initials || getInitials(userName);
+  const avatarInitials = user?.initials || (userName ? getInitials(userName) : 'U');
 
   return (
     <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 md:px-6 py-2.5 flex items-center justify-between gap-4 shadow-md relative">

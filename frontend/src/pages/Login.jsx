@@ -25,7 +25,7 @@ export const Login = () => {
 
   const from = location.state?.from?.pathname || '/';
 
-  const [fullName, setFullName] = useState('Rohan Mishra');
+  const [fullName, setFullName] = useState('');
   const [designation, setDesignation] = useState('Software Engineer');
   const [role, setRole] = useState('ROLE_EMPLOYEE');
   const [email, setEmail] = useState('employee@skillsphere.com');
@@ -48,28 +48,37 @@ export const Login = () => {
     setErrorMsg('');
     setSuccessMsg('');
 
-    if (!email.trim() || !password.trim()) {
-      setErrorMsg('Please enter both work email address and password.');
+    const enteredName = fullName.trim();
+    if (!enteredName) {
+      setErrorMsg('Please enter your full name.');
       return;
     }
 
     setLoading(true);
     try {
-      const finalName = fullName.trim() || 'Learner';
-      const initials = finalName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
-      const loggedUser = await login(
-        email.trim(), 
-        password.trim(), 
-        finalName, 
-        designation.trim() || 'Software Engineer', 
-        role
-      );
-      setSuccessMsg(`Authenticated as ${loggedUser.name || loggedUser.fullName} (${loggedUser.designation || loggedUser.position})!`);
+      const userSession = {
+        name: enteredName,
+        fullName: enteredName,
+        initials: enteredName
+          .split(' ')
+          .filter(Boolean)
+          .map(part => part[0])
+          .join('')
+          .slice(0, 2)
+          .toUpperCase(),
+        email: email.trim() || `${enteredName.toLowerCase().replace(/\s+/g, '')}@nexus.internal`,
+        role: role || 'ROLE_EMPLOYEE',
+        designation: designation.trim() || 'Software Engineer',
+        position: designation.trim() || 'Software Engineer'
+      };
+
+      const loggedUser = await login(userSession);
+      setSuccessMsg(`Authenticated as ${loggedUser.name} (${loggedUser.designation || loggedUser.position || 'Software Engineer'})!`);
       setTimeout(() => {
         navigate(from, { replace: true });
       }, 400);
     } catch (err) {
-      setErrorMsg('Invalid email or password. Please verify your enterprise credentials.');
+      setErrorMsg('Invalid credentials. Please enter your name and credentials to continue.');
     } finally {
       setLoading(false);
     }
@@ -78,11 +87,13 @@ export const Login = () => {
   const handleDemoSelect = (demoEmail, demoPass, demoName, demoPosition, demoRole) => {
     setEmail(demoEmail);
     setPassword(demoPass);
-    setFullName(demoName);
+    if (!fullName.trim()) {
+      setFullName(demoName);
+    }
     setDesignation(demoPosition);
     setRole(demoRole);
     setErrorMsg('');
-    setSuccessMsg(`Pre-filled profile for ${demoName} (${demoPosition}). Click 'Sign In' or edit fields above.`);
+    setSuccessMsg(`Pre-filled role ${demoPosition}. Click 'Sign In' or enter your name above.`);
   };
 
   return (
@@ -147,9 +158,9 @@ export const Login = () => {
                 <input
                   type="text"
                   required
+                  placeholder="Enter your full name"
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
-                  placeholder="e.g. Rohan Mishra"
                   className="w-full bg-[#0b1120] border border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
                 />
                 <Users className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
