@@ -28,7 +28,7 @@ export const Login = () => {
   const [fullName, setFullName] = useState('');
   const [designation, setDesignation] = useState('Software Engineer');
   const [role, setRole] = useState('ROLE_EMPLOYEE');
-  const [email, setEmail] = useState('employee@skillsphere.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
@@ -61,6 +61,7 @@ export const Login = () => {
 
     setLoading(true);
     try {
+      const userEmail = email.trim() || `${enteredName.toLowerCase().replace(/\s+/g, '')}@skillsphere.com`;
       const userSession = {
         name: enteredName,
         fullName: enteredName,
@@ -71,7 +72,7 @@ export const Login = () => {
           .join('')
           .slice(0, 2)
           .toUpperCase(),
-        email: email.trim() || `${enteredName.toLowerCase().replace(/\s+/g, '')}@nexus.internal`,
+        email: userEmail,
         role: role || 'ROLE_EMPLOYEE',
         designation: designation.trim() || 'Software Engineer',
         position: designation.trim() || 'Software Engineer'
@@ -253,6 +254,7 @@ export const Login = () => {
                 <input
                   type="email"
                   required
+                  autoComplete="off"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="e.g. employee@skillsphere.com"

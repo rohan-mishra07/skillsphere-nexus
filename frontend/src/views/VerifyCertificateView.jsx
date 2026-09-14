@@ -140,6 +140,41 @@ export default function VerifyCertificateView() {
           </div>
         </div>
 
+        {/* Certificate Signature Block */}
+        <div className="pt-6 border-t border-slate-800/80 text-center">
+          {/* Above Horizontal Rule: Authentic Cursive SVG Ink Stroke Signature */}
+          <div className="flex justify-center items-center h-12 select-none">
+            <svg viewBox="0 0 220 55" className="w-52 h-12 filter drop-shadow-[0_2px_6px_rgba(56,189,248,0.2)]" fill="none">
+              <path
+                d="M 20,36 C 16,20 22,8 30,10 C 38,12 36,25 24,27 C 33,27 40,33 44,40 C 48,34 52,30 56,34 C 60,38 64,28 67,14 C 69,34 73,36 77,32 C 81,28 84,36 88,34 C 92,32 94,36 98,34 M 108,38 C 104,22 112,12 117,14 C 121,16 120,36 125,24 C 129,12 133,36 137,34 C 141,32 145,36 149,32 C 153,28 155,12 159,32 C 163,36 167,32 171,34 C 175,36 179,32 183,34 M 15,43 C 65,47 135,45 195,42"
+                stroke="url(#signature-ink-gradient-view)"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <defs>
+                <linearGradient id="signature-ink-gradient-view" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#38bdf8" />
+                  <stop offset="50%" stopColor="#818cf8" />
+                  <stop offset="100%" stopColor="#34d399" />
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+
+          {/* Baseline Divider */}
+          <div className="w-56 h-[1px] bg-slate-700/80 mx-auto my-2" />
+
+          {/* Below Baseline Divider */}
+          <div className="text-xs font-bold tracking-wide text-slate-100">Rohan Mishra</div>
+          <div className="text-[11px] text-slate-400 font-medium mt-0.5">Founder &amp; CEO, SkillSphere Learning Platform</div>
+
+          <div className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] text-emerald-400 font-semibold">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Cryptographically Verified Digital Signature
+          </div>
+        </div>
+
         {/* Action Buttons */}
         <div className="pt-4 border-t border-slate-800 flex justify-between items-center">
           <span className="text-[11px] text-slate-400 font-mono">

@@ -6,6 +6,7 @@ export const DEFAULT_LEAVES = [
   {
     id: 'LV-101',
     employeeName: 'Alex Chen',
+    userName: 'Alex Chen',
     employeeEmail: 'employee@skillsphere.com',
     role: 'Senior Software Engineer',
     employeeRole: 'Senior Software Engineer',
@@ -22,6 +23,7 @@ export const DEFAULT_LEAVES = [
   {
     id: 'LV-102',
     employeeName: 'Rohan Mishra',
+    userName: 'Rohan Mishra',
     employeeEmail: 'rohan.mishra@skillsphere.com',
     role: 'Software Engineer',
     employeeRole: 'Software Engineer',
@@ -34,6 +36,42 @@ export const DEFAULT_LEAVES = [
     status: 'PENDING',
     submittedAt: '2026-09-11',
     submissionDate: 'Sept 11, 2026'
+  },
+  {
+    id: 'LV-103',
+    employeeName: 'Dr. Sarah Jenkins',
+    userName: 'Dr. Sarah Jenkins',
+    employeeEmail: 'sarah.jenkins@skillsphere.com',
+    role: 'Principal Architect',
+    employeeRole: 'Principal Architect',
+    leaveType: 'Sick Leave',
+    startDate: '2026-09-01',
+    endDate: '2026-09-03',
+    duration: '3 Days',
+    daysCount: '3 Days',
+    reason: 'Medical Recovery & Rest',
+    status: 'APPROVED',
+    submittedAt: '2026-08-30',
+    submissionDate: 'Aug 30, 2026',
+    processedAt: 'Sep 1, 2026'
+  },
+  {
+    id: 'LV-104',
+    employeeName: 'David Miller',
+    userName: 'David Miller',
+    employeeEmail: 'david.miller@skillsphere.com',
+    role: 'DevOps Lead',
+    employeeRole: 'DevOps Lead',
+    leaveType: 'Casual Leave',
+    startDate: '2026-08-28',
+    endDate: '2026-08-29',
+    duration: '2 Days',
+    daysCount: '2 Days',
+    reason: 'Personal Family Matter',
+    status: 'REJECTED',
+    submittedAt: '2026-08-25',
+    submissionDate: 'Aug 25, 2026',
+    processedAt: 'Aug 27, 2026'
   }
 ];
 
@@ -120,6 +158,22 @@ export const WorkforceProvider = ({ children }) => {
     );
   };
 
+  const updateLeaveStatus = (reqId, status, rejectionReason) => {
+    const nowStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    setLeaveRequests((prev) =>
+      (Array.isArray(prev) ? prev : DEFAULT_LEAVES).map((req) =>
+        String(req.id) === String(reqId)
+          ? {
+              ...req,
+              status,
+              rejectionReason: status === 'REJECTED' ? rejectionReason : undefined,
+              processedAt: status === 'PENDING' ? undefined : (req.processedAt || nowStr)
+            }
+          : req
+      )
+    );
+  };
+
   // Record user login event (Called when someone logs in or switches role)
   const recordLogin = (userData) => {
     const name = userData?.fullName || userData?.name || 'Authorized User';
@@ -193,6 +247,7 @@ export const WorkforceProvider = ({ children }) => {
       addLeaveRequest,
       approveLeaveRequest,
       rejectLeaveRequest,
+      updateLeaveStatus,
       recordLogin,
       recordLogout,
       getIndiaTimeString,
