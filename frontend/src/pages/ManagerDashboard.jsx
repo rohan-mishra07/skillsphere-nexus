@@ -46,7 +46,7 @@ export const ManagerDashboard = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {teamMembers.map((m, idx) => (
+          {(teamMembers || []).map((m, idx) => (
             <div key={idx} className="glass-panel p-4 rounded-xl border border-slate-800 space-y-3">
               <div className="flex items-center justify-between">
                 <div>

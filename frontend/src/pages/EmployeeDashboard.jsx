@@ -56,27 +56,31 @@ export const EmployeeDashboard = () => {
     fetchData();
   }, []);
 
+  const fallbackCourses = [
+    { id: 1, title: 'Enterprise Java Spring Boot 3 & Security', category: 'Backend', level: 'Advanced', duration: '12 Hours', rating: 4.9, enrolledCount: 1240 },
+    { id: 2, title: 'React 18 & Modern Tailwind CSS Enterprise UI', category: 'Frontend', level: 'Intermediate', duration: '10 Hours', rating: 4.85, enrolledCount: 980 },
+    { id: 3, title: 'AI-Driven Workforce Analytics & HR Strategy', category: 'Management', level: 'Executive', duration: '6 Hours', rating: 4.95, enrolledCount: 620 }
+  ];
+
+  const fallbackSkills = [
+    { skillName: 'Java Spring Boot', currentProficiency: 88, requiredProficiency: 90, level: 'Advanced' },
+    { skillName: 'React.js', currentProficiency: 65, requiredProficiency: 85, level: 'Intermediate' },
+    { skillName: 'Tailwind CSS', currentProficiency: 92, requiredProficiency: 80, level: 'Expert' }
+  ];
+
   const fetchData = async () => {
     try {
       const cRes = await api.get('/lms/courses');
-      setCourses(cRes.data);
+      setCourses(Array.isArray(cRes.data) && cRes.data.length > 0 ? cRes.data : fallbackCourses);
       const sRes = await api.get(`/skills/user/${user?.id || 4}`);
-      setUserSkills(sRes.data);
+      setUserSkills(Array.isArray(sRes.data) && sRes.data.length > 0 ? sRes.data : fallbackSkills);
       const certRes = await api.get(`/lms/certificates/user/${user?.id || 4}`);
-      if (certRes.data && certRes.data.length > 0) {
+      if (Array.isArray(certRes.data) && certRes.data.length > 0) {
         setUserCert(certRes.data[certRes.data.length - 1]);
       }
     } catch (err) {
-      setCourses([
-        { id: 1, title: 'Enterprise Java Spring Boot 3 & Security', category: 'Backend', level: 'Advanced', duration: '12 Hours', rating: 4.9, enrolledCount: 1240 },
-        { id: 2, title: 'React 18 & Modern Tailwind CSS Enterprise UI', category: 'Frontend', level: 'Intermediate', duration: '10 Hours', rating: 4.85, enrolledCount: 980 },
-        { id: 3, title: 'AI-Driven Workforce Analytics & HR Strategy', category: 'Management', level: 'Executive', duration: '6 Hours', rating: 4.95, enrolledCount: 620 }
-      ]);
-      setUserSkills([
-        { skillName: 'Java Spring Boot', currentProficiency: 88, requiredProficiency: 90, level: 'Advanced' },
-        { skillName: 'React.js', currentProficiency: 65, requiredProficiency: 85, level: 'Intermediate' },
-        { skillName: 'Tailwind CSS', currentProficiency: 92, requiredProficiency: 80, level: 'Expert' }
-      ]);
+      setCourses(fallbackCourses);
+      setUserSkills(fallbackSkills);
     }
   };
 
@@ -193,7 +197,7 @@ export const EmployeeDashboard = () => {
           </div>
 
           <div className="space-y-3">
-            {courses.map((course) => (
+            {(courses || []).map((course) => (
               <div key={course.id} className="glass-panel glass-panel-hover p-5 rounded-2xl border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1.5 flex-1">
                   <div className="flex items-center gap-2">
@@ -237,7 +241,7 @@ export const EmployeeDashboard = () => {
             </div>
 
             <div className="space-y-3.5">
-              {userSkills.map((sk, idx) => (
+              {(userSkills || []).map((sk, idx) => (
                 <div key={idx} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
                     <span className="font-semibold text-slate-200">{sk.skillName}</span>

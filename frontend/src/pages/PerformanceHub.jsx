@@ -13,15 +13,17 @@ export const PerformanceHub = () => {
     fetchGoals();
   }, []);
 
+  const fallbackGoals = [
+    { id: 1, title: 'Complete Microservices Migration Phase 1', kpiMetric: '100% Endpoint Test Coverage', progress: 75, status: 'In Progress', managerFeedback: 'Great progress on security filters.' },
+    { id: 2, title: 'Upgrade React Frontend to Tailwind Glassmorphism', kpiMetric: 'Sub-100ms UI Render Velocity', progress: 95, status: 'In Progress', managerFeedback: 'Exceptional design execution!' },
+  ];
+
   const fetchGoals = async () => {
     try {
       const gRes = await api.get(`/performance/goals/user/${user?.id || 4}`);
-      setGoals(gRes.data);
+      setGoals(Array.isArray(gRes.data) && gRes.data.length > 0 ? gRes.data : fallbackGoals);
     } catch (err) {
-      setGoals([
-        { id: 1, title: 'Complete Microservices Migration Phase 1', kpiMetric: '100% Endpoint Test Coverage', progress: 75, status: 'In Progress', managerFeedback: 'Great progress on security filters.' },
-        { id: 2, title: 'Upgrade React Frontend to Tailwind Glassmorphism', kpiMetric: 'Sub-100ms UI Render Velocity', progress: 95, status: 'In Progress', managerFeedback: 'Exceptional design execution!' },
-      ]);
+      setGoals(fallbackGoals);
     }
   };
 
@@ -67,7 +69,7 @@ export const PerformanceHub = () => {
 
       {/* Goals Cards List */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {goals.map((g) => (
+        {(goals || []).map((g) => (
           <div key={g.id} className="glass-panel p-5 rounded-2xl border border-slate-800 space-y-4">
             <div className="flex items-start justify-between">
               <div>

@@ -23,19 +23,22 @@ export const HRDashboard = () => {
     fetchHrData();
   }, []);
 
+  const fallbackLeaves = [
+    { id: 1, userName: 'Alex Chen', leaveType: 'Annual Vacation', startDate: '2026-08-10', endDate: '2026-08-14', reason: 'Attending International Tech Summit', status: 'PENDING' }
+  ];
+  const fallbackJobPostings = [
+    { id: 1, title: 'Senior Cloud Backend Architect', department: 'Engineering', location: 'Remote', applicantCount: 14, status: 'Active' }
+  ];
+
   const fetchHrData = async () => {
     try {
       const lRes = await api.get('/workforce/leaves');
-      setLeaves(lRes.data);
+      setLeaves(Array.isArray(lRes.data) && lRes.data.length > 0 ? lRes.data : fallbackLeaves);
       const jRes = await api.get('/recruitment/jobs');
-      setJobPostings(jRes.data);
+      setJobPostings(Array.isArray(jRes.data) && jRes.data.length > 0 ? jRes.data : fallbackJobPostings);
     } catch (err) {
-      setLeaves([
-        { id: 1, userName: 'Alex Chen', leaveType: 'Annual Vacation', startDate: '2026-08-10', endDate: '2026-08-14', reason: 'Attending International Tech Summit', status: 'PENDING' }
-      ]);
-      setJobPostings([
-        { id: 1, title: 'Senior Cloud Backend Architect', department: 'Engineering', location: 'Remote', applicantCount: 14, status: 'Active' }
-      ]);
+      setLeaves(fallbackLeaves);
+      setJobPostings(fallbackJobPostings);
     }
   };
 
@@ -43,7 +46,7 @@ export const HRDashboard = () => {
     try {
       await api.put(`/workforce/leaves/${id}/status?status=${status}&approvedBy=Marcus Vance`);
     } catch (err) {}
-    setLeaves(prev => prev.map(l => l.id === id ? { ...l, status } : l));
+    setLeaves(prev => (Array.isArray(prev) ? prev : fallbackLeaves).map(l => l.id === id ? { ...l, status } : l));
   };
 
   return (
@@ -120,7 +123,7 @@ export const HRDashboard = () => {
         </div>
 
         <div className="space-y-3">
-          {leaves.map((leave) => (
+          {(leaves || []).map((leave) => (
             <div key={leave.id} className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">

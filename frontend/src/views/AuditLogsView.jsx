@@ -86,7 +86,7 @@ export const AuditLogsView = () => {
   const [filterStatus, setFilterStatus] = useState('ALL');
 
   // Filter logic
-  const filteredLogs = logs.filter(log => {
+  const filteredLogs = (logs || []).filter(log => {
     const matchesSearch = 
       log.actorName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       log.actionDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -102,7 +102,7 @@ export const AuditLogsView = () => {
   // CSV Export Function
   const handleExportCSV = () => {
     const headers = ['Audit ID', 'Timestamp', 'Actor Name', 'Actor Role', 'Category', 'Action Description', 'IP / Origin', 'Status'];
-    const rows = filteredLogs.map(log => [
+    const rows = (filteredLogs || []).map(log => [
       log.id,
       log.timestamp,
       log.actorName,
@@ -253,14 +253,14 @@ export const AuditLogsView = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-sans">
-              {filteredLogs.length === 0 ? (
+              {(filteredLogs || []).length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-8 text-center text-slate-500 font-semibold">
                     No matching compliance audit entries found.
                   </td>
                 </tr>
               ) : (
-                filteredLogs.map((log) => (
+                (filteredLogs || []).map((log) => (
                   <tr key={log.id} className="hover:bg-slate-800/40 transition-colors">
                     <td className="p-4 font-mono text-slate-400 whitespace-nowrap">
                       <div className="flex items-center gap-1.5">

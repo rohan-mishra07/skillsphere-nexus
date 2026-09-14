@@ -32,27 +32,30 @@ export const CoursePlayer = () => {
     fetchCourseDetails();
   }, [id]);
 
+  const fallbackCourse = {
+    id: 1,
+    title: 'Enterprise Java Spring Boot 3 & Security',
+    description: 'Master modern Spring Boot 3 RESTful APIs, Spring Security 6 with JWT tokens, Spring Data JPA, and Microservices Architecture.',
+    category: 'Backend Engineering',
+    trainerName: 'Prof. David Sterling',
+    level: 'Advanced'
+  };
+
+  const fallbackLessons = [
+    { id: 1, title: '1. Introduction to Spring Boot 3 & Architecture', videoUrl: 'https://www.youtube.com/embed/9SGDpanrc8U', notesContent: 'Spring Boot makes it easy to create stand-alone production grade Spring based Applications.', durationMinutes: 25 },
+    { id: 2, title: '2. Implementing JWT Authentication & Security Filter Chains', videoUrl: 'https://www.youtube.com/embed/9SGDpanrc8U', notesContent: 'Stateless authentication using JSON Web Tokens ensures high scalability across distributed microservices.', durationMinutes: 45 },
+  ];
+
   const fetchCourseDetails = async () => {
     try {
       const cRes = await api.get(`/lms/courses/${id || 1}`);
-      setCourse(cRes.data);
+      setCourse(cRes.data || fallbackCourse);
       const lRes = await api.get(`/lms/courses/${id || 1}/lessons`);
-      setLessons(lRes.data);
-      if (lRes.data.length > 0) setActiveLesson(lRes.data[0]);
+      const safeL = Array.isArray(lRes.data) && lRes.data.length > 0 ? lRes.data : fallbackLessons;
+      setLessons(safeL);
+      setActiveLesson(safeL[0]);
     } catch (err) {
-      const fallbackCourse = {
-        id: 1,
-        title: 'Enterprise Java Spring Boot 3 & Security',
-        description: 'Master modern Spring Boot 3 RESTful APIs, Spring Security 6 with JWT tokens, Spring Data JPA, and Microservices Architecture.',
-        category: 'Backend Engineering',
-        trainerName: 'Prof. David Sterling',
-        level: 'Advanced'
-      };
       setCourse(fallbackCourse);
-      const fallbackLessons = [
-        { id: 1, title: '1. Introduction to Spring Boot 3 & Architecture', videoUrl: 'https://www.youtube.com/embed/9SGDpanrc8U', notesContent: 'Spring Boot makes it easy to create stand-alone production grade Spring based Applications.', durationMinutes: 25 },
-        { id: 2, title: '2. Implementing JWT Authentication & Security Filter Chains', videoUrl: 'https://www.youtube.com/embed/9SGDpanrc8U', notesContent: 'Stateless authentication using JSON Web Tokens ensures high scalability across distributed microservices.', durationMinutes: 45 },
-      ];
       setLessons(fallbackLessons);
       setActiveLesson(fallbackLessons[0]);
     }
@@ -173,7 +176,7 @@ export const CoursePlayer = () => {
             </div>
 
             <div className="space-y-2 pt-2">
-              {lessons.map((les) => (
+              {(lessons || []).map((les) => (
                 <button
                   key={les.id}
                   onClick={() => setActiveLesson(les)}

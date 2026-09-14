@@ -41,48 +41,86 @@ export function Milestone2Dashboard() {
     setLoading(true);
     setError(null);
     const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8080';
+    
+    // 1. Course Creation GET /api/learning/courses
     try {
-      // 1. Course Creation GET /api/learning/courses
       const resCourses = await fetch(`${baseUrl}/api/learning/courses`);
-      const dataCourses = await resCourses.json();
-      setCourses(Array.isArray(dataCourses) && dataCourses.length > 0 ? dataCourses : fallbackCourses);
-
-      // 2. Enrollment Tracking GET /api/learning/enrollments/employee/{empId}
-      const resEnrollments = await fetch(`${baseUrl}/api/learning/enrollments/employee/${empId}`);
-      const dataEnrollments = await resEnrollments.json();
-      setEnrollments(Array.isArray(dataEnrollments) && dataEnrollments.length > 0 ? dataEnrollments : fallbackEnrollments);
-
-      // 3. Learning Path GET /api/learning/paths
-      const resPaths = await fetch(`${baseUrl}/api/learning/paths`);
-      const dataPaths = await resPaths.json();
-      setLearningPaths(Array.isArray(dataPaths) && dataPaths.length > 0 ? dataPaths : fallbackPaths);
-
-      // 4. Completion Tracking GET /api/learning/enrollments/{enrollmentId}
-      const resCompletion = await fetch(`${baseUrl}/api/learning/enrollments/${enrollmentId}`);
-      const dataCompletion = await resCompletion.json();
-      setCompletion(dataCompletion || fallbackCompletion);
-
-      // 5. Assessment Results GET /api/learning/assessments/enrollment/{enrollmentId}
-      const resAssessment = await fetch(`${baseUrl}/api/learning/assessments/enrollment/${enrollmentId}`);
-      const dataAssessment = await resAssessment.json();
-      setAssessment(Array.isArray(dataAssessment) ? dataAssessment[0] : (dataAssessment || fallbackAssessment));
-
-      // 6. Certificate Generation GET /api/learning/certificates/employee/{empId}
-      const resCert = await fetch(`${baseUrl}/api/learning/certificates/employee/${empId}`);
-      const dataCert = await resCert.json();
-      setCertificate(Array.isArray(dataCert) ? dataCert[0] : (dataCert || fallbackCertificate));
-
-    } catch (err) {
-      console.warn("Using Milestone 2 local fallback data", err);
+      if (resCourses.ok) {
+        const dataCourses = await resCourses.json();
+        setCourses(Array.isArray(dataCourses) && dataCourses.length > 0 ? dataCourses : fallbackCourses);
+      } else {
+        setCourses(fallbackCourses);
+      }
+    } catch (e) {
       setCourses(fallbackCourses);
-      setEnrollments(fallbackEnrollments);
-      setLearningPaths(fallbackPaths);
-      setCompletion(fallbackCompletion);
-      setAssessment(fallbackAssessment);
-      setCertificate(fallbackCertificate);
-    } finally {
-      setLoading(false);
     }
+
+    // 2. Enrollment Tracking GET /api/learning/enrollments/employee/{empId}
+    try {
+      const resEnrollments = await fetch(`${baseUrl}/api/learning/enrollments/employee/${empId}`);
+      if (resEnrollments.ok) {
+        const dataEnrollments = await resEnrollments.json();
+        setEnrollments(Array.isArray(dataEnrollments) && dataEnrollments.length > 0 ? dataEnrollments : fallbackEnrollments);
+      } else {
+        setEnrollments(fallbackEnrollments);
+      }
+    } catch (e) {
+      setEnrollments(fallbackEnrollments);
+    }
+
+    // 3. Learning Path GET /api/learning/paths
+    try {
+      const resPaths = await fetch(`${baseUrl}/api/learning/paths`);
+      if (resPaths.ok) {
+        const dataPaths = await resPaths.json();
+        setLearningPaths(Array.isArray(dataPaths) && dataPaths.length > 0 ? dataPaths : fallbackPaths);
+      } else {
+        setLearningPaths(fallbackPaths);
+      }
+    } catch (e) {
+      setLearningPaths(fallbackPaths);
+    }
+
+    // 4. Completion Tracking GET /api/learning/enrollments/{enrollmentId}
+    try {
+      const resCompletion = await fetch(`${baseUrl}/api/learning/enrollments/${enrollmentId}`);
+      if (resCompletion.ok) {
+        const dataCompletion = await resCompletion.json();
+        setCompletion(dataCompletion || fallbackCompletion);
+      } else {
+        setCompletion(fallbackCompletion);
+      }
+    } catch (e) {
+      setCompletion(fallbackCompletion);
+    }
+
+    // 5. Assessment Results GET /api/learning/assessments/enrollment/{enrollmentId}
+    try {
+      const resAssessment = await fetch(`${baseUrl}/api/learning/assessments/enrollment/${enrollmentId}`);
+      if (resAssessment.ok) {
+        const dataAssessment = await resAssessment.json();
+        setAssessment(Array.isArray(dataAssessment) ? dataAssessment[0] : (dataAssessment || fallbackAssessment));
+      } else {
+        setAssessment(fallbackAssessment);
+      }
+    } catch (e) {
+      setAssessment(fallbackAssessment);
+    }
+
+    // 6. Certificate Generation GET /api/learning/certificates/employee/{empId}
+    try {
+      const resCert = await fetch(`${baseUrl}/api/learning/certificates/employee/${empId}`);
+      if (resCert.ok) {
+        const dataCert = await resCert.json();
+        setCertificate(Array.isArray(dataCert) ? dataCert[0] : (dataCert || fallbackCertificate));
+      } else {
+        setCertificate(fallbackCertificate);
+      }
+    } catch (e) {
+      setCertificate(fallbackCertificate);
+    }
+
+    setLoading(false);
   };
 
   useEffect(() => {

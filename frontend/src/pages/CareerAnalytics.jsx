@@ -205,9 +205,12 @@ export function CareerAnalytics() {
   };
 
   const isEmployee = user?.role === 'ROLE_EMPLOYEE';
+  const safePlans = Array.isArray(plans) ? plans : fallbackPlans;
+  const safeJobs = Array.isArray(jobs) ? jobs : fallbackJobs;
+  const safeRoles = Array.isArray(roles) ? roles : fallbackRoles;
   const displayedPlans = isEmployee
-    ? plans.filter(p => p.employeeName?.toLowerCase().includes('rohan') || p.employeeName?.toLowerCase().includes('mishra') || true).slice(0, 1)
-    : plans;
+    ? safePlans.filter(p => p.employeeName?.toLowerCase().includes('rohan') || p.employeeName?.toLowerCase().includes('mishra') || true).slice(0, 1)
+    : safePlans;
 
   return (
     <div className="space-y-6">
@@ -289,7 +292,7 @@ export function CareerAnalytics() {
           }`}
         >
           <Target className="w-4 h-4" />
-          <span>{isEmployee ? 'My Roadmap' : `Career Planning (${plans.length})`}</span>
+          <span>{isEmployee ? 'My Roadmap' : `Career Planning (${(safePlans || []).length})`}</span>
         </button>
 
         <button
@@ -301,7 +304,7 @@ export function CareerAnalytics() {
           }`}
         >
           <Briefcase className="w-4 h-4" />
-          <span>Internal Job Openings ({jobs.length})</span>
+          <span>Internal Job Openings ({(safeJobs || []).length})</span>
         </button>
       </div>
 
@@ -343,7 +346,7 @@ export function CareerAnalytics() {
 
               <div className="bg-slate-900/80 p-5 rounded-xl border border-indigo-500/30">
                 <p className="text-[11px] text-slate-400 font-semibold uppercase">Eligible Job Matches</p>
-                <h3 className="text-2xl font-black text-purple-400 mt-2">{jobs.length} Jobs</h3>
+                <h3 className="text-2xl font-black text-purple-400 mt-2">{(safeJobs || []).length} Jobs</h3>
                 <span className="text-[10px] text-slate-400">Internal Mobility</span>
               </div>
             </div>
@@ -352,17 +355,17 @@ export function CareerAnalytics() {
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
               <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
                 <p className="text-[11px] text-slate-400 font-semibold uppercase">Total Career Plans</p>
-                <h3 className="text-2xl font-black text-white mt-2">{analytics?.totalCareerPlans ?? plans.length}</h3>
+                <h3 className="text-2xl font-black text-white mt-2">{analytics?.totalCareerPlans ?? (safePlans || []).length}</h3>
               </div>
 
               <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
                 <p className="text-[11px] text-slate-400 font-semibold uppercase">Active Plans</p>
-                <h3 className="text-2xl font-black text-indigo-400 mt-2">{analytics?.activeCareerPlans ?? plans.filter(p => p.status === 'ACTIVE').length}</h3>
+                <h3 className="text-2xl font-black text-indigo-400 mt-2">{analytics?.activeCareerPlans ?? (safePlans || []).filter(p => p.status === 'ACTIVE').length}</h3>
               </div>
 
               <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
                 <p className="text-[11px] text-slate-400 font-semibold uppercase">Promotions Eligible</p>
-                <h3 className="text-2xl font-black text-emerald-400 mt-2">{analytics?.promotionEligible ?? plans.filter(p => p.promotionEligible).length}</h3>
+                <h3 className="text-2xl font-black text-emerald-400 mt-2">{analytics?.promotionEligible ?? (safePlans || []).filter(p => p.promotionEligible).length}</h3>
               </div>
 
               <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
@@ -377,7 +380,7 @@ export function CareerAnalytics() {
 
               <div className="bg-slate-900/80 p-5 rounded-xl border border-slate-800">
                 <p className="text-[11px] text-slate-400 font-semibold uppercase">Active Internal Jobs</p>
-                <h3 className="text-2xl font-black text-purple-400 mt-2">{analytics?.activeJobs ?? jobs.length}</h3>
+                <h3 className="text-2xl font-black text-purple-400 mt-2">{analytics?.activeJobs ?? (safeJobs || []).length}</h3>
               </div>
             </div>
           )}
@@ -387,7 +390,7 @@ export function CareerAnalytics() {
       {/* Tab Content 2: Career Planning / Personal Roadmap */}
       {activeTab === 'career' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {displayedPlans.map((plan) => (
+          {(displayedPlans || []).map((plan) => (
             <div key={plan.planId} className="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 relative hover:border-indigo-500/50 transition-all">
               <div className="flex items-start justify-between">
                 <div>
@@ -440,8 +443,8 @@ export function CareerAnalytics() {
       {/* Tab Content 3: Jobs */}
       {activeTab === 'jobs' && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {jobs.map((job) => {
-            const isApplied = appliedJobs.includes(job.jobId);
+          {(safeJobs || []).map((job) => {
+            const isApplied = (appliedJobs || []).includes(job.jobId);
             return (
               <div key={job.jobId} className="bg-slate-900/80 p-6 rounded-2xl border border-slate-800 hover:border-purple-500/50 transition-all flex flex-col justify-between">
                 <div>
@@ -521,7 +524,7 @@ export function CareerAnalytics() {
                     value={planForm.targetRole}
                     onChange={(e) => setPlanForm({ ...planForm, targetRole: e.target.value })}
                   >
-                    {roles.map((r, idx) => (
+                    {(safeRoles || []).map((r, idx) => (
                       <option key={idx} value={r.roleName}>
                         {r.roleName}
                       </option>
@@ -729,7 +732,7 @@ export function CareerAnalytics() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800 bg-slate-950/60">
-                {plans.map((p, idx) => (
+                {(safePlans || []).map((p, idx) => (
                   <tr key={idx}>
                     <td className="p-2.5 font-bold text-white">{p.employeeName}</td>
                     <td className="p-2.5 text-slate-400">{p.currentRole}</td>
@@ -767,7 +770,7 @@ export function CareerAnalytics() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800 bg-slate-950/60">
-                {jobs.map((j, idx) => (
+                {(safeJobs || []).map((j, idx) => (
                   <tr key={idx}>
                     <td className="p-2.5 font-bold text-white">{j.title}</td>
                     <td className="p-2.5 text-purple-300">{j.department}</td>

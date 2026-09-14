@@ -49,8 +49,16 @@ export const SkillManagementHub = () => {
         api.get(`/skills/profile/${empId}`),
         api.get('/skills/catalog')
       ]);
-      setProfileData(pRes.data);
-      setCatalog(cRes.data);
+      if (pRes.data && typeof pRes.data === 'object' && Array.isArray(pRes.data.skills)) {
+        setProfileData(pRes.data);
+      } else {
+        throw new Error("Invalid profile payload");
+      }
+      if (Array.isArray(cRes.data) && cRes.data.length > 0) {
+        setCatalog(cRes.data);
+      } else {
+        setCatalog(getFallbackCatalog());
+      }
       showToast("Skill profile and enterprise catalog data refreshed successfully!");
     } catch (err) {
       console.warn("Using fallback demo data for Milestone 1", err);

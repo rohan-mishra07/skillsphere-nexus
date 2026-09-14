@@ -10,21 +10,25 @@ export const RecruitmentBoard = () => {
     fetchRecruitmentData();
   }, []);
 
+  const fallbackJobs = [
+    { id: 1, title: 'Senior Cloud Backend Architect', department: 'Engineering', location: 'Remote', type: 'Full-time', applicantCount: 14, status: 'Active' }
+  ];
+
+  const fallbackApplicants = [
+    { id: 1, candidateName: 'Jordan Rivera', candidateEmail: 'jordan.r@example.com', jobTitle: 'Senior Cloud Backend Architect', stage: 'Interview Scheduled', matchScore: 94 },
+    { id: 2, candidateName: 'Samantha Lee', candidateEmail: 'sam.lee@example.com', jobTitle: 'Senior Cloud Backend Architect', stage: 'Screening', matchScore: 88 },
+    { id: 3, candidateName: 'Marcus Miller', candidateEmail: 'm.miller@example.com', jobTitle: 'Senior Cloud Backend Architect', stage: 'Offer Sent', matchScore: 96 },
+  ];
+
   const fetchRecruitmentData = async () => {
     try {
       const jRes = await api.get('/recruitment/jobs');
-      setJobs(jRes.data);
+      setJobs(Array.isArray(jRes.data) && jRes.data.length > 0 ? jRes.data : fallbackJobs);
       const aRes = await api.get('/recruitment/applicants');
-      setApplicants(aRes.data);
+      setApplicants(Array.isArray(aRes.data) && aRes.data.length > 0 ? aRes.data : fallbackApplicants);
     } catch (err) {
-      setJobs([
-        { id: 1, title: 'Senior Cloud Backend Architect', department: 'Engineering', location: 'Remote', type: 'Full-time', applicantCount: 14, status: 'Active' }
-      ]);
-      setApplicants([
-        { id: 1, candidateName: 'Jordan Rivera', candidateEmail: 'jordan.r@example.com', jobTitle: 'Senior Cloud Backend Architect', stage: 'Interview Scheduled', matchScore: 94 },
-        { id: 2, candidateName: 'Samantha Lee', candidateEmail: 'sam.lee@example.com', jobTitle: 'Senior Cloud Backend Architect', stage: 'Screening', matchScore: 88 },
-        { id: 3, candidateName: 'Marcus Miller', candidateEmail: 'm.miller@example.com', jobTitle: 'Senior Cloud Backend Architect', stage: 'Offer Sent', matchScore: 96 },
-      ]);
+      setJobs(fallbackJobs);
+      setApplicants(fallbackApplicants);
     }
   };
 
@@ -32,7 +36,7 @@ export const RecruitmentBoard = () => {
     try {
       await api.put(`/recruitment/applicants/${applicantId}/stage?stage=${encodeURIComponent(newStage)}`);
     } catch (e) {}
-    setApplicants(prev => prev.map(a => a.id === applicantId ? { ...a, stage: newStage } : a));
+    setApplicants(prev => (Array.isArray(prev) ? prev : fallbackApplicants).map(a => a.id === applicantId ? { ...a, stage: newStage } : a));
   };
 
   const stages = ['Applied', 'Screening', 'Interview Scheduled', 'Offer Sent', 'Onboarded'];
@@ -57,7 +61,7 @@ export const RecruitmentBoard = () => {
       {/* ATS Stage Board Columns */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-3 overflow-x-auto pb-4">
         {stages.map((stg) => {
-          const stageApps = applicants.filter(a => a.stage === stg);
+          const stageApps = (applicants || []).filter(a => a.stage === stg);
           return (
             <div key={stg} className="glass-panel p-3 rounded-2xl border border-slate-800 space-y-3 min-w-[200px]">
               <div className="flex items-center justify-between border-b border-slate-800 pb-2">

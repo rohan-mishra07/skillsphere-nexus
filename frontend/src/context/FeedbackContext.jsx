@@ -129,7 +129,8 @@ export const FeedbackProvider = ({ children }) => {
     } catch (err) {
       // Fallback silently if endpoint is not reachable
       try {
-        await fetch('http://localhost:8080/api/feedback', {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:8080';
+        await fetch(`${baseUrl}/api/feedback`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(entry)

@@ -28,8 +28,9 @@ export const ReportsAnalytics = () => {
     } catch (err) {}
   };
 
-  const avgRating = totalFeedbackCount > 0
-    ? (feedbacks.reduce((acc, f) => acc + (f.rating || 5), 0) / totalFeedbackCount).toFixed(1)
+  const safeFeedbacks = Array.isArray(feedbacks) ? feedbacks : [];
+  const avgRating = safeFeedbacks.length > 0
+    ? (safeFeedbacks.reduce((acc, f) => acc + (f?.rating || 5), 0) / safeFeedbacks.length).toFixed(1)
     : '4.9';
 
   return (

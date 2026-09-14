@@ -19,8 +19,10 @@ export const FeedbackView = () => {
   const [categoryFilter, setCategoryFilter] = useState('ALL');
   const [minRatingFilter, setMinRatingFilter] = useState(0);
 
+  const safeFeedbacks = Array.isArray(feedbacks) ? feedbacks : [];
+
   // Filtered feedbacks
-  const filteredFeedbacks = feedbacks.filter((fb) => {
+  const filteredFeedbacks = safeFeedbacks.filter((fb) => {
     if (minRatingFilter > 0 && fb.rating < minRatingFilter) return false;
     if (categoryFilter !== 'ALL') {
       const cats = Array.isArray(fb.categories) ? fb.categories : [fb.category || 'General'];
@@ -30,11 +32,11 @@ export const FeedbackView = () => {
   });
 
   // Calculate metrics
-  const totalCount = feedbacks.length;
+  const totalCount = safeFeedbacks.length;
   const avgRating = totalCount > 0 
-    ? (feedbacks.reduce((acc, f) => acc + (f.rating || 5), 0) / totalCount).toFixed(1)
+    ? (safeFeedbacks.reduce((acc, f) => acc + (f.rating || 5), 0) / totalCount).toFixed(1)
     : '5.0';
-  const yesNpsCount = feedbacks.filter(f => f.npsRecommend === 'Yes').length;
+  const yesNpsCount = safeFeedbacks.filter(f => f.npsRecommend === 'Yes').length;
   const npsPercentage = totalCount > 0 ? Math.round((yesNpsCount / totalCount) * 100) : 100;
 
   return (

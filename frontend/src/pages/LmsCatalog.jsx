@@ -60,7 +60,7 @@ export const LmsCatalog = () => {
   const fetchCourses = async () => {
     try {
       const res = await api.get('/lms/courses');
-      if (res.data && res.data.length > 0) {
+      if (Array.isArray(res.data) && res.data.length > 0) {
         setCourses(res.data);
       } else {
         setCourses(getDefaultCourses());
@@ -74,7 +74,7 @@ export const LmsCatalog = () => {
     setIsLoadingEnrollments(true);
     try {
       const res = await api.get('/learning/enrollments');
-      if (res.data && res.data.length > 0) {
+      if (Array.isArray(res.data) && res.data.length > 0) {
         setEnrollments(res.data);
       } else {
         setEnrollments(getDefaultEnrollments());
@@ -231,7 +231,7 @@ export const LmsCatalog = () => {
       showToast(`Progress updated to ${updateProgressVal}%!`);
       fetchEnrollments();
     } catch (err) {
-      setEnrollments(enrollments.map(enr => {
+      setEnrollments((enrollments || []).map(enr => {
         if (enr.enrollmentId === selectedEnrollmentId) {
           const isComp = updateProgressVal >= 100;
           return {
@@ -248,15 +248,15 @@ export const LmsCatalog = () => {
     }
   };
 
-  const filteredCourses = courses.filter(c => {
+  const filteredCourses = (courses || []).filter(c => {
     const matchesCategory = filterCategory === 'ALL' || c.category?.toLowerCase().includes(filterCategory.toLowerCase());
     const matchesType = filterType === 'ALL' || (c.type || 'Online Course').toLowerCase() === filterType.toLowerCase();
-    const matchesQuery = !searchQuery || c.title.toLowerCase().includes(searchQuery.toLowerCase()) || c.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesQuery = !searchQuery || c.title?.toLowerCase().includes(searchQuery.toLowerCase()) || c.description?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesType && matchesQuery;
   });
 
   const getCourseTitle = (courseId) => {
-    const found = courses.find(c => c.id === courseId);
+    const found = (courses || []).find(c => c.id === courseId);
     return found ? found.title : `Course #${courseId}`;
   };
 
@@ -422,7 +422,7 @@ export const LmsCatalog = () => {
 
           {/* Course Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {filteredCourses.map((course) => (
+            {(filteredCourses || []).map((course) => (
               <div key={course.id} className="glass-panel glass-panel-hover p-5 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -503,7 +503,7 @@ export const LmsCatalog = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60 text-slate-300">
-                  {enrollments.map((enr) => (
+                  {(enrollments || []).map((enr) => (
                     <tr key={enr.enrollmentId} className="hover:bg-slate-900/40 transition-colors">
                       <td className="py-3.5 px-4 font-mono text-[11px] text-indigo-400">
                         {enr.enrollmentId.substring(0, 8)}...
@@ -680,7 +680,7 @@ export const LmsCatalog = () => {
                   className="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:border-indigo-500"
                 >
                   <option value="">-- Choose active enrollment --</option>
-                  {enrollments.map((enr) => (
+                  {(enrollments || []).map((enr) => (
                     <option key={enr.enrollmentId} value={enr.enrollmentId}>
                       {enr.courseTitle || getCourseTitle(enr.courseId)} ({enr.progress}%)
                     </option>
@@ -732,7 +732,7 @@ export const LmsCatalog = () => {
             </h2>
             
             <div className="space-y-3">
-              {enrollments.map((enr) => (
+              {(enrollments || []).map((enr) => (
                 <div key={enr.enrollmentId} className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center justify-between gap-4">
                   <div className="space-y-1">
                     <h4 className="text-xs font-bold text-white">{enr.courseTitle || getCourseTitle(enr.courseId)}</h4>

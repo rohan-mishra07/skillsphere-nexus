@@ -16,25 +16,29 @@ export const SkillGapAnalysis = () => {
     fetchSkillsData();
   }, []);
 
+  const fallbackSkills = [
+    { id: 1, skillId: 1, skillName: 'Java Spring Boot', category: 'Technical', currentProficiency: 88, requiredProficiency: 90, level: 'Advanced' },
+    { id: 2, skillId: 2, skillName: 'React.js', category: 'Technical', currentProficiency: 65, requiredProficiency: 85, level: 'Intermediate' },
+    { id: 3, skillId: 3, skillName: 'Tailwind CSS', category: 'Technical', currentProficiency: 92, requiredProficiency: 80, level: 'Expert' },
+    { id: 4, skillId: 4, skillName: 'Agile Leadership', category: 'Management', currentProficiency: 55, requiredProficiency: 75, level: 'Intermediate' },
+  ];
+
+  const fallbackRecommendations = {
+    aiSummary: "Based on your latest assessment, we identified a proficiency gap in React.js State Architecture (-20%) and Agile Leadership (-20%). Enrolling in recommended courses will accelerate your promotion readiness.",
+    recommendedCourses: [
+      { id: 2, title: 'React 18 & Modern Tailwind CSS Enterprise UI', category: 'Frontend Web Development', duration: '10 Hours' }
+    ]
+  };
+
   const fetchSkillsData = async () => {
     try {
       const sRes = await api.get(`/skills/user/${user?.id || 4}`);
-      setSkills(sRes.data);
+      setSkills(Array.isArray(sRes.data) && sRes.data.length > 0 ? sRes.data : fallbackSkills);
       const rRes = await api.get(`/skills/recommendations/${user?.id || 4}`);
-      setRecommendations(rRes.data);
+      setRecommendations(rRes.data || fallbackRecommendations);
     } catch (err) {
-      setSkills([
-        { id: 1, skillId: 1, skillName: 'Java Spring Boot', category: 'Technical', currentProficiency: 88, requiredProficiency: 90, level: 'Advanced' },
-        { id: 2, skillId: 2, skillName: 'React.js', category: 'Technical', currentProficiency: 65, requiredProficiency: 85, level: 'Intermediate' },
-        { id: 3, skillId: 3, skillName: 'Tailwind CSS', category: 'Technical', currentProficiency: 92, requiredProficiency: 80, level: 'Expert' },
-        { id: 4, skillId: 4, skillName: 'Agile Leadership', category: 'Management', currentProficiency: 55, requiredProficiency: 75, level: 'Intermediate' },
-      ]);
-      setRecommendations({
-        aiSummary: "Based on your latest assessment, we identified a proficiency gap in React.js State Architecture (-20%) and Agile Leadership (-20%). Enrolling in recommended courses will accelerate your promotion readiness.",
-        recommendedCourses: [
-          { id: 2, title: 'React 18 & Modern Tailwind CSS Enterprise UI', category: 'Frontend Web Development', duration: '10 Hours' }
-        ]
-      });
+      setSkills(fallbackSkills);
+      setRecommendations(fallbackRecommendations);
     }
   };
 
@@ -97,7 +101,7 @@ export const SkillGapAnalysis = () => {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {skills.map((sk) => {
+            {(skills || []).map((sk) => {
               const gap = sk.requiredProficiency - sk.currentProficiency;
               const hasGap = gap > 0;
 

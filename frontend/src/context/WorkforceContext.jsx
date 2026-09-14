@@ -106,13 +106,13 @@ export const WorkforceProvider = ({ children }) => {
 
   const approveLeaveRequest = (reqId) => {
     setLeaveRequests((prev) =>
-      prev.map((req) => (req.id === reqId ? { ...req, status: 'APPROVED' } : req))
+      (Array.isArray(prev) ? prev : DEFAULT_LEAVES).map((req) => (req.id === reqId ? { ...req, status: 'APPROVED' } : req))
     );
   };
 
   const rejectLeaveRequest = (reqId, reason) => {
     setLeaveRequests((prev) =>
-      prev.map((req) =>
+      (Array.isArray(prev) ? prev : DEFAULT_LEAVES).map((req) =>
         req.id === reqId
           ? { ...req, status: 'REJECTED', rejectionReason: reason }
           : req
@@ -142,7 +142,7 @@ export const WorkforceProvider = ({ children }) => {
     };
 
     setLatestEvent(newEvent);
-    setLiveLog(prev => [newEvent, ...prev.slice(0, 24)]);
+    setLiveLog(prev => [newEvent, ...(Array.isArray(prev) ? prev.slice(0, 24) : [])]);
 
     setTimeout(() => {
       setPulseType(null);
@@ -169,7 +169,7 @@ export const WorkforceProvider = ({ children }) => {
     };
 
     setLatestEvent(newEvent);
-    setLiveLog(prev => [newEvent, ...prev.slice(0, 24)]);
+    setLiveLog(prev => [newEvent, ...(Array.isArray(prev) ? prev.slice(0, 24) : [])]);
 
     setTimeout(() => {
       setPulseType(null);

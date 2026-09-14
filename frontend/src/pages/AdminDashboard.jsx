@@ -88,18 +88,20 @@ export const AdminDashboard = () => {
     fetchUsers();
   }, []);
 
+  const fallbackUsers = [
+    { id: 1, fullName: 'Sarah Jenkins', email: 'admin@skillsphere.com', role: 'ROLE_ADMIN', department: 'Executive', active: true },
+    { id: 2, fullName: 'Marcus Vance', email: 'hr@skillsphere.com', role: 'ROLE_HR', department: 'Human Resources', active: true },
+    { id: 3, fullName: 'Elena Rostova', email: 'manager@skillsphere.com', role: 'ROLE_MANAGER', department: 'Engineering', active: true },
+    { id: 4, fullName: 'Alex Chen', email: 'employee@skillsphere.com', role: 'ROLE_EMPLOYEE', department: 'Engineering', active: true },
+    { id: 5, fullName: 'Prof. David Sterling', email: 'trainer@skillsphere.com', role: 'ROLE_TRAINER', department: 'L&D', active: true },
+  ];
+
   const fetchUsers = async () => {
     try {
       const res = await api.get('/auth/users');
-      setUsers(res.data);
+      setUsers(Array.isArray(res.data) && res.data.length > 0 ? res.data : fallbackUsers);
     } catch (err) {
-      setUsers([
-        { id: 1, fullName: 'Sarah Jenkins', email: 'admin@skillsphere.com', role: 'ROLE_ADMIN', department: 'Executive', active: true },
-        { id: 2, fullName: 'Marcus Vance', email: 'hr@skillsphere.com', role: 'ROLE_HR', department: 'Human Resources', active: true },
-        { id: 3, fullName: 'Elena Rostova', email: 'manager@skillsphere.com', role: 'ROLE_MANAGER', department: 'Engineering', active: true },
-        { id: 4, fullName: 'Alex Chen', email: 'employee@skillsphere.com', role: 'ROLE_EMPLOYEE', department: 'Engineering', active: true },
-        { id: 5, fullName: 'Prof. David Sterling', email: 'trainer@skillsphere.com', role: 'ROLE_TRAINER', department: 'L&D', active: true },
-      ]);
+      setUsers(fallbackUsers);
     }
   };
 
@@ -217,7 +219,7 @@ export const AdminDashboard = () => {
             <Users className="w-4 h-4 text-rose-400" />
             Global User Directory &amp; Permissions
           </h3>
-          <span className="text-xs text-slate-400">Total Records: {users.length}</span>
+          <span className="text-xs text-slate-400">Total Records: {(users || []).length}</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -233,7 +235,7 @@ export const AdminDashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {users.map((u) => (
+              {(users || []).map((u) => (
                 <tr key={u.id} className="hover:bg-slate-900/50">
                   <td className="p-3 font-semibold text-white flex items-center gap-2">
                     <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center font-bold text-[10px] text-slate-200">
@@ -274,10 +276,10 @@ export const AdminDashboard = () => {
               Pending Leave Approvals Queue
             </h3>
             <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold">
-              {leaveRequests.filter(r => r.status === 'PENDING').length} Pending
+              {(leaveRequests || []).filter(r => r.status === 'PENDING').length} Pending
             </span>
           </div>
-          <span className="text-xs text-slate-400">Total Requests: {leaveRequests.length}</span>
+          <span className="text-xs text-slate-400">Total Requests: {(leaveRequests || []).length}</span>
         </div>
 
         <div className="overflow-x-auto">
@@ -294,7 +296,7 @@ export const AdminDashboard = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60">
-              {leaveRequests.map((req) => (
+              {(leaveRequests || []).map((req) => (
                 <tr key={req.id} className="hover:bg-slate-900/50">
                   <td className="p-3 font-semibold text-white">
                     <div>{req.employeeName}</div>

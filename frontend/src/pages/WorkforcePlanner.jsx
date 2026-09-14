@@ -20,14 +20,16 @@ export const WorkforcePlanner = () => {
     fetchWorkforceData();
   }, []);
 
+  const fallbackLeaves = [
+    { id: 1, leaveType: 'Annual Vacation', startDate: '2026-08-10', endDate: '2026-08-14', reason: 'Tech Summit', status: 'APPROVED', approvedBy: 'Marcus Vance' }
+  ];
+
   const fetchWorkforceData = async () => {
     try {
       const lRes = await api.get(`/workforce/leaves/user/${user?.id || 4}`);
-      setLeaves(lRes.data);
+      setLeaves(Array.isArray(lRes.data) && lRes.data.length > 0 ? lRes.data : fallbackLeaves);
     } catch (err) {
-      setLeaves([
-        { id: 1, leaveType: 'Annual Vacation', startDate: '2026-08-10', endDate: '2026-08-14', reason: 'Tech Summit', status: 'APPROVED', approvedBy: 'Marcus Vance' }
-      ]);
+      setLeaves(fallbackLeaves);
     }
   };
 
@@ -149,7 +151,7 @@ export const WorkforcePlanner = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-800/60">
-                  {liveLog.map((a, idx) => (
+                  {(liveLog || []).map((a, idx) => (
                     <tr key={a.id} className={`transition-all duration-300 ${
                       idx === 0 && pulseType === 'JOIN' ? 'bg-emerald-500/10 font-bold' :
                       idx === 0 && pulseType === 'LEFT' ? 'bg-amber-500/10 font-bold' : 'hover:bg-slate-900/40'
@@ -196,7 +198,7 @@ export const WorkforcePlanner = () => {
             </h3>
 
             <div className="space-y-3">
-              {leaves.map((l) => (
+              {(leaves || []).map((l) => (
                 <div key={l.id} className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs text-white">{l.leaveType}</span>
