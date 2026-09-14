@@ -89,16 +89,41 @@ export const Login = () => {
     }
   };
 
-  const handleDemoSelect = (demoEmail, demoName, demoPosition, demoRole) => {
+  const handleDemoSelect = async (demoEmail, demoName, demoPosition, demoRole) => {
+    setErrorMsg('');
     setEmail(demoEmail);
-    setPassword('');
-    if (!fullName.trim()) {
-      setFullName(demoName);
-    }
+    setFullName(demoName);
     setDesignation(demoPosition);
     setRole(demoRole);
-    setErrorMsg('');
-    setSuccessMsg(`Pre-filled role ${demoPosition}. Enter your password to continue.`);
+    setLoading(true);
+
+    try {
+      const userSession = {
+        name: demoName,
+        fullName: demoName,
+        initials: demoName
+          .split(' ')
+          .filter(Boolean)
+          .map(part => part[0])
+          .join('')
+          .slice(0, 2)
+          .toUpperCase(),
+        email: demoEmail,
+        role: demoRole,
+        designation: demoPosition,
+        position: demoPosition
+      };
+
+      const loggedUser = await login(userSession);
+      setSuccessMsg(`Authenticated as ${loggedUser.name} (${loggedUser.designation || loggedUser.position})!`);
+      setTimeout(() => {
+        navigate(from, { replace: true });
+      }, 300);
+    } catch (err) {
+      setErrorMsg('Quick demo authentication error.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

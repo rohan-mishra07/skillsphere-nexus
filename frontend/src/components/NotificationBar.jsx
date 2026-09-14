@@ -76,18 +76,24 @@ export const NotificationBar = ({ isOpen, onClose, notifications: propsNotificat
 
   if (!isOpen) return null;
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = (notifications || []).filter(n => !n.read).length;
 
   const toggleRead = (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: !n.read } : n));
+    if (typeof setNotifications === 'function') {
+      setNotifications(prev => (prev || []).map(n => n.id === id ? { ...n, read: !n.read } : n));
+    }
   };
 
   const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    if (typeof setNotifications === 'function') {
+      setNotifications(prev => (prev || []).map(n => ({ ...n, read: true })));
+    }
   };
 
   const clearAll = () => {
-    setNotifications([]);
+    if (typeof setNotifications === 'function') {
+      setNotifications([]);
+    }
   };
 
   const filtered = filter === 'UNREAD' ? notifications.filter(n => !n.read) : notifications;

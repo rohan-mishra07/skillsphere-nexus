@@ -22,9 +22,9 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
   const { activeInOffice, pulseType } = useWorkforce();
   const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [showNotificationBar, setShowNotificationBar] = useState(false);
-  const [notifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = (notifications || []).filter(n => !n.read).length;
 
   const roleLabels = {
     ROLE_ADMIN: { label: 'Admin', color: 'bg-rose-500/20 text-rose-300 border-rose-500/30' },
