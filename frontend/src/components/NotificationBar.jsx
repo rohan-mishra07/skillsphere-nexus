@@ -68,8 +68,10 @@ export const INITIAL_NOTIFICATIONS = [
   }
 ];
 
-export const NotificationBar = ({ isOpen, onClose }) => {
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+export const NotificationBar = ({ isOpen, onClose, notifications: propsNotifications, setNotifications: propsSetNotifications }) => {
+  const [localNotifications, setLocalNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const notifications = propsNotifications !== undefined ? propsNotifications : localNotifications;
+  const setNotifications = propsSetNotifications || setLocalNotifications;
   const [filter, setFilter] = useState('ALL'); // 'ALL' | 'UNREAD'
 
   if (!isOpen) return null;

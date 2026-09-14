@@ -29,7 +29,7 @@ export const Login = () => {
   const [designation, setDesignation] = useState('Software Engineer');
   const [role, setRole] = useState('ROLE_EMPLOYEE');
   const [email, setEmail] = useState('employee@skillsphere.com');
-  const [password, setPassword] = useState('rohan1234');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -51,6 +51,11 @@ export const Login = () => {
     const enteredName = fullName.trim();
     if (!enteredName) {
       setErrorMsg('Please enter your full name.');
+      return;
+    }
+
+    if (!password.trim()) {
+      setErrorMsg('Please enter your password.');
       return;
     }
 
@@ -84,16 +89,16 @@ export const Login = () => {
     }
   };
 
-  const handleDemoSelect = (demoEmail, demoPass, demoName, demoPosition, demoRole) => {
+  const handleDemoSelect = (demoEmail, demoName, demoPosition, demoRole) => {
     setEmail(demoEmail);
-    setPassword(demoPass);
+    setPassword('');
     if (!fullName.trim()) {
       setFullName(demoName);
     }
     setDesignation(demoPosition);
     setRole(demoRole);
     setErrorMsg('');
-    setSuccessMsg(`Pre-filled role ${demoPosition}. Click 'Sign In' or enter your name above.`);
+    setSuccessMsg(`Pre-filled role ${demoPosition}. Enter your password to continue.`);
   };
 
   return (
@@ -241,6 +246,7 @@ export const Login = () => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete="current-password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -293,13 +299,13 @@ export const Login = () => {
               <span className="font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
                 <Sparkles className="w-3 h-3 text-purple-400" /> Quick-Access Evaluator Demos:
               </span>
-              <span className="text-[10px] text-slate-500 font-mono">1-Click Auto-Fill</span>
+              <span className="text-[10px] text-slate-500 font-mono">1-Click Role Select</span>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
-                onClick={() => handleDemoSelect('admin@skillsphere.com', 'admin123', 'Sarah Jenkins', 'Platform Director', 'ROLE_ADMIN')}
+                onClick={() => handleDemoSelect('admin@skillsphere.com', 'Sarah Jenkins', 'Platform Director', 'ROLE_ADMIN')}
                 className="p-2 bg-slate-950 hover:bg-slate-800 border border-rose-500/30 hover:border-rose-400 text-rose-300 rounded-xl text-[11px] font-bold transition-all text-center flex flex-col items-center gap-1 shadow-sm"
               >
                 <ShieldAlert className="w-4 h-4 text-rose-400" />
@@ -308,7 +314,7 @@ export const Login = () => {
 
               <button
                 type="button"
-                onClick={() => handleDemoSelect('hr@skillsphere.com', 'hr123456', 'Priya Sharma', 'HR Manager', 'ROLE_HR')}
+                onClick={() => handleDemoSelect('hr@skillsphere.com', 'Priya Sharma', 'HR Manager', 'ROLE_HR')}
                 className="p-2 bg-slate-950 hover:bg-slate-800 border border-purple-500/30 hover:border-purple-400 text-purple-300 rounded-xl text-[11px] font-bold transition-all text-center flex flex-col items-center gap-1 shadow-sm"
               >
                 <Users className="w-4 h-4 text-purple-400" />
@@ -317,7 +323,7 @@ export const Login = () => {
 
               <button
                 type="button"
-                onClick={() => handleDemoSelect('employee@skillsphere.com', 'rohan1234', 'Rohan Mishra', 'Software Engineer', 'ROLE_EMPLOYEE')}
+                onClick={() => handleDemoSelect('employee@skillsphere.com', 'Alex Chen', 'Software Engineer', 'ROLE_EMPLOYEE')}
                 className="p-2 bg-slate-950 hover:bg-slate-800 border border-indigo-500/30 hover:border-indigo-400 text-indigo-300 rounded-xl text-[11px] font-bold transition-all text-center flex flex-col items-center gap-1 shadow-sm"
               >
                 <GraduationCap className="w-4 h-4 text-indigo-400" />

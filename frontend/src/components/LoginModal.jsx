@@ -21,12 +21,12 @@ import {
 export const LoginModal = ({ isOpen, onClose }) => {
   const { user, login, register, logout, switchRole, MOCK_USERS } = useAuth();
   const [activeTab, setActiveTab] = useState('login'); // 'login' | 'quick' | 'register'
-  const [email, setEmail] = useState('rohan.mishra@skillsphere.com');
-  const [password, setPassword] = useState('rohan1234');
+  const [email, setEmail] = useState('employee@skillsphere.com');
+  const [password, setPassword] = useState('');
   const [registerForm, setRegisterForm] = useState({
-    fullName: 'Rohan Mishra',
-    email: 'rohan.mishra@skillsphere.com',
-    password: 'rohan1234',
+    fullName: '',
+    email: 'employee@skillsphere.com',
+    password: '',
     role: 'ROLE_EMPLOYEE',
     department: 'Software Engineering',
     designation: 'Developer'
@@ -78,10 +78,10 @@ export const LoginModal = ({ isOpen, onClose }) => {
     }, 800);
   };
 
-  const fillCredentials = (eMail, pass) => {
+  const fillCredentials = (eMail) => {
     setEmail(eMail);
-    setPassword(pass);
-    setMessage({ type: 'success', text: `Credentials pre-filled for ${eMail}` });
+    setPassword('');
+    setMessage({ type: 'success', text: `Work email pre-filled for ${eMail}. Enter your password to continue.` });
   };
 
   return (
@@ -174,6 +174,7 @@ export const LoginModal = ({ isOpen, onClose }) => {
               <input
                 type="password"
                 required
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
@@ -183,28 +184,28 @@ export const LoginModal = ({ isOpen, onClose }) => {
 
             {/* Pre-seeded credentials helper pills */}
             <div className="space-y-1.5 pt-1">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Fill Credentials:</span>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Quick Fill Work Email:</span>
               <div className="flex flex-wrap gap-1.5">
                 <button
                   type="button"
-                  onClick={() => fillCredentials('rohan.mishra@skillsphere.com', 'rohan1234')}
+                  onClick={() => fillCredentials('employee@skillsphere.com')}
                   className="px-2.5 py-1 bg-slate-950 hover:bg-slate-800 border border-cyan-500/30 text-cyan-300 rounded-lg text-[10px] font-mono font-bold"
                 >
-                  Rohan Mishra (Developer)
+                  Employee Account
                 </button>
                 <button
                   type="button"
-                  onClick={() => fillCredentials('hr@skillsphere.com', 'hr123456')}
+                  onClick={() => fillCredentials('hr@skillsphere.com')}
                   className="px-2.5 py-1 bg-slate-950 hover:bg-slate-800 border border-purple-500/30 text-purple-300 rounded-lg text-[10px] font-mono font-bold"
                 >
-                  Marcus Vance (HR)
+                  HR Account
                 </button>
                 <button
                   type="button"
-                  onClick={() => fillCredentials('admin@skillsphere.com', 'admin123')}
+                  onClick={() => fillCredentials('admin@skillsphere.com')}
                   className="px-2.5 py-1 bg-slate-950 hover:bg-slate-800 border border-rose-500/30 text-rose-300 rounded-lg text-[10px] font-mono font-bold"
                 >
-                  Sarah Jenkins (Admin)
+                  Admin Account
                 </button>
               </div>
             </div>

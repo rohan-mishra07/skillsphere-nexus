@@ -20,7 +20,7 @@ export const MobileBottomNav = () => {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 px-1 py-2 flex items-center justify-around shadow-2xl">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 pointer-events-auto bg-slate-900/95 backdrop-blur-lg border-t border-slate-800 px-1 py-2 grid grid-cols-6 items-center justify-items-center shadow-2xl">
       {tabs.map((tab) => {
         const Icon = tab.icon;
         return (
@@ -28,7 +28,7 @@ export const MobileBottomNav = () => {
             key={tab.path}
             to={tab.path}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center min-w-[48px] min-h-[44px] px-1 py-1 rounded-xl text-[9px] font-bold transition-all ${
+              `flex flex-col items-center justify-center w-full min-h-[44px] px-1 py-1 rounded-xl text-[9px] font-bold transition-all ${
                 isActive
                   ? 'text-cyan-400 bg-cyan-950/40 border border-cyan-500/30'
                   : 'text-slate-400 hover:text-slate-200'

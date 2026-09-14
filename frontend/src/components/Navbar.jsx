@@ -172,6 +172,8 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
           <NotificationBar
             isOpen={showNotificationBar}
             onClose={() => setShowNotificationBar(false)}
+            notifications={notifications}
+            setNotifications={setNotifications}
           />
         </div>
 
