@@ -9,13 +9,73 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useFeedback } from '../context/FeedbackContext';
 
+export const DEFAULT_COURSES = [
+  { 
+    id: 1, 
+    title: 'Enterprise Java Spring Boot 4 & Security', 
+    description: 'Master modern Spring Boot 4 RESTful APIs, Spring Security 6 with JWT tokens, Spring Data JPA, and Microservices Architecture.', 
+    category: 'Backend Engineering', 
+    type: 'Online Course', 
+    level: 'Advanced', 
+    duration: '12 Hours', 
+    rating: 4.9, 
+    enrolledCount: 1240, 
+    trainerName: 'Prof. David Sterling' 
+  },
+  { 
+    id: 2, 
+    title: 'React 18 & Modern Tailwind CSS Enterprise UI', 
+    description: 'Build high-performance web applications using React hooks, dynamic routing, state management, and custom glassmorphism design systems.', 
+    category: 'Frontend Web Development', 
+    type: 'Workshop', 
+    level: 'Intermediate', 
+    duration: '10 Hours', 
+    rating: 4.85, 
+    enrolledCount: 980, 
+    trainerName: 'Prof. David Sterling' 
+  },
+  { 
+    id: 3, 
+    title: 'AWS Certified Solutions Architect & Cloud Native Strategy', 
+    description: 'Designing fault-tolerant, highly available enterprise microservices on AWS Cloud infrastructure.', 
+    category: 'Cloud & DevOps', 
+    type: 'Bootcamp', 
+    level: 'Executive', 
+    duration: '15 Hours', 
+    rating: 4.95, 
+    enrolledCount: 1450, 
+    trainerName: 'Elena Rostova' 
+  },
+  { 
+    id: 4, 
+    title: 'AI-Driven Workforce Analytics & HR Strategy', 
+    description: 'Leverage predictive AI models, skill gap matrixes, and performance KPIs to optimize enterprise talent development.', 
+    category: 'Management & Leadership', 
+    type: 'Webinar', 
+    level: 'Executive', 
+    duration: '6 Hours', 
+    rating: 4.90, 
+    enrolledCount: 620, 
+    trainerName: 'Elena Rostova' 
+  }
+];
+
 export const LmsCatalog = () => {
   const { user } = useAuth();
   const { triggerAutoFeedback } = useFeedback();
   const [activeTab, setActiveTab] = useState('catalog'); // catalog | enrollments | paths | completion | assessments | certificates
 
-  // Courses & Filters State
-  const [courses, setCourses] = useState([]);
+  // 1. State Hydration from localStorage with DEFAULT_COURSES fallback
+  const [courses, setCourses] = useState(() => {
+    try {
+      const saved = localStorage.getItem('nexus_courses');
+      return saved ? JSON.parse(saved) : DEFAULT_COURSES;
+    } catch (err) {
+      console.warn("Failed loading courses from localStorage", err);
+      return DEFAULT_COURSES;
+    }
+  });
+
   const [filterCategory, setFilterCategory] = useState('ALL');
   const [filterType, setFilterType] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
@@ -58,15 +118,29 @@ export const LmsCatalog = () => {
   }, []);
 
   const fetchCourses = async () => {
+    const saved = localStorage.getItem('nexus_courses');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setCourses(parsed);
+          return;
+        }
+      } catch (e) {}
+    }
     try {
-      const res = await api.get('/lms/courses');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1000);
+      const res = await api.get('/lms/courses', { signal: controller.signal });
+      clearTimeout(timeoutId);
       if (Array.isArray(res.data) && res.data.length > 0) {
         setCourses(res.data);
+        localStorage.setItem('nexus_courses', JSON.stringify(res.data));
       } else {
-        setCourses(getDefaultCourses());
+        setCourses(DEFAULT_COURSES);
       }
     } catch (err) {
-      setCourses(getDefaultCourses());
+      setCourses(DEFAULT_COURSES);
     }
   };
 
@@ -85,57 +159,6 @@ export const LmsCatalog = () => {
       setIsLoadingEnrollments(false);
     }
   };
-
-  const getDefaultCourses = () => [
-    { 
-      id: 1, 
-      title: 'Enterprise Java Spring Boot 4 & Security', 
-      description: 'Master modern Spring Boot 4 RESTful APIs, Spring Security 6 with JWT tokens, Spring Data JPA, and Microservices Architecture.', 
-      category: 'Backend Engineering', 
-      type: 'Online Course', 
-      level: 'Advanced', 
-      duration: '12 Hours', 
-      rating: 4.9, 
-      enrolledCount: 1240, 
-      trainerName: 'Prof. David Sterling' 
-    },
-    { 
-      id: 2, 
-      title: 'React 18 & Modern Tailwind CSS Enterprise UI', 
-      description: 'Build high-performance web applications using React hooks, dynamic routing, state management, and custom glassmorphism design systems.', 
-      category: 'Frontend Web Development', 
-      type: 'Workshop', 
-      level: 'Intermediate', 
-      duration: '10 Hours', 
-      rating: 4.85, 
-      enrolledCount: 980, 
-      trainerName: 'Prof. David Sterling' 
-    },
-    { 
-      id: 3, 
-      title: 'AWS Certified Solutions Architect & Cloud Native Strategy', 
-      description: 'Designing fault-tolerant, highly available enterprise microservices on AWS Cloud infrastructure.', 
-      category: 'Cloud & DevOps', 
-      type: 'Bootcamp', 
-      level: 'Executive', 
-      duration: '15 Hours', 
-      rating: 4.95, 
-      enrolledCount: 1450, 
-      trainerName: 'Elena Rostova' 
-    },
-    { 
-      id: 4, 
-      title: 'AI-Driven Workforce Analytics & HR Strategy', 
-      description: 'Leverage predictive AI models, skill gap matrixes, and performance KPIs to optimize enterprise talent development.', 
-      category: 'Management & Leadership', 
-      type: 'Webinar', 
-      level: 'Executive', 
-      duration: '6 Hours', 
-      rating: 4.90, 
-      enrolledCount: 620, 
-      trainerName: 'Elena Rostova' 
-    }
-  ];
 
   const getDefaultEnrollments = () => [
     {
@@ -173,17 +196,36 @@ export const LmsCatalog = () => {
     }
   ];
 
+  // 2. Create Course Handler assigning unique ID, 5.0 rating, 0 enrolled count & active timestamp
   const handleCreateCourseSubmit = async (e) => {
     e.preventDefault();
+    const createdCourse = {
+      ...newCourse,
+      id: `course-${Date.now()}`,
+      rating: 5.0,
+      enrolledCount: 0,
+      createdAt: new Date().toISOString()
+    };
+
     try {
-      const res = await api.post('/lms/courses', newCourse);
-      setCourses([res.data, ...courses]);
-      showToast(`Course "${newCourse.title}" created successfully!`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1000);
+      const res = await api.post('/lms/courses', createdCourse, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      if (res?.data) {
+        Object.assign(createdCourse, res.data);
+      }
     } catch (err) {
-      const created = { ...newCourse, id: Date.now(), rating: 5.0, enrolledCount: 1 };
-      setCourses([created, ...courses]);
-      showToast(`Course "${newCourse.title}" added to catalog!`);
+      console.warn("Backend unavailable; saving course locally into localStorage.", err);
     }
+
+    setCourses(prevCourses => {
+      const updated = [createdCourse, ...(prevCourses || [])];
+      localStorage.setItem('nexus_courses', JSON.stringify(updated));
+      return updated;
+    });
+
+    showToast(`Course "${createdCourse.title}" created & persisted successfully!`);
     setIsCreateModalOpen(false);
     setNewCourse({
       title: '',
@@ -194,6 +236,13 @@ export const LmsCatalog = () => {
       trainerName: user?.fullName || 'Prof. David Sterling',
       type: 'Online Course'
     });
+  };
+
+  // 3. Reset Fallback Handler
+  const handleResetCatalog = () => {
+    setCourses(DEFAULT_COURSES);
+    localStorage.setItem('nexus_courses', JSON.stringify(DEFAULT_COURSES));
+    showToast('Course catalog reset to enterprise default courses.');
   };
 
   const handleEnrollUser = async (courseId, title) => {
@@ -291,14 +340,21 @@ export const LmsCatalog = () => {
             {user?.role !== 'ROLE_EMPLOYEE' && (
               <button
                 onClick={() => setIsCreateModalOpen(true)}
-                className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/25 flex items-center gap-2 transition-all transform hover:-translate-y-0.5"
+                className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/25 flex items-center gap-2 transition-all transform hover:-translate-y-0.5 cursor-pointer"
               >
                 <Plus className="w-4 h-4" /> Create Course
               </button>
             )}
             <button
+              onClick={handleResetCatalog}
+              className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-2 transition-all cursor-pointer"
+              title="Reset course catalog to enterprise defaults"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-amber-400" /> Reset Catalog
+            </button>
+            <button
               onClick={fetchEnrollments}
-              className="px-3.5 py-2.5 glass-panel text-slate-300 hover:text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-all"
+              className="px-3.5 py-2.5 glass-panel text-slate-300 hover:text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isLoadingEnrollments ? 'animate-spin' : ''}`} /> Sync Data
             </button>

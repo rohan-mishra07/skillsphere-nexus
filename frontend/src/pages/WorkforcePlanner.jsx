@@ -139,8 +139,8 @@ export const WorkforcePlanner = () => {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-300">
+            <div className="w-full overflow-x-auto rounded-xl border border-slate-800 bg-slate-900/50 shadow-inner scrollbar-thin scrollbar-thumb-slate-700">
+              <table className="w-full text-left text-xs text-slate-300 min-w-[640px] border-collapse">
                 <thead className="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
                   <tr>
                     <th className="p-3">Employee</th>
@@ -156,7 +156,7 @@ export const WorkforcePlanner = () => {
                       idx === 0 && pulseType === 'JOIN' ? 'bg-emerald-500/10 font-bold' :
                       idx === 0 && pulseType === 'LEFT' ? 'bg-amber-500/10 font-bold' : 'hover:bg-slate-900/40'
                     }`}>
-                      <td className="p-3 font-semibold text-white flex items-center gap-2">
+                      <td className="p-3 font-semibold text-white flex items-center gap-2 whitespace-nowrap">
                         <div className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] ${
                           a.action === 'JOIN' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
                         }`}>
@@ -169,10 +169,10 @@ export const WorkforcePlanner = () => {
                           </span>
                         )}
                       </td>
-                      <td className="p-3 text-slate-400">{a.department || 'Engineering'}</td>
-                      <td className="p-3 text-slate-400">{a.shift || 'Morning Shift'}</td>
-                      <td className="p-3 font-mono text-slate-200">{a.time}</td>
-                      <td className="p-3">
+                      <td className="p-3 text-slate-400 whitespace-nowrap">{a.department || 'Engineering'}</td>
+                      <td className="p-3 text-slate-400 whitespace-nowrap">{a.shift || 'Morning Shift'}</td>
+                      <td className="p-3 font-mono text-slate-200 whitespace-nowrap">{a.time}</td>
+                      <td className="p-3 whitespace-nowrap">
                         <span className={`px-2.5 py-0.5 rounded text-[10px] font-bold inline-flex items-center gap-1 ${
                           a.action === 'JOIN' 
                             ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' 
