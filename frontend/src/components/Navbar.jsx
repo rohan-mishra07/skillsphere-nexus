@@ -6,36 +6,19 @@ import { ServiceStatusPills } from './ServiceStatusPills';
 import { 
   Bell, 
   Search, 
-  UserCheck, 
-  ChevronDown, 
   LogOut,
-  ShieldAlert, 
-  Briefcase, 
-  GraduationCap, 
-  Users,
   Bot,
   Activity
 } from 'lucide-react';
 
 export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
-  const { user, switchRole, logout, roleToast } = useAuth();
+  const { user, logout } = useAuth();
   const { activeInOffice, pulseType } = useWorkforce();
-  const [showRoleDropdown, setShowRoleDropdown] = useState(false);
   const [showNotificationBar, setShowNotificationBar] = useState(false);
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
 
   const unreadCount = (notifications || []).filter(n => !n.read).length;
 
-  const roleLabels = {
-    ROLE_ADMIN: { label: 'Admin', color: 'bg-rose-500/20 text-rose-300 border-rose-500/30' },
-    ROLE_HR: { label: 'HR Executive', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' },
-    ROLE_MANAGER: { label: 'Team Lead / Manager', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' },
-    ROLE_EMPLOYEE: { label: 'Employee', color: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' },
-    ROLE_STUDENT: { label: 'Student Learner', color: 'bg-pink-500/20 text-pink-300 border-pink-500/30' },
-    ROLE_TRAINER: { label: 'Instructor / Trainer', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' },
-  };
-
-  const activeRoleBadge = roleLabels[user?.role] || roleLabels.ROLE_ADMIN;
   const userName = user?.name || user?.fullName || 'Learner';
   const userPosition = user?.position || user?.designation || 'Software Engineer';
   const avatarInitials = user?.initials || (userName ? getInitials(userName) : 'U');
@@ -43,14 +26,6 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
   return (
     <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 md:px-6 py-2.5 flex items-center justify-between gap-4 shadow-md relative">
       
-      {/* Toast Notification Banner */}
-      {roleToast && (
-        <div className="absolute top-16 right-6 z-50 px-4 py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl shadow-2xl border border-indigo-400/50 flex items-center gap-2 animate-bounce">
-          <UserCheck className="w-4 h-4 text-cyan-300" />
-          <span>{roleToast}</span>
-        </div>
-      )}
-
       {/* Left: Mobile Brand & Global Search */}
       <div className="flex items-center gap-3 flex-1 max-w-md">
         <div className="md:hidden flex items-center gap-2 shrink-0">
@@ -85,70 +60,22 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
         </div>
       </div>
 
-      {/* Right Utility Bar: Status Pills, Role Switcher, AI, Bell, User Profile, Logout */}
+      {/* Right Utility Bar: Status Pills, Read-Only Role Badge, AI, Bell, User Profile, Logout */}
       <div className="flex items-center gap-3 shrink-0">
         <ServiceStatusPills />
 
-        {/* Dynamic RBAC Simulator & Role Switcher */}
-        <div className="relative hidden sm:block">
-          <button
-            onClick={() => setShowRoleDropdown(!showRoleDropdown)}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold tracking-wide transition-all ${activeRoleBadge.color}`}
-          >
-            <UserCheck className="w-3.5 h-3.5" />
-            <span>Role: {activeRoleBadge.label}</span>
-            <ChevronDown className="w-3.5 h-3.5 opacity-70" />
-          </button>
-
-          {showRoleDropdown && (
-            <div className="absolute right-0 mt-2 w-72 glass-panel rounded-2xl shadow-2xl p-2.5 z-50 border border-slate-700 bg-slate-900/95 backdrop-blur-xl">
-              <div className="px-3 py-2 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800 mb-1">
-                Active Session RBAC Switcher
-              </div>
-              
-              {/* Option 1: Admin */}
-              <button 
-                onClick={() => { switchRole('ROLE_ADMIN'); setShowRoleDropdown(false); }} 
-                className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-rose-950/40 flex items-start gap-2.5 text-rose-300 transition-colors border border-transparent hover:border-rose-500/30 group mb-1"
-              >
-                <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-xs font-bold text-rose-200">Admin</div>
-                  <div className="text-[10px] text-slate-400 leading-tight">Full platform governance</div>
-                </div>
-              </button>
-
-              {/* Option 2: HR Executive */}
-              <button 
-                onClick={() => { switchRole('ROLE_HR'); setShowRoleDropdown(false); }} 
-                className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-purple-950/40 flex items-start gap-2.5 text-purple-300 transition-colors border border-transparent hover:border-purple-500/30 group mb-1"
-              >
-                <Users className="w-4 h-4 text-purple-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-xs font-bold text-purple-200">HR Executive</div>
-                  <div className="text-[10px] text-slate-400 leading-tight">Workforce planning & promotion approvals</div>
-                </div>
-              </button>
-
-              {/* Option 3: Employee */}
-              <button 
-                onClick={() => { switchRole('ROLE_EMPLOYEE'); setShowRoleDropdown(false); }} 
-                className="w-full text-left px-3 py-2.5 rounded-xl hover:bg-indigo-950/40 flex items-start gap-2.5 text-indigo-300 transition-colors border border-transparent hover:border-indigo-500/30 group"
-              >
-                <GraduationCap className="w-4 h-4 text-indigo-400 shrink-0 mt-0.5" />
-                <div>
-                  <div className="text-xs font-bold text-indigo-200">Employee</div>
-                  <div className="text-[10px] text-slate-400 leading-tight">Personal upskilling & career mobility</div>
-                </div>
-              </button>
-            </div>
-          )}
+        {/* Clean Static Read-Only Active Role Badge */}
+        <div className="hidden md:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700/60 text-xs font-semibold text-slate-300">
+          <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
+          {user?.role === 'ROLE_ADMIN' ? 'Platform Administrator' : 
+           user?.role === 'ROLE_HR' ? 'HR Executive' : 
+           user?.role === 'ROLE_MANAGER' ? 'Team Lead / Manager' : 'Employee Portal'}
         </div>
 
         {/* AI Assistant Button */}
         <button
           onClick={onOpenAiModal}
-          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-md hover:scale-105 transition-transform"
+          className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-md hover:scale-105 transition-transform cursor-pointer"
         >
           <Bot className="w-4 h-4" />
           <span>AI Assistant</span>
@@ -158,7 +85,7 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
         <div className="relative">
           <button
             onClick={() => setShowNotificationBar(!showNotificationBar)}
-            className="relative p-2 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+            className="relative p-2 rounded-xl bg-slate-800/80 text-slate-300 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
             title="Notification Bar"
           >
             <Bell className="w-4 h-4" />
@@ -201,3 +128,5 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
     </header>
   );
 };
+
+export default Navbar;
