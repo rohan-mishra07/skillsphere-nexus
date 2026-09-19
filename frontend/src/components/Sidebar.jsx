@@ -2,36 +2,43 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { 
-  LayoutDashboard, 
+  Home,
   BookOpen, 
-  Target, 
-  Clock, 
-  TrendingUp, 
-  UserPlus, 
-  BarChart3, 
-  Sparkles,
-  Layers,
   Award,
-  MessageSquare,
-  ShieldCheck
+  Briefcase,
+  Users,
+  ClipboardList,
+  BarChart3,
+  Sparkles,
+  Layers
 } from 'lucide-react';
 
 export const Sidebar = ({ onOpenAiCopilot }) => {
   const { user } = useAuth();
 
-  const navItems = [
-    { label: 'Overview Dashboard', icon: LayoutDashboard, path: '/', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
-    { label: 'Employee Skills', icon: Target, path: '/skills', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_STUDENT'] },
-    { label: 'Learning LMS', icon: BookOpen, path: '/courses', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
-    { label: 'Certifications', icon: Award, path: '/certifications', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
-    { label: 'Career Analytics', icon: Sparkles, path: '/career-analytics', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
-    { label: 'Internal Jobs', icon: UserPlus, path: '/recruitment', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
-    { label: 'Workforce & Shifts', icon: Clock, path: '/workforce', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
-    { label: 'Performance & KPIs', icon: TrendingUp, path: '/performance', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE'] },
-    { label: 'User Feedback', icon: MessageSquare, path: '/feedback', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER', 'ROLE_EMPLOYEE', 'ROLE_TRAINER', 'ROLE_STUDENT'] },
-    { label: 'Audit & Governance', icon: ShieldCheck, path: '/audit-logs', roles: ['ROLE_ADMIN', 'ROLE_HR'] },
-    { label: 'Reports & Analytics', icon: BarChart3, path: '/analytics', roles: ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER'] },
+  // Determine if active session has management privileges
+  const isManagement = ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER'].includes(user?.role);
+
+  // Strict Segregated Menu Structures:
+  
+  // Non-Management (Employee Portal) Links (ONLY 4 Links)
+  const employeeNavItems = [
+    { label: 'My Growth Hub', icon: Home, path: '/dashboard', iconEmoji: '🏠' },
+    { label: 'Course Catalog', icon: BookOpen, path: '/learning', iconEmoji: '📚' },
+    { label: 'My Certifications', icon: Award, path: '/certifications', iconEmoji: '🏆' },
+    { label: 'Internal Job Openings', icon: Briefcase, path: '/jobs', iconEmoji: '💼' },
   ];
+
+  // Management Portal Administrative Links (5 Administrative Links)
+  const managementNavItems = [
+    { label: 'Management Intelligence', icon: Home, path: '/dashboard', iconEmoji: '🏠' },
+    { label: 'User Directory & RBAC', icon: Users, path: '/admin/users', iconEmoji: '👥' },
+    { label: 'Workforce & Leave Approvals', icon: ClipboardList, path: '/workforce', iconEmoji: '📋' },
+    { label: 'Course Management', icon: BookOpen, path: '/learning', iconEmoji: '📚' },
+    { label: 'Reports & Analytics', icon: BarChart3, path: '/reports', iconEmoji: '📊' },
+  ];
+
+  const currentNav = isManagement ? managementNavItems : employeeNavItems;
 
   return (
     <aside className="hidden md:flex w-64 bg-slate-900 border-r border-slate-800 flex-col justify-between h-screen sticky top-0 shrink-0">
@@ -45,34 +52,35 @@ export const Sidebar = ({ onOpenAiCopilot }) => {
             <h1 className="font-extrabold text-lg text-white tracking-tight flex items-center gap-1 font-outfit">
               SkillSphere <span className="text-cyan-400">Nexus</span>
             </h1>
-            <p className="text-[10px] text-slate-400 font-medium tracking-wide">Enterprise Talent Platform</p>
+            <p className="text-[10px] text-slate-400 font-medium tracking-wide">
+              {isManagement ? 'Management Portal' : 'Employee Workspace'}
+            </p>
           </div>
         </div>
 
-        {/* Navigation Menu */}
+        {/* Dynamic Navigation Menu */}
         <nav className="p-3 space-y-1 mt-2">
-          {navItems
-            .filter(item => item.roles.includes(user?.role || 'ROLE_EMPLOYEE'))
-            .map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  end={item.path === '/'}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                      isActive
-                        ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30 scale-[1.02]'
-                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
-                    }`
-                  }
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </NavLink>
-              );
-            })}
+          {currentNav.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                end={item.path === '/dashboard' || item.path === '/'}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    isActive
+                      ? 'bg-gradient-to-r from-purple-600 via-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/25 border border-purple-400/30 scale-[1.02]'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/60'
+                  }`
+                }
+              >
+                <span className="text-sm shrink-0">{item.iconEmoji}</span>
+                <Icon className="w-4 h-4 shrink-0" />
+                <span className="truncate">{item.label}</span>
+              </NavLink>
+            );
+          })}
         </nav>
       </div>
 
@@ -95,10 +103,12 @@ export const Sidebar = ({ onOpenAiCopilot }) => {
             </span>
           </div>
           <p className="text-[11px] text-slate-400 leading-relaxed group-hover:text-slate-300 transition-colors">
-            Real-time skill gap analysis & verified certificates connected. <strong className="text-purple-300">Click to launch Copilot →</strong>
+            Real-time skill gap analysis &amp; verified certificates connected. <strong className="text-purple-300">Click to launch →</strong>
           </p>
         </div>
       </div>
     </aside>
   );
 };
+
+export default Sidebar;

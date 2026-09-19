@@ -22,6 +22,7 @@ import { WorkforcePlanner } from './pages/WorkforcePlanner';
 import { PerformanceHub } from './pages/PerformanceHub';
 import { RecruitmentBoard } from './pages/RecruitmentBoard';
 import { ReportsAnalytics } from './pages/ReportsAnalytics';
+import { AdminDashboard } from './pages/AdminDashboard';
 import { Milestone2Dashboard } from './pages/Milestone2Dashboard';
 import { CertificationManagement } from './pages/CertificationManagement';
 import { CareerAnalytics } from './pages/CareerAnalytics';
@@ -92,8 +93,10 @@ export function AppContent() {
           <Route path="/performance" element={<PerformanceHub />} />
           <Route path="/recruitment" element={<RecruitmentBoard />} />
           <Route path="/jobs" element={<RecruitmentBoard />} />
+          <Route path="/admin/users" element={<AdminDashboard />} />
           <Route path="/audit-logs" element={<AuditLogsView />} />
           <Route path="/audit" element={<AuditLogsView />} />
+          <Route path="/reports" element={<ReportsAnalytics />} />
           <Route path="/analytics" element={<ReportsAnalytics />} />
           <Route path="/feedback" element={<FeedbackView />} />
           <Route path="*" element={<Navigate to="/" replace />} />
