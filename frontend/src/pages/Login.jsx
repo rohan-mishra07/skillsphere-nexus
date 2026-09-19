@@ -41,7 +41,7 @@ export const Login = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Cleanup effect on component mount to clear prefilled credentials
+  // Mount effect to guarantee input fields initialize to empty strings
   useEffect(() => {
     setFullName('');
     setEmail('');
@@ -62,20 +62,24 @@ export const Login = () => {
     if (type === 'EMPLOYEE') {
       setRole('ROLE_EMPLOYEE');
       setDesignation('Software Engineer');
-      setFullName('Alex Chen');
-      setEmail('employee@skillsphere.com');
     } else {
-      handleSelectSubRole('ROLE_ADMIN', 'Platform Director', 'Sarah Jenkins', 'admin@skillsphere.com');
+      setRole('ROLE_ADMIN');
+      setDesignation('Platform Director');
     }
   };
 
   // Sub-Role Selection Handler for Management Portal
-  const handleSelectSubRole = (subRoleCode, defaultDesignation, defaultName, defaultEmail) => {
+  const handleSelectSubRole = (subRoleCode, defaultDesignation) => {
     setErrorMsg('');
     setRole(subRoleCode);
     setDesignation(defaultDesignation);
-    setFullName(defaultName);
-    setEmail(defaultEmail);
+  };
+
+  // Quick Demo Autofill Helper
+  const handleAutofillDemo = (demoName, demoEmail) => {
+    setFullName(demoName);
+    setEmail(demoEmail);
+    setPassword('password123');
   };
 
   // Core Session Creator & Storage Persistence
@@ -141,8 +145,8 @@ export const Login = () => {
   };
 
   const handleInstantSignIn = () => {
-    const demoName = fullName || (role === 'ROLE_ADMIN' ? 'Sarah Jenkins' : role === 'ROLE_HR' ? 'Priya Sharma' : role === 'ROLE_MANAGER' ? 'Elena Rostova' : 'Alex Chen');
-    const demoEmail = email || (role === 'ROLE_ADMIN' ? 'admin@skillsphere.com' : role === 'ROLE_HR' ? 'hr@skillsphere.com' : role === 'ROLE_MANAGER' ? 'manager@skillsphere.com' : 'employee@skillsphere.com');
+    const demoName = fullName.trim() || (role === 'ROLE_ADMIN' ? 'Sarah Jenkins' : role === 'ROLE_HR' ? 'Priya Sharma' : role === 'ROLE_MANAGER' ? 'Elena Rostova' : 'Alex Chen');
+    const demoEmail = email.trim() || (role === 'ROLE_ADMIN' ? 'admin@skillsphere.com' : role === 'ROLE_HR' ? 'hr@skillsphere.com' : role === 'ROLE_MANAGER' ? 'manager@skillsphere.com' : 'employee@skillsphere.com');
 
     executeAuthentication({
       name: demoName,
@@ -224,7 +228,7 @@ export const Login = () => {
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
-                  onClick={() => handleSelectSubRole('ROLE_ADMIN', 'Platform Director', 'Sarah Jenkins', 'admin@skillsphere.com')}
+                  onClick={() => handleSelectSubRole('ROLE_ADMIN', 'Platform Director')}
                   className={`p-2.5 rounded-xl border text-[11px] font-bold transition-all text-center flex flex-col items-center justify-center gap-1 cursor-pointer ${
                     role === 'ROLE_ADMIN'
                       ? 'bg-rose-500/20 text-rose-200 border-rose-500/60 shadow-md shadow-rose-500/20'
@@ -237,7 +241,7 @@ export const Login = () => {
 
                 <button
                   type="button"
-                  onClick={() => handleSelectSubRole('ROLE_HR', 'HR Talent Partner', 'Priya Sharma', 'hr@skillsphere.com')}
+                  onClick={() => handleSelectSubRole('ROLE_HR', 'HR Talent Partner')}
                   className={`p-2.5 rounded-xl border text-[11px] font-bold transition-all text-center flex flex-col items-center justify-center gap-1 cursor-pointer ${
                     role === 'ROLE_HR'
                       ? 'bg-purple-500/20 text-purple-200 border-purple-500/60 shadow-md shadow-purple-500/20'
@@ -250,7 +254,7 @@ export const Login = () => {
 
                 <button
                   type="button"
-                  onClick={() => handleSelectSubRole('ROLE_MANAGER', 'Engineering Lead', 'Elena Rostova', 'manager@skillsphere.com')}
+                  onClick={() => handleSelectSubRole('ROLE_MANAGER', 'Engineering Lead')}
                   className={`p-2.5 rounded-xl border text-[11px] font-bold transition-all text-center flex flex-col items-center justify-center gap-1 cursor-pointer ${
                     role === 'ROLE_MANAGER'
                       ? 'bg-amber-500/20 text-amber-200 border-amber-500/60 shadow-md shadow-amber-500/20'
@@ -283,10 +287,10 @@ export const Login = () => {
           <div className="p-3.5 rounded-2xl bg-slate-950/90 border border-slate-800 flex items-center justify-between gap-3">
             <div>
               <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                {portalType === 'MANAGEMENT' ? 'Prepared Management Role' : 'Employee Demo Credential'}
+                {portalType === 'MANAGEMENT' ? 'Prepared Management Role' : 'Employee Portal Access'}
               </div>
               <div className="text-xs font-bold text-white flex items-center gap-1.5 mt-0.5">
-                <UserCheck className="w-3.5 h-3.5 text-cyan-400" /> {fullName || (role === 'ROLE_ADMIN' ? 'Sarah Jenkins' : role === 'ROLE_HR' ? 'Priya Sharma' : role === 'ROLE_MANAGER' ? 'Elena Rostova' : 'Alex Chen')} ({designation})
+                <UserCheck className="w-3.5 h-3.5 text-cyan-400" /> {fullName || (role === 'ROLE_ADMIN' ? 'Platform Director' : role === 'ROLE_HR' ? 'HR Executive' : role === 'ROLE_MANAGER' ? 'Engineering Lead' : 'Software Engineer')}
               </div>
             </div>
             <button
@@ -300,11 +304,20 @@ export const Login = () => {
             </button>
           </div>
 
-          {/* Sign In Form */}
+          {/* Sign In Form with Explicit Security & Credential Hygiene */}
           <form onSubmit={handleFormSignIn} className="space-y-4 pt-2 border-t border-slate-800/80">
             <div>
-              <label className="text-xs font-semibold text-slate-300 flex items-center gap-1.5 mb-1.5">
-                <Users className="w-3.5 h-3.5 text-indigo-400" /> Full Name
+              <label className="text-xs font-semibold text-slate-300 flex items-center justify-between mb-1.5">
+                <span className="flex items-center gap-1.5">
+                  <Users className="w-3.5 h-3.5 text-indigo-400" /> Full Name
+                </span>
+                <button 
+                  type="button" 
+                  onClick={() => handleAutofillDemo(role === 'ROLE_ADMIN' ? 'Sarah Jenkins' : role === 'ROLE_HR' ? 'Priya Sharma' : role === 'ROLE_MANAGER' ? 'Elena Rostova' : 'Alex Chen', role === 'ROLE_ADMIN' ? 'admin@skillsphere.com' : role === 'ROLE_HR' ? 'hr@skillsphere.com' : role === 'ROLE_MANAGER' ? 'manager@skillsphere.com' : 'employee@skillsphere.com')}
+                  className="text-[10px] text-indigo-400 hover:text-indigo-300 font-bold"
+                >
+                  Autofill Demo User
+                </button>
               </label>
               <input
                 type="text"

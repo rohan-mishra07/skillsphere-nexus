@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import api from '../api/axios';
 import { useWorkforce } from './WorkforceContext';
 
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
         return null;
       }
     }
-    return null; // Unauthenticated by default if no stored session
+    return null;
   });
 
   const isAuthenticated = !!user;
@@ -148,69 +148,22 @@ export const AuthProvider = ({ children }) => {
     return studentUser;
   };
 
-  const [roleToast, setRoleToast] = useState('');
-
-  // Synchronize stored active role from localStorage
-  const savedActiveRole = localStorage.getItem('skillsphere_active_role');
-  if (user && savedActiveRole && user.role !== savedActiveRole) {
-    user.role = savedActiveRole;
-  }
-
-  const switchRole = (newRole, customName) => {
-    const roleMapNames = {
-      ROLE_ADMIN: 'Admin',
-      ROLE_HR: 'HR Executive',
-      ROLE_EMPLOYEE: 'Employee',
-      ROLE_MANAGER: 'Manager',
-      ROLE_STUDENT: 'Student'
-    };
-
-    const target = MOCK_USERS.find(u => u.role === newRole) || MOCK_USERS[0];
-    const token = 'mock-jwt-token-role-' + Date.now();
-    const currentName = user?.name || user?.fullName;
-    const finalName = (customName || currentName || 'Learner').trim();
-    const initials = getInitials(finalName);
-
-    const updatedUser = { 
-      ...user,
-      role: newRole,
-      fullName: finalName,
-      name: finalName,
-      initials: initials,
-      token: token 
-    };
-
-    setUser(updatedUser);
-    localStorage.setItem('nexus_user', JSON.stringify(updatedUser));
-    localStorage.setItem('auth_user', JSON.stringify(updatedUser));
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('skillsphere_user', JSON.stringify(updatedUser));
-    localStorage.setItem('token', token);
-    localStorage.setItem('role', newRole);
-    localStorage.setItem('skillsphere_active_role', newRole);
-
-    if (workforce?.recordLogin) workforce.recordLogin(updatedUser);
-
-    // Trigger Toast Notification
-    const roleDisplayName = roleMapNames[newRole] || 'Role';
-    setRoleToast(`Active session switched to ${roleDisplayName}`);
-    setTimeout(() => {
-      setRoleToast('');
-    }, 4000);
-  };
-
+  // Comprehensive Logout & Session Sanitization
   const logout = () => {
     if (user && workforce?.recordLogout) workforce.recordLogout(user);
-    setUser(null);
+    
+    // Completely wipe all storage items and active session state
     localStorage.removeItem('nexus_user');
+    localStorage.removeItem('user');
     localStorage.removeItem('auth_user');
     localStorage.removeItem('auth_token');
     localStorage.removeItem('skillsphere_user');
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
     localStorage.removeItem('role');
     localStorage.removeItem('skillsphere_active_role');
     sessionStorage.clear();
+    
+    setUser(null);
 
     const keycloak = window.keycloak;
     if (keycloak && keycloak.authenticated) {
@@ -221,7 +174,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, register, loginAsStudent, logout, switchRole, roleToast, setRoleToast, MOCK_USERS, getInitials }}>
+    <AuthContext.Provider value={{ user, isAuthenticated, login, register, loginAsStudent, logout, MOCK_USERS, getInitials }}>
       {children}
     </AuthContext.Provider>
   );
