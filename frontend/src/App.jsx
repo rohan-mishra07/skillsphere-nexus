@@ -23,7 +23,7 @@ import { PerformanceHub } from './pages/PerformanceHub';
 import { RecruitmentBoard } from './pages/RecruitmentBoard';
 import { ReportsAnalytics } from './pages/ReportsAnalytics';
 import { AdminDashboard } from './pages/AdminDashboard';
-import { Milestone2Dashboard } from './pages/Milestone2Dashboard';
+import Milestone2Dashboard, { Milestone2Dashboard as Milestone2DashboardNamed } from './pages/Milestone2Dashboard';
 import { CertificationManagement } from './pages/CertificationManagement';
 import { CareerAnalytics } from './pages/CareerAnalytics';
 import { MobileBottomNav } from './components/MobileBottomNav';

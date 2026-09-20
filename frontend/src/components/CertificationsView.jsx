@@ -65,7 +65,7 @@ export function CertificationsView() {
       id: `cert-${Date.now()}`,
       empId: formData.empId || 'EMP-' + Math.floor(100000 + Math.random() * 900000),
       employeeName: user?.fullName || user?.name || 'Authorized Professional',
-      certificationName: formData.certificationName || 'Cloud & System Security',
+      certificationName: formData.certificationName || 'Cloud Security Specialist',
       issuingOrganization: formData.issuingOrganization || 'SkillSphere Enterprise',
       credentialId: formData.credentialId || `SKSP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
       issueDate: formData.issueDate || new Date().toISOString().split('T')[0],

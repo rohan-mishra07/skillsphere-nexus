@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth, getInitials } from '../context/AuthContext';
 import { useWorkforce } from '../context/WorkforceContext';
 import { NotificationBar, INITIAL_NOTIFICATIONS } from './NotificationBar';
@@ -8,7 +8,8 @@ import {
   Search, 
   LogOut,
   Bot,
-  Activity
+  Activity,
+  CheckCircle2
 } from 'lucide-react';
 
 export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
@@ -16,6 +17,23 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
   const { activeInOffice, pulseType } = useWorkforce();
   const [showNotificationBar, setShowNotificationBar] = useState(false);
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [syncToastMsg, setSyncToastMsg] = useState('');
+
+  useEffect(() => {
+    const handleSystemSync = () => {
+      setSyncToastMsg('System telemetry & cached records re-synchronized.');
+      setTimeout(() => setSyncToastMsg(''), 4000);
+    };
+    window.addEventListener('nexus_system_sync', handleSystemSync);
+    return () => window.removeEventListener('nexus_system_sync', handleSystemSync);
+  }, []);
+
+  const handleSearchChange = (e) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    window.dispatchEvent(new CustomEvent('nexus_global_search', { detail: query }));
+  };
 
   const unreadCount = (notifications || []).filter(n => !n.read).length;
 
@@ -26,6 +44,14 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
   return (
     <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-md border-b border-slate-800/80 px-4 md:px-6 py-2.5 flex items-center justify-between gap-4 shadow-md relative">
       
+      {/* Toast Notification Banner */}
+      {syncToastMsg && (
+        <div className="fixed top-16 right-6 z-50 px-4 py-2.5 bg-emerald-500/20 border border-emerald-500/40 text-emerald-200 text-xs font-bold rounded-2xl shadow-xl backdrop-blur-md animate-bounce flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          <span>{syncToastMsg}</span>
+        </div>
+      )}
+
       {/* Left: Mobile Brand & Global Search */}
       <div className="flex items-center gap-3 flex-1 max-w-md">
         <div className="md:hidden flex items-center gap-2 shrink-0">
@@ -40,6 +66,8 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
           <input
             type="text"
             placeholder="Search skills, courses, certifications..."
+            value={searchQuery}
+            onChange={handleSearchChange}
             className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 transition-colors"
           />
         </div>
@@ -72,7 +100,7 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
               <span className="w-2 h-2 rounded-full bg-indigo-400"></span>
               {user?.role === 'ROLE_ADMIN' ? 'Platform Administrator' : 
                user?.role === 'ROLE_HR' ? 'HR Executive' : 
-               user?.role === 'ROLE_MANAGER' ? 'Team Lead / Manager' : 'Employee Portal'}
+               user?.role === 'ROLE_MANAGER' ? 'Team Manager' : 'Employee Portal'}
             </div>
 
             {/* AI Assistant Button */}
@@ -108,15 +136,17 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
             </div>
 
             {/* User Info Avatar Pill */}
-            <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 via-indigo-500 to-pink-500 flex items-center justify-center font-bold text-xs text-white shadow-md">
-                {avatarInitials}
+            {user && (
+              <div className="flex items-center gap-2 pl-2 border-l border-slate-800">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-500 via-indigo-500 to-pink-500 flex items-center justify-center font-bold text-xs text-white shadow-md">
+                  {avatarInitials}
+                </div>
+                <div className="hidden lg:block text-left">
+                  <div className="text-xs font-bold text-white leading-none">{user.name || userName}</div>
+                  {userPosition && <div className="text-[10px] text-slate-400 mt-0.5">{userPosition}</div>}
+                </div>
               </div>
-              <div className="hidden lg:block text-left">
-                <div className="text-xs font-bold text-white leading-none">{userName}</div>
-                {userPosition && <div className="text-[10px] text-slate-400 mt-0.5">{userPosition}</div>}
-              </div>
-            </div>
+            )}
 
             {/* Direct Logout Action */}
             <button

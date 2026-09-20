@@ -26,14 +26,14 @@ export const Sidebar = ({ onOpenAiCopilot }) => {
     { label: 'My Growth Hub', icon: Home, path: '/dashboard', iconEmoji: '🏠' },
     { label: 'Course Catalog', icon: BookOpen, path: '/learning', iconEmoji: '📚' },
     { label: 'My Certifications', icon: Award, path: '/certifications', iconEmoji: '🏆' },
-    { label: 'Internal Job Openings', icon: Briefcase, path: '/jobs', iconEmoji: '💼' },
+    { label: 'Internal Jobs', icon: Briefcase, path: '/jobs', iconEmoji: '💼' },
   ];
 
   // Management Portal Administrative Links (5 Administrative Links)
   const managementNavItems = [
     { label: 'Management Intelligence', icon: Home, path: '/dashboard', iconEmoji: '🏠' },
     { label: 'User Directory & RBAC', icon: Users, path: '/admin/users', iconEmoji: '👥' },
-    { label: 'Workforce & Leave Approvals', icon: ClipboardList, path: '/workforce', iconEmoji: '📋' },
+    { label: 'Workforce & Leaves', icon: ClipboardList, path: '/workforce', iconEmoji: '📋' },
     { label: 'Course Management', icon: BookOpen, path: '/learning', iconEmoji: '📚' },
     { label: 'Reports & Analytics', icon: BarChart3, path: '/reports', iconEmoji: '📊' },
   ];

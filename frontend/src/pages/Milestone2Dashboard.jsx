@@ -453,3 +453,6 @@ export function Milestone2Dashboard() {
     </div>
   );
 }
+
+export default Milestone2Dashboard;
+

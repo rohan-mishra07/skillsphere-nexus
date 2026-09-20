@@ -201,7 +201,7 @@ export const Login = () => {
                 }`}
               >
                 <span>👨‍💼</span>
-                <span>Employee Portal</span>
+                <span>Employee Workspace</span>
               </button>
 
               <button
@@ -214,7 +214,7 @@ export const Login = () => {
                 }`}
               >
                 <span>💼</span>
-                <span>Management Portal</span>
+                <span>Management Console</span>
               </button>
             </div>
           </div>

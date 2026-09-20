@@ -152,7 +152,6 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     if (user && workforce?.recordLogout) workforce.recordLogout(user);
     
-    // Completely wipe all storage items and active session state
     localStorage.removeItem('nexus_user');
     localStorage.removeItem('user');
     localStorage.removeItem('auth_user');
@@ -168,8 +167,6 @@ export const AuthProvider = ({ children }) => {
     const keycloak = window.keycloak;
     if (keycloak && keycloak.authenticated) {
       keycloak.logout({ redirectUri: window.location.origin + '/login' });
-    } else {
-      window.location.href = '/login';
     }
   };
 

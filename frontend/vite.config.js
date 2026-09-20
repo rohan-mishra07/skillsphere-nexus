@@ -12,6 +12,11 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
         secure: false,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, _res) => {
+            // Silence spammy proxy connection refused logs in terminal when backend is down
+          });
+        }
       }
     }
   }

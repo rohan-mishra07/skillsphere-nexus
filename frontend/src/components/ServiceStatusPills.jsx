@@ -63,10 +63,13 @@ export function ServiceStatusPills() {
 
         {/* Manual Refresh Trigger */}
         <button 
-          onClick={checkBackendHealth} 
+          onClick={() => {
+            checkBackendHealth();
+            window.dispatchEvent(new CustomEvent('nexus_system_sync'));
+          }} 
           disabled={checking}
-          className="p-1 text-slate-400 hover:text-white transition-colors disabled:opacity-50 min-h-[32px] min-w-[32px] flex items-center justify-center"
-          title="Ping Unified Backend Host (Port 8080)"
+          className="p-1 text-slate-400 hover:text-white transition-colors disabled:opacity-50 min-h-[32px] min-w-[32px] flex items-center justify-center cursor-pointer"
+          title="Ping Unified Backend Host & Synchronize System Telemetry"
         >
           <RefreshCw className={`w-3 h-3 ${checking ? 'animate-spin text-indigo-400' : ''}`} />
         </button>
