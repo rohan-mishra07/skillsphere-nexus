@@ -3,6 +3,7 @@ import { useAuth, getInitials } from '../context/AuthContext';
 import { useWorkforce } from '../context/WorkforceContext';
 import { NotificationBar, INITIAL_NOTIFICATIONS } from './NotificationBar';
 import { ServiceStatusPills } from './ServiceStatusPills';
+import AiAssistantModal from '../components/AiAssistantModal';
 import { 
   Bell, 
   Search, 
@@ -19,6 +20,7 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [searchQuery, setSearchQuery] = useState('');
   const [syncToastMsg, setSyncToastMsg] = useState('');
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   useEffect(() => {
     const handleSystemSync = () => {
@@ -105,11 +107,15 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
 
             {/* AI Assistant Button */}
             <button
-              onClick={onOpenAiModal}
+              type="button"
+              onClick={() => {
+                setIsAiModalOpen(true);
+                if (typeof onOpenAiModal === 'function') onOpenAiModal();
+              }}
               className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-md hover:scale-105 transition-transform cursor-pointer"
             >
               <Bot className="w-4 h-4" />
-              <span>AI Assistant</span>
+              <span>✨ AI Assistant</span>
             </button>
 
             {/* Notification Bell */}
@@ -160,6 +166,11 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
           </>
         ) : null}
       </div>
+
+      <AiAssistantModal 
+        isOpen={isAiModalOpen} 
+        onClose={() => setIsAiModalOpen(false)} 
+      />
     </header>
   );
 };

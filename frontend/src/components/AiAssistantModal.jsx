@@ -53,18 +53,35 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
       setMessages(prev => [...prev, { sender: 'ai', text: aiReply, actionLink, actionLabel }]);
     } catch (err) {
       // Offline fallback answer logic
+      const lower = userMsg.toLowerCase();
       let reply = "Based on your current skill matrix and enterprise goals, I recommend completing 'Enterprise Java Spring Boot 3 & Security' to boost your technical proficiency index.";
       let link = "/courses";
       let label = "Explore LMS Courses";
 
-      if (userMsg.toLowerCase().includes('leave')) {
-        reply = "You can log leave requests in the Workforce module. Standard processing time is 24 hours with automatic manager notification.";
+      if (lower.includes('leave') || lower.includes('vacation') || lower.includes('pto') || lower.includes('time off')) {
+        reply = "You can log leave requests in the Workforce module. Standard processing time is 24 hours with automatic manager notification and 14 days annual balance available.";
         link = "/workforce";
         label = "Apply for Leave";
-      } else if (userMsg.toLowerCase().includes('career')) {
+      } else if (lower.includes('career') || lower.includes('roadmap') || lower.includes('promotion') || lower.includes('path')) {
         reply = "Based on your current skill matrix (Java: 88%, React: 65%), your recommended career progression is Senior Full-Stack Architect within 12 months.";
         link = "/skills";
-        label = "View Skill Matrix";
+        label = "View Skill Matrix & Roadmap";
+      } else if (lower.includes('certif') || lower.includes('verify') || lower.includes('badge') || lower.includes('degree')) {
+        reply = "You can generate, view, and publicly verify digital certificates for all completed courses under the Certification Management module.";
+        link = "/certifications";
+        label = "View Certifications";
+      } else if (lower.includes('skill') || lower.includes('gap') || lower.includes('matrix') || lower.includes('competency')) {
+        reply = "Your primary identified skill gap is Advanced Cloud Architecture (AWS/Azure). Closing this gap will elevate your role readiness to 94%.";
+        link = "/skills";
+        label = "Analyze Skill Gaps";
+      } else if (lower.includes('course') || lower.includes('catalog') || lower.includes('recommend') || lower.includes('learn')) {
+        reply = "Top recommended courses for your profile: 1) Enterprise Java Spring Boot 3 & Security, 2) Modern React & TypeScript Architecture, 3) AWS Certified Solutions Architect.";
+        link = "/courses";
+        label = "Browse LMS Catalog";
+      } else if (lower.includes('okr') || lower.includes('goal') || lower.includes('performance')) {
+        reply = "Your Q3 OKR goal progress is currently at 78%. Your overall performance rating is 4.6/5. Key focus area: Lead 1 cross-team architecture workshop.";
+        link = "/performance";
+        label = "View Performance Hub";
       }
 
       setMessages(prev => [...prev, { sender: 'ai', text: reply, actionLink: link, actionLabel: label }]);
@@ -209,3 +226,5 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
     </div>
   );
 };
+
+export default AiAssistantModal;
