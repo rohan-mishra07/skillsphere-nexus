@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
-  X, Send, Bot, User, Sparkles, Loader2, ArrowRight, Trash2, HelpCircle 
+  X, Send, Bot, User, Sparkles, Loader2, ArrowRight, Trash2, HelpCircle, ChevronDown, Minus 
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
@@ -49,12 +49,13 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
+  const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([
     {
       sender: 'ai',
       text: 'Hello! I am your SkillSphere AI Copilot & Interactive Platform Concierge. How can I assist you with course recommendations, active job openings, certification rules, or closing your skill gap today?',
       actions: [
-        { label: 'Browse LMS Catalog', link: '/courses' },
+        { label: '📖 Open in Course Portal', link: '/courses' },
         { label: 'View Skill Matrix', link: '/skills' }
       ]
     }
@@ -66,7 +67,7 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
     scrollToBottom();
   }, [messages, loading]);
 
-  // Prevent body scroll when modal is open on mobile & add Escape key listener
+  // Keyboard Escape listener & body scroll management
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === 'Escape') {
@@ -74,7 +75,7 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
       }
     };
 
-    if (isOpen) {
+    if (isOpen && !isMinimized) {
       document.body.style.overflow = 'hidden';
       window.addEventListener('keydown', handleKeyDown);
     } else {
@@ -84,13 +85,37 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, isMinimized, onClose]);
+
+  // Reset minimized state on modal open
+  useEffect(() => {
+    if (isOpen) {
+      setIsMinimized(false);
+    }
+  }, [isOpen]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   if (!isOpen) return null;
+
+  // Render minimized compact pill when user clicks minimize button
+  if (isMinimized) {
+    return (
+      <div 
+        onClick={() => setIsMinimized(false)}
+        className="fixed bottom-5 right-5 z-[60] flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 border border-indigo-500/50 text-white font-bold text-xs rounded-full shadow-2xl cursor-pointer hover:scale-105 transition-all animate-bounce"
+        title="Expand AI Assistant"
+      >
+        <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0">
+          <Bot className="w-4 h-4" />
+        </div>
+        <span>SkillSphere AI Copilot</span>
+        <Sparkles className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+      </div>
+    );
+  }
 
   // Rule-based Mock Engine & Intent Recognizer
   const parseRuleBasedIntent = (userPrompt) => {
@@ -117,7 +142,6 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
     ) {
       const catalog = getCoursesFromCatalog();
       
-      // Check if user specified a specific topic (e.g., "find courses on java", "react courses")
       let matchedCourses = catalog;
       const topicMatch = lower.match(/(?:find|search|show|get|recommend)?\s*courses?\s*(?:on|for|about|in)?\s*(.*)/i);
       const extractedTopic = topicMatch && topicMatch[1] ? topicMatch[1].trim() : '';
@@ -152,7 +176,7 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
           actions: catalog.slice(0, 2).map(c => ({
             label: `Open Course #${c.id}: ${c.title}`,
             link: `/courses/${c.id}`
-          })).concat([{ label: 'Browse Full Catalog', link: '/courses' }])
+          })).concat([{ label: '📖 Open in Course Portal', link: '/courses' }])
         };
       }
     }
@@ -170,7 +194,7 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
       return {
         text: `💼 **Active Internal Job Openings & Career Portal**\n\nBased on your current profile and skill competencies, here are top matching requisition openings:\n\n1. **Senior Cloud Backend Architect** (Engineering - Remote) — *94% Skill Match*\n2. **Full-Stack UI Specialist (React/TS)** (Frontend - Hybrid) — *88% Skill Match*\n3. **DevOps & Cloud Automation Lead** (Operations - On-site) — *85% Skill Match*\n\nYou can submit 1-click internal applications and view pipeline stages directly in the Career Portal.`,
         actions: [
-          { label: 'Explore Career Portal', link: '/career' },
+          { label: 'Explore Career Portal', link: '/jobs' },
           { label: 'View ATS & Recruitment Board', link: '/recruitment' }
         ]
       };
@@ -246,8 +270,8 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
     return {
       text: `I've analyzed your request across enterprise modules. Here are direct deep-links to help you navigate:`,
       actions: [
-        { label: 'Browse LMS Courses', link: '/courses' },
-        { label: 'View Career Portal', link: '/career' },
+        { label: '📖 Open in Course Portal', link: '/courses' },
+        { label: 'View Career Portal', link: '/jobs' },
         { label: 'My Skill Radar', link: '/skills' }
       ]
     };
@@ -262,7 +286,6 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
-      // Attempt backend AI endpoint if configured
       const res = await api.post('/analytics/ai-chatbot', { prompt: userMsg });
       
       let aiReply = res.data.response;
@@ -274,7 +297,6 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
         actions = [{ label: res.data.actionLabel || 'Navigate', link: res.data.actionLink }];
       }
 
-      // If backend returns generic text or no actions, enrich with mock engine
       if (!aiReply || actions.length === 0) {
         const enriched = parseRuleBasedIntent(userMsg);
         aiReply = aiReply || enriched.text;
@@ -283,7 +305,6 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
 
       setMessages(prev => [...prev, { sender: 'ai', text: aiReply, actions }]);
     } catch (err) {
-      // Robust Context-Aware Fallback Mock Engine
       const fallbackResponse = parseRuleBasedIntent(userMsg);
       setMessages(prev => [
         ...prev, 
@@ -342,19 +363,19 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
       >
         {/* Mobile drag bar */}
         <div
-          className="absolute top-2.5 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-slate-600 sm:hidden"
+          className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-slate-600 sm:hidden z-[60]"
           aria-hidden="true"
         />
 
-        {/* ── Header ───────────────────────────────────────────────────────── */}
-        <div className="px-4 pt-7 pb-3 sm:pt-4 sm:pb-3 bg-gradient-to-r from-slate-900 via-indigo-950/70 to-slate-900 border-b border-slate-800 flex items-center justify-between shrink-0">
+        {/* ── Sticky Header ─────────────────────────────────────────────────── */}
+        <div className="sticky top-0 z-50 flex items-center justify-between p-3.5 bg-slate-900/95 border-b border-slate-700/60 backdrop-blur-md shrink-0 pt-6 sm:pt-3.5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 shrink-0">
               <Bot className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-bold text-sm text-white flex items-center gap-2 font-outfit">
-                SkillSphere Platform Concierge
+                SkillSphere AI Copilot
                 <span className="hidden sm:inline-flex items-center gap-1 text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 font-medium">
                   <Sparkles className="w-2.5 h-2.5 text-indigo-400" /> AI Guide
                 </span>
@@ -363,19 +384,31 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setMessages([])}
-              className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+              className="hidden sm:flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
               title="Clear conversation"
               aria-label="Clear chat history"
             >
               <Trash2 className="w-4 h-4" />
             </button>
 
+            {/* Minimize Toggle Button */}
+            <button
+              onClick={() => setIsMinimized(true)}
+              className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-indigo-600 transition-colors cursor-pointer"
+              title="Minimize Assistant"
+              aria-label="Minimize AI Assistant"
+            >
+              <ChevronDown className="w-5 h-5" />
+            </button>
+
+            {/* High Contrast Close Button */}
             <button
               onClick={onClose}
-              className="flex items-center justify-center w-11 h-11 rounded-xl text-slate-300 hover:text-white hover:bg-slate-700 active:bg-slate-600 transition-colors"
+              className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-rose-600 transition-colors cursor-pointer"
+              title="Close (Esc)"
               aria-label="Close AI Assistant"
             >
               <X className="w-5 h-5" />
@@ -383,8 +416,8 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* ── Message Thread ───────────────────────────────────────────────── */}
-        <div className="flex-1 min-h-0 p-4 overflow-y-auto space-y-4 bg-slate-950/50 overscroll-contain">
+        {/* ── Message Thread (max-h-[60vh] overflow-y-auto pr-2) ──────────── */}
+        <div className="flex-1 min-h-0 p-4 overflow-y-auto max-h-[60vh] pr-2 space-y-4 bg-slate-950/50 overscroll-contain">
           {messages.map((m, idx) => (
             <div key={idx} className={`flex gap-3 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               {m.sender === 'ai' && (
@@ -411,7 +444,7 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
                       <button
                         key={aIdx}
                         onClick={() => handleActionClick(act.link)}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-[11px] font-bold rounded-xl border border-indigo-500/40 hover:border-indigo-500 transition-all shadow-sm active:scale-95"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-[11px] font-bold rounded-xl border border-indigo-500/40 hover:border-indigo-500 transition-all shadow-sm active:scale-95 cursor-pointer"
                       >
                         <span>{act.label}</span>
                         <ArrowRight className="w-3 h-3" />
@@ -448,7 +481,7 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
             <button
               key={idx}
               onClick={() => sendMessage(chip.query)}
-              className="px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-indigo-600/40 hover:border-indigo-400 text-slate-200 hover:text-white text-[11px] font-medium border border-slate-700/80 shrink-0 transition-all shadow-sm active:scale-95"
+              className="px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-indigo-600/40 hover:border-indigo-400 text-slate-200 hover:text-white text-[11px] font-medium border border-slate-700/80 shrink-0 transition-all shadow-sm active:scale-95 cursor-pointer"
             >
               {chip.label}
             </button>
@@ -475,7 +508,7 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-md shadow-indigo-600/20 disabled:opacity-50 shrink-0"
+            className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-md shadow-indigo-600/20 disabled:opacity-50 shrink-0 cursor-pointer"
             aria-label="Send message"
           >
             <Send className="w-3.5 h-3.5" />
