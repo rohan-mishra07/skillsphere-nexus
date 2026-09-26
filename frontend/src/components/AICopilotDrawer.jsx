@@ -159,8 +159,11 @@ export const AICopilotDrawer = ({ isOpen, onClose }) => {
         aria-hidden="true"
       />
 
-      {/* Slide-out Drawer Panel */}
-      <aside className="fixed inset-y-0 right-0 z-50 w-full max-w-md bg-[#0f172a] border-l border-purple-500/30 shadow-2xl shadow-purple-950/80 flex flex-col animate-slide-in-right">
+      {/* Slide-out Drawer Panel
+       * Mobile  (<sm): full width, slides in from right
+       * ≥ sm:         capped at max-w-md
+       */}
+      <aside className="fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-[#0f172a] border-l border-purple-500/30 shadow-2xl shadow-purple-950/80 flex flex-col animate-slide-in-right">
         <style>{`
           @keyframes slideInRight {
             from {
@@ -197,19 +200,22 @@ export const AICopilotDrawer = ({ isOpen, onClose }) => {
           </div>
 
           <div className="flex items-center gap-1">
+            {/* Clear — min 44×44px touch target */}
             <button
               onClick={handleClearChat}
-              className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-xl transition-colors"
+              className="flex items-center justify-center w-11 h-11 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-xl transition-colors"
               title="Clear chat history"
+              aria-label="Clear chat history"
             >
               <Trash2 className="w-4 h-4" />
             </button>
+            {/* Close — min 44×44px touch target (WCAG 2.5.5) */}
             <button
               onClick={onClose}
-              className="p-2 text-slate-400 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-full border border-slate-800 transition-colors"
+              className="flex items-center justify-center w-11 h-11 text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 rounded-xl border border-slate-800 transition-colors"
               aria-label="Close AI Copilot drawer"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -233,8 +239,11 @@ export const AICopilotDrawer = ({ isOpen, onClose }) => {
           </div>
         </div>
 
-        {/* Chat History Messages Area */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-950/40">
+        {/* Chat History Messages Area
+         * flex-1 + min-h-0 lets the area grow and scroll.
+         * overscroll-contain stops iOS rubber-band from escaping the drawer.
+         */}
+        <div className="flex-1 min-h-0 p-4 overflow-y-auto space-y-4 bg-slate-950/40 overscroll-contain">
           {messages.map((msg) => (
             <div
               key={msg.id}
@@ -289,8 +298,14 @@ export const AICopilotDrawer = ({ isOpen, onClose }) => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Input Box Footer */}
-        <div className="p-4 bg-slate-900 border-t border-slate-800 shrink-0">
+        {/* Input Box Footer
+         * safe-area-inset-bottom ensures content is above iOS home bar.
+         * font-size 16px prevents iOS Safari from auto-zooming on focus.
+         */}
+        <div
+          className="p-4 bg-slate-900 border-t border-slate-800 shrink-0"
+          style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+        >
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -303,12 +318,17 @@ export const AICopilotDrawer = ({ isOpen, onClose }) => {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask Nexus Copilot anything..."
-              className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-2xl pl-4 pr-12 py-3 text-xs text-white placeholder-slate-500 outline-none transition-colors"
+              className="w-full bg-slate-950 border border-slate-800 focus:border-purple-500 rounded-2xl pl-4 pr-14 py-3 text-white placeholder-slate-500 outline-none transition-colors"
+              style={{ fontSize: '16px' }}
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck="false"
             />
+            {/* Send button — enlarged to 44×44px touch target */}
             <button
               type="submit"
               disabled={!input.trim() || loading}
-              className={`absolute right-2 p-2 rounded-xl transition-all ${
+              className={`absolute right-2 w-10 h-10 flex items-center justify-center rounded-xl transition-all ${
                 input.trim() && !loading
                   ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md shadow-purple-600/30 hover:scale-105 cursor-pointer'
                   : 'bg-slate-800 text-slate-600 cursor-not-allowed'

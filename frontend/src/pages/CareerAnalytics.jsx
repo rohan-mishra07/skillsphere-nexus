@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { useRoles } from '../hooks/useRoles';
 import { useFeedback } from '../context/FeedbackContext';
 import { 
   TrendingUp, 
@@ -169,8 +170,25 @@ export function CareerAnalytics() {
     }
   };
 
+  // ── Offline / demo toast state — type-aware ('success' | 'warn' | 'error') ─
+  const [toast, setToast] = useState({ msg: '', type: 'success' });
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: '', type: 'success' }), type === 'error' ? 6000 : 4000);
+  };
+
   const handleCreatePlan = async (e) => {
     e.preventDefault();
+
+    // ── Offline RBAC guard ───────────────────────────────────────────────
+    // Mirror of: @PreAuthorize("hasAnyRole('ADMIN','HR','MANAGER')")
+    const planAuthErr = assertCanCreateCareerPlan();
+    if (planAuthErr) {
+      showToast(planAuthErr, 'error');
+      setShowPlanModal(false);
+      return;
+    }
+
     try {
       await axios.post(`${API_BASE}/plans`, planForm);
       setShowPlanModal(false);
@@ -185,26 +203,87 @@ export function CareerAnalytics() {
         trainingPlan: ''
       });
       fetchData();
+      showToast('Career plan created successfully.', 'success');
     } catch (err) {
-      console.error('Error creating career plan:', err);
-      alert('Failed to create career plan. Ensure backend service on port 8080 is running.');
+      // Offline / backend unavailable — persist locally
+      console.warn('Backend unavailable; persisting career plan to nexus_career_plans.', err);
+      const localPlan = {
+        ...planForm,
+        planId: 'plan-' + Date.now(),
+        status: 'ACTIVE',
+        promotionEligible: false,
+        createdAt: new Date().toISOString(),
+      };
+      try {
+        const existing = JSON.parse(localStorage.getItem('nexus_career_plans') || '[]');
+        localStorage.setItem('nexus_career_plans', JSON.stringify([localPlan, ...existing]));
+      } catch (storageErr) {
+        console.warn('Could not persist plan to localStorage:', storageErr);
+      }
+      setPlans(prev => [localPlan, ...(Array.isArray(prev) ? prev : [])]);
+      setShowPlanModal(false);
+      setPlanForm({
+        empId: '11111111-1111-1111-1111-111111111111',
+        employeeName: '',
+        currentRole: '',
+        targetRole: roles[0]?.roleName || 'Senior Developer',
+        employeeSkills: '',
+        progress: 50,
+        mentor: '',
+        trainingPlan: ''
+      });
+      showToast('Career plan saved locally (backend offline).', 'warn');
     }
   };
 
   const handleCreateJob = async (e) => {
     e.preventDefault();
+
+    // ── Offline RBAC guard ───────────────────────────────────────────────
+    // Mirror of: @PreAuthorize("hasRole('ADMIN')")
+    // Even in offline/demo mode an Employee or Manager must NOT be able to
+    // inject a job into nexus_jobs or post to the backend.
+    const jobAuthErr = assertCanCreateJob();
+    if (jobAuthErr) {
+      showToast(jobAuthErr, 'error');
+      setShowJobModal(false);
+      return; // abort — do NOT touch localStorage or call the API
+    }
+
     try {
       await axios.post(`${API_BASE}/jobs`, jobForm);
       setShowJobModal(false);
       setJobForm({ title: '', department: '', requiredSkills: '', minimumExperience: 2 });
       fetchData();
+      showToast('Job opening posted successfully!', 'success');
     } catch (err) {
-      console.error('Error creating job:', err);
-      alert('Failed to create job posting.');
+      // Offline / backend unavailable — persist job locally
+      console.warn('Backend unavailable; persisting job to nexus_jobs in localStorage.', err);
+      const localJob = {
+        ...jobForm,
+        jobId: 'job-' + Date.now(),
+        status: 'OPEN',
+        postedBy: 'ROLE_ADMIN', // only admin reaches this branch
+        createdAt: new Date().toISOString(),
+      };
+      try {
+        const existing = JSON.parse(localStorage.getItem('nexus_jobs') || '[]');
+        localStorage.setItem('nexus_jobs', JSON.stringify([localJob, ...existing]));
+      } catch (storageErr) {
+        console.warn('Could not persist job to localStorage:', storageErr);
+      }
+      setJobs(prev => [localJob, ...(Array.isArray(prev) ? prev : [])]);
+      setShowJobModal(false);
+      setJobForm({ title: '', department: '', requiredSkills: '', minimumExperience: 2 });
+      showToast('Job saved locally (backend offline).', 'warn');
     }
   };
 
-  const isEmployee = user?.role === 'ROLE_EMPLOYEE';
+  // ── Role capability flags (single source of truth) ───────────────────────
+  const {
+    canCreateJob, canCreateCareerPlan, isAdmin, isEmployee,
+    assertCanCreateJob, assertCanCreateCareerPlan,
+  } = useRoles();
   const safePlans = Array.isArray(plans) ? plans : fallbackPlans;
   const safeJobs = Array.isArray(jobs) ? jobs : fallbackJobs;
   const safeRoles = Array.isArray(roles) ? roles : fallbackRoles;
@@ -214,6 +293,26 @@ export function CareerAnalytics() {
 
   return (
     <div className="space-y-6">
+      {/* RBAC / Action Toast — type-aware styling */}
+      {toast.msg && (() => {
+        const styles = {
+          success: 'bg-indigo-600 border-indigo-400/30 text-white',
+          warn:    'bg-amber-500/90 border-amber-400/40 text-slate-900',
+          error:   'bg-red-600/90 border-red-400/40 text-white',
+        };
+        const icons = {
+          success: <Sparkles className="w-5 h-5 flex-shrink-0" />,
+          warn:    <span className="text-base flex-shrink-0">⚠️</span>,
+          error:   <span className="text-base flex-shrink-0">🔒</span>,
+        };
+        return (
+          <div className={`fixed bottom-6 right-6 z-50 max-w-sm px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border animate-bounce ${styles[toast.type] ?? styles.success}`}>
+            {icons[toast.type]}
+            <span className="text-sm font-semibold">{toast.msg}</span>
+          </div>
+        );
+      })()}
+
       {/* Header Banner */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-900/80 p-6 rounded-2xl border border-slate-800 backdrop-blur-xl">
         <div>
@@ -232,24 +331,31 @@ export function CareerAnalytics() {
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Administrative Action Triggers (Hidden for Employee) */}
-          {!isEmployee && (
+          {/* ── ADMIN / HR / MANAGER only: New Career Plan ─────────────── */}
+          {canCreateCareerPlan && (
             <>
               <button
+                id="btn-new-career-plan"
                 onClick={() => setShowPlanModal(true)}
                 className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/30 transition-all flex items-center gap-2"
+                title="Create a new employee career plan"
               >
                 <Plus className="w-4 h-4" />
                 <span>New Career Plan</span>
               </button>
 
-              <button
-                onClick={() => setShowJobModal(true)}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Post Internal Job</span>
-              </button>
+              {/* ── ADMIN ONLY: Post Internal Job ─────────────────────── */}
+              {canCreateJob && (
+                <button
+                  id="btn-post-job"
+                  onClick={() => setShowJobModal(true)}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-purple-600/30 transition-all flex items-center gap-2"
+                  title="Post a new internal job opening (Admin only)"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Post Internal Job</span>
+                </button>
+              )}
             </>
           )}
 
@@ -458,31 +564,45 @@ export function CareerAnalytics() {
                   <p className="text-xs text-slate-400 mt-2"><strong className="text-slate-300">Required Skills:</strong> {job.requiredSkills}</p>
                 </div>
 
-                <button
-                  onClick={() => {
-                    if (!isApplied) {
-                      setAppliedJobs([...appliedJobs, job.jobId]);
-                      setApplyToast(`Application submitted for "${job.title}"!`);
-                      setTimeout(() => setApplyToast(''), 4000);
-                      if (triggerAutoFeedback) {
-                        triggerAutoFeedback('Career Roadmaps');
+                {/* Job card bottom action — role-aware ────────────────── */}
+                {isAdmin ? (
+                  /* Admin: Manage button (view/edit/close the posting) */
+                  <button
+                    id={`btn-manage-job-${job.jobId}`}
+                    onClick={() => setShowJobModal(true)}
+                    className="mt-6 w-full py-2.5 font-bold text-xs rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 bg-purple-600/80 hover:bg-purple-500 text-white shadow-purple-600/20"
+                    title="Manage this job posting (Admin only)"
+                  >
+                    <Briefcase className="w-4 h-4" /> Manage Posting
+                  </button>
+                ) : (
+                  /* All other roles: Apply Now button */
+                  <button
+                    id={`btn-apply-job-${job.jobId}`}
+                    onClick={() => {
+                      if (!isApplied) {
+                        setAppliedJobs([...appliedJobs, job.jobId]);
+                        setApplyToast(`Application submitted for "${job.title}"!`);
+                        setTimeout(() => setApplyToast(''), 4000);
+                        if (triggerAutoFeedback) {
+                          triggerAutoFeedback('Career Roadmaps');
+                        }
                       }
-                    }
-                  }}
-                  className={`mt-6 w-full py-2.5 font-bold text-xs rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 ${
-                    isApplied
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                      : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20'
-                  }`}
-                >
-                  {isApplied ? (
-                    <>
-                      <Check className="w-4 h-4" /> Application Submitted
-                    </>
-                  ) : (
-                    'Apply Now'
-                  )}
-                </button>
+                    }}
+                    className={`mt-6 w-full py-2.5 font-bold text-xs rounded-xl transition-all shadow-lg flex items-center justify-center gap-2 ${
+                      isApplied
+                        ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                        : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/20'
+                    }`}
+                    title={isApplied ? 'Application already submitted' : 'Apply for this position'}
+                  >
+                    {isApplied ? (
+                      <><Check className="w-4 h-4" /> Application Submitted</>
+                    ) : (
+                      'Apply Now'
+                    )}
+                  </button>
+                )}
               </div>
             );
           })}

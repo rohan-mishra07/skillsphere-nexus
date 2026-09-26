@@ -105,9 +105,10 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
                user?.role === 'ROLE_MANAGER' ? 'Team Manager' : 'Employee Portal'}
             </div>
 
-            {/* AI Assistant Button */}
+            {/* AI Assistant Button — desktop only (FAB handles mobile below) */}
             <button
               type="button"
+              id="btn-ai-assistant-navbar"
               onClick={() => {
                 setIsAiModalOpen(true);
                 if (typeof onOpenAiModal === 'function') onOpenAiModal();
@@ -167,10 +168,39 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
         ) : null}
       </div>
 
-      <AiAssistantModal 
-        isOpen={isAiModalOpen} 
-        onClose={() => setIsAiModalOpen(false)} 
+      <AiAssistantModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
       />
+
+      {/*
+       * Floating Action Button (FAB) — visible on ALL viewport sizes.
+       *
+       * Positioning:
+       *   - Mobile (<md): bottom-20 clears the MobileBottomNav (h ~64px + gap)
+       *   - Desktop (≥md): bottom-6 (no bottom nav present)
+       *   - Always right-5, z-50 (above page content, below modals at z-[60])
+       *
+       * Touch target: 52×52px — exceeds WCAG 2.5.5 minimum of 44×44px.
+       * The pulsing ring gives a subtle "live" signal on mobile.
+       */}
+      {user && (
+        <button
+          id="fab-ai-assistant"
+          type="button"
+          onClick={() => {
+            setIsAiModalOpen(true);
+            if (typeof onOpenAiModal === 'function') onOpenAiModal();
+          }}
+          className="md:hidden fixed bottom-20 right-5 z-50 w-[52px] h-[52px] flex items-center justify-center rounded-full bg-gradient-to-tr from-purple-600 via-indigo-600 to-cyan-500 text-white shadow-2xl shadow-purple-700/60 hover:scale-110 active:scale-95 transition-transform focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 relative overflow-visible"
+          aria-label="Open AI Assistant"
+          title="Open AI Assistant"
+        >
+          {/* Pulsing glow ring */}
+          <span className="absolute inset-0 rounded-full animate-ping bg-purple-500/30 pointer-events-none" aria-hidden="true" />
+          <Bot className="w-5 h-5 relative z-10" />
+        </button>
+      )}
     </header>
   );
 };

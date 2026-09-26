@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
@@ -22,12 +23,27 @@ public class JwtUtils {
     @Value("${skillsphere.app.jwtExpirationMs}")
     private int jwtExpirationMs;
 
+    /**
+     * Generates a signed JWT containing the user's email as the subject
+     * and their single role as a custom {@code "role"} claim.
+     *
+     * <p>Embedding the role claim here allows downstream microservices
+     * (learning-service, career-service) to reconstruct Spring Security
+     * authorities from the token alone — no shared user-DB lookup needed.</p>
+     */
     @SuppressWarnings("null")
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
+        // Extract the single granted authority (e.g. "ROLE_ADMIN") to embed in the token.
+        String role = userPrincipal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .findFirst()
+                .orElse("");
+
         return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
+                .setSubject(userPrincipal.getUsername())
+                .claim("role", role)              // ← custom claim read by microservice filters
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS256)

@@ -1,10 +1,9 @@
-package com.skillsphere.learningservice.config;
+package com.skillsphere.careerservice.config;
 
-import com.skillsphere.learningservice.security.JwtAuthFilter;
-import com.skillsphere.learningservice.security.JwtUtils;
+import com.skillsphere.careerservice.security.JwtAuthFilter;
+import com.skillsphere.careerservice.security.JwtUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,23 +18,23 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Spring Security configuration for the Learning Service (Milestone 2).
+ * Spring Security configuration for the Career Service (Milestone 4).
  *
- * <p>Key behaviours enforced here:
+ * <p>Design decisions:
  * <ul>
- *   <li>Stateless JWT authentication — no HTTP session is created.</li>
+ *   <li>Stateless — no HTTP session; every request must carry a valid JWT.</li>
  *   <li>{@code @EnableMethodSecurity(prePostEnabled = true)} activates
- *       {@code @PreAuthorize} evaluation on every controller method, giving
- *       fine-grained, per-endpoint role enforcement.</li>
- *   <li>H2 console and Actuator health remain publicly accessible for
- *       local development without a token.</li>
- *   <li>All {@code /api/learning/**} endpoints require authentication;
- *       individual role boundaries are declared on the controller methods.</li>
+ *       {@code @PreAuthorize} on controller methods, enabling fine-grained
+ *       role enforcement without cluttering the {@code HttpSecurity} DSL.</li>
+ *   <li>H2 console is open for local development convenience.</li>
+ *   <li>All {@code /api/career/**} endpoints require a valid token;
+ *       per-method role checks are declared directly on {@link
+ *       com.skillsphere.careerservice.controller.JobController}.</li>
  * </ul>
  * </p>
  */
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true)   // ← activates @PreAuthorize / @PostAuthorize
+@EnableMethodSecurity(prePostEnabled = true)   // ← required for @PreAuthorize to fire
 public class SecurityConfig {
 
     @Bean
@@ -59,9 +58,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // H2 console — dev only
                 .requestMatchers("/h2-console/**").permitAll()
-                // All learning API endpoints require a valid JWT;
-                // role boundaries are enforced via @PreAuthorize on the controllers.
-                .requestMatchers("/api/learning/**").authenticated()
+                // All career API endpoints require a valid JWT;
+                // per-role decisions are made by @PreAuthorize on the controller.
+                .requestMatchers("/api/career/**").authenticated()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthFilter(), UsernamePasswordAuthenticationFilter.class);
@@ -86,4 +85,3 @@ public class SecurityConfig {
         return source;
     }
 }
-

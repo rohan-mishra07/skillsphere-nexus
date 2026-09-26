@@ -50,6 +50,27 @@ public class CourseService {
         courseRepository.deleteById(courseId);
     }
 
+    /**
+     * Updates mutable fields of an existing course.
+     * Only non-null DTO fields are applied (patch semantics).
+     * Restricted callers: ADMIN, TRAINER — enforced at the controller layer.
+     */
+    public CourseDTO updateCourse(UUID courseId, CourseDTO dto) {
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new RuntimeException("Course not found with id: " + courseId));
+
+        if (dto.getTitle()       != null) course.setTitle(dto.getTitle());
+        if (dto.getDescription() != null) course.setDescription(dto.getDescription());
+        if (dto.getDuration()    != null) course.setDuration(dto.getDuration());
+        if (dto.getType()        != null) course.setType(Course.CourseType.valueOf(dto.getType().toUpperCase()));
+        if (dto.getInstructor()  != null) course.setInstructor(dto.getInstructor());
+        if (dto.getRating()      != null) course.setRating(dto.getRating());
+        if (dto.getActive()      != null) course.setActive(dto.getActive());
+
+        return toDTO(courseRepository.save(course));
+    }
+
+
     private CourseDTO toDTO(Course course) {
         return CourseDTO.builder()
                 .courseId(course.getCourseId())

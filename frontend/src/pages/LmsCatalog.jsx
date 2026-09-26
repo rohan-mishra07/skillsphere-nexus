@@ -7,6 +7,7 @@ import {
 import { Link } from 'react-router-dom';
 import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
+import { useRoles } from '../hooks/useRoles';
 import { useFeedback } from '../context/FeedbackContext';
 
 export const DEFAULT_COURSES = [
@@ -63,6 +64,11 @@ export const DEFAULT_COURSES = [
 export const LmsCatalog = () => {
   const { user } = useAuth();
   const { triggerAutoFeedback } = useFeedback();
+  // Centralised role capability flags — never compare role strings directly in JSX
+  const {
+    canCreateCourse, canResetCatalog, canUploadContent, isAdmin, isTrainer,
+    assertCanCreateCourse, assertCanResetCatalog, assertCanEnroll,
+  } = useRoles();
   const [activeTab, setActiveTab] = useState('catalog'); // catalog | enrollments | paths | completion | assessments | certificates
 
   // 1. State Hydration from localStorage with DEFAULT_COURSES fallback
@@ -108,12 +114,19 @@ export const LmsCatalog = () => {
   // Certificate Modal State
   const [selectedCert, setSelectedCert] = useState(null);
 
-  // Notification Toast State
-  const [toastMessage, setToastMessage] = useState('');
+  // Notification Toast State — supports 'success' | 'warn' | 'error' variants
+  const [toast, setToast] = useState({ msg: '', type: 'success' });
 
-  const showToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(''), 4000);
+  /**
+   * showToast(msg, type?)
+   *   type: 'success' (default, indigo) | 'warn' (amber) | 'error' (red)
+   *
+   * Called from both success paths and role-guard rejections so the user
+   * always gets visible feedback regardless of whether the operation ran.
+   */
+  const showToast = (msg, type = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast({ msg: '', type: 'success' }), type === 'error' ? 6000 : 4000);
   };
 
   useEffect(() => {
@@ -214,15 +227,31 @@ export const LmsCatalog = () => {
     }
   ];
 
-  // 2. Create Course Handler assigning unique timestamp ID, 5.0 rating, 0 enrolled count & active timestamp
+  // 2. Create Course Handler — with offline RBAC guard
+  //
+  // Before touching localStorage or posting to the backend, we call
+  // assertCanCreateCourse() — the client-side mirror of:
+  //   @PreAuthorize("hasAnyRole('ADMIN','TRAINER')")
+  // This ensures that even in offline/demo mode an unauthorized user
+  // cannot inject courses into nexus_courses.
   const handleCreateCourseSubmit = async (e) => {
     e.preventDefault();
+
+    // ── Offline RBAC guard ────────────────────────────────────────────────
+    const authErr = assertCanCreateCourse();
+    if (authErr) {
+      showToast(authErr, 'error');
+      setIsCreateModalOpen(false);
+      return; // abort — do NOT write to localStorage or call the backend
+    }
+
     const createdCourse = {
       ...newCourse,
       id: `course-${Date.now()}`,
       rating: 5.0,
       enrolledCount: 0,
-      createdAt: new Date().toISOString()
+      createdAt: new Date().toISOString(),
+      publishedBy: user?.role ?? 'UNKNOWN', // audit trail
     };
 
     try {
@@ -234,16 +263,18 @@ export const LmsCatalog = () => {
         Object.assign(createdCourse, res.data);
       }
     } catch (err) {
-      console.warn("Backend unavailable; saving course locally into localStorage.", err);
+      // Backend unavailable — fall back to localStorage (offline/demo mode)
+      console.warn('Backend unavailable; persisting course to nexus_courses in localStorage.', err);
     }
 
+    // Persist to nexus_courses (both online confirmation + offline fallback)
     setCourses(prev => {
       const updated = [createdCourse, ...(prev || [])];
       localStorage.setItem('nexus_courses', JSON.stringify(updated));
       return updated;
     });
 
-    showToast(`Course "${createdCourse.title}" created & persisted successfully!`);
+    showToast(`Course "${createdCourse.title}" created & persisted successfully!`, 'success');
     setIsCreateModalOpen(false);
     setNewCourse({
       title: '',
@@ -256,11 +287,19 @@ export const LmsCatalog = () => {
     });
   };
 
-  // 3. Reset Fallback Handler
+  // 3. Reset Fallback Handler — with offline RBAC guard
+  //
+  // Mirror of: @PreAuthorize("hasRole('ADMIN')")
+  // Managers and Trainers may sync data but cannot wipe and reset the catalog.
   const handleResetCatalog = () => {
+    const authErr = assertCanResetCatalog();
+    if (authErr) {
+      showToast(authErr, 'error');
+      return;
+    }
     setCourses(DEFAULT_COURSES);
     localStorage.setItem('nexus_courses', JSON.stringify(DEFAULT_COURSES));
-    showToast('Course catalog reset to enterprise default courses.');
+    showToast('Course catalog reset to enterprise default courses.', 'success');
   };
 
   // 4. Cache Soft-Sync Handler
@@ -280,27 +319,61 @@ export const LmsCatalog = () => {
     setTimeout(() => setIsSyncing(false), 600);
   };
 
+  // 5. Enroll User Handler — with offline RBAC guard + nexus_enrolled_courses write
+  //
+  // Mirror of: @PreAuthorize("hasAnyRole('ADMIN','TRAINER','MANAGER','EMPLOYEE','HR','STUDENT')")
+  // All authenticated roles can enroll. The enrollment is written to BOTH:
+  //   a) nexus_enrolled_courses  — employee-facing offline store
+  //   b) React enrollments state — immediate UI update
   const handleEnrollUser = async (courseId, title) => {
-    const dummyEmpId = 'e1001-john-smith-id';
+    // ── Offline RBAC guard ────────────────────────────────────────────────
+    const authErr = assertCanEnroll();
+    if (authErr) {
+      showToast(authErr, 'error');
+      return;
+    }
+
+    const empId = user?.id ? `emp-${user.id}` : 'e1001-john-smith-id';
+
+    const newEnr = {
+      enrollmentId: 'enr-' + Date.now(),
+      empId,
+      courseId,
+      courseTitle: title,
+      enrolledAt: new Date().toISOString(),
+      progress: 0,
+      completed: false,
+      score: 0.0,
+      completedAt: null
+    };
+
     try {
-      const res = await api.post(`/learning/enrollments?empId=${dummyEmpId}&courseId=${courseId}`);
-      showToast(`Enrolled successfully in "${title}"!`);
+      const res = await api.post(`/learning/enrollments?empId=${empId}&courseId=${courseId}`);
+      // Use server-assigned record if backend responded
+      if (res?.data) Object.assign(newEnr, res.data);
       fetchEnrollments();
     } catch (err) {
-      const newEnr = {
-        enrollmentId: 'enr-' + Date.now(),
-        empId: dummyEmpId,
-        courseId: courseId,
-        courseTitle: title,
-        enrolledAt: new Date().toISOString(),
-        progress: 0,
-        completed: false,
-        score: 0.0,
-        completedAt: null
-      };
-      setEnrollments([newEnr, ...enrollments]);
-      showToast(`Enrolled successfully in "${title}"!`);
+      // Offline / backend unavailable — persist enrollment to localStorage
+      console.warn('Backend unavailable; persisting enrollment to nexus_enrolled_courses.', err);
+      setEnrollments(prev => [newEnr, ...(prev || [])]);
     }
+
+    // Always write to nexus_enrolled_courses so the employee's progress
+    // survives page refreshes in offline / demo mode.
+    try {
+      const existing = JSON.parse(localStorage.getItem('nexus_enrolled_courses') || '[]');
+      const alreadyEnrolled = existing.some(
+        e => String(e.courseId) === String(courseId) && e.empId === empId
+      );
+      if (!alreadyEnrolled) {
+        const updated = [newEnr, ...existing];
+        localStorage.setItem('nexus_enrolled_courses', JSON.stringify(updated));
+      }
+    } catch (storageErr) {
+      console.warn('Could not persist enrollment to localStorage:', storageErr);
+    }
+
+    showToast(`Enrolled successfully in "${title}"!`, 'success');
     if (triggerAutoFeedback) {
       triggerAutoFeedback('Learning Content');
     }
@@ -346,13 +419,25 @@ export const LmsCatalog = () => {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Notification Toast */}
-      {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-indigo-600 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border border-indigo-400/30 animate-bounce">
-          <Sparkles className="w-5 h-5" />
-          <span className="text-sm font-semibold">{toastMessage}</span>
-        </div>
-      )}
+      {/* Notification Toast — type-aware styling */}
+      {toast.msg && (() => {
+        const styles = {
+          success: 'bg-indigo-600 border-indigo-400/30 text-white',
+          warn:    'bg-amber-500/90 border-amber-400/40 text-slate-900',
+          error:   'bg-red-600/90 border-red-400/40 text-white',
+        };
+        const icons = {
+          success: <Sparkles className="w-5 h-5 flex-shrink-0" />,
+          warn:    <span className="text-base flex-shrink-0">⚠️</span>,
+          error:   <span className="text-base flex-shrink-0">🔒</span>,
+        };
+        return (
+          <div className={`fixed bottom-6 right-6 z-50 max-w-sm px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border animate-bounce ${styles[toast.type] ?? styles.success}`}>
+            {icons[toast.type]}
+            <span className="text-sm font-semibold">{toast.msg}</span>
+          </div>
+        );
+      })()}
 
       {/* Top Milestone Header Banner */}
       <div className="glass-panel p-6 md:p-8 rounded-3xl border border-indigo-500/20 bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 shadow-xl relative overflow-hidden">
@@ -372,29 +457,43 @@ export const LmsCatalog = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            {user?.role !== 'ROLE_EMPLOYEE' && (
+            {/* ── ADMIN / TRAINER ONLY: Course creation button ─────────────── */}
+            {canCreateCourse && (
               <button
+                id="btn-create-course"
                 onClick={() => setIsCreateModalOpen(true)}
                 className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl shadow-lg shadow-indigo-600/25 flex items-center gap-2 transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                title="Create a new course (Admin / Trainer only)"
               >
                 <Plus className="w-4 h-4" /> Create Course
               </button>
             )}
-            <button
-              onClick={handleResetCatalog}
-              className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-2 transition-all cursor-pointer"
-              title="Reset course catalog to enterprise defaults"
-            >
-              <RefreshCw className="w-3.5 h-3.5 text-amber-400" /> Reset Catalog
-            </button>
-            <button
-              type="button"
-              onClick={handleSyncData}
-              disabled={isSyncing}
-              className="px-3.5 py-2.5 glass-panel text-slate-300 hover:text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing || isLoadingEnrollments ? 'animate-spin text-indigo-400' : ''}`} /> Sync Data
-            </button>
+
+            {/* ── ADMIN ONLY: Catalog reset — destructive utility ───────────── */}
+            {canResetCatalog && (
+              <button
+                id="btn-reset-catalog"
+                onClick={handleResetCatalog}
+                className="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold rounded-xl border border-slate-700 flex items-center gap-2 transition-all cursor-pointer"
+                title="Reset course catalog to enterprise defaults (Admin only)"
+              >
+                <RefreshCw className="w-3.5 h-3.5 text-amber-400" /> Reset Catalog
+              </button>
+            )}
+
+            {/* ── ADMIN / TRAINER: Sync / Upload Content ───────────────────── */}
+            {canUploadContent && (
+              <button
+                id="btn-sync-catalog"
+                type="button"
+                onClick={handleSyncData}
+                disabled={isSyncing}
+                className="px-3.5 py-2.5 glass-panel text-slate-300 hover:text-white text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+                title="Sync / upload content (Admin / Trainer only)"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isSyncing || isLoadingEnrollments ? 'animate-spin text-indigo-400' : ''}`} /> Sync Data
+              </button>
+            )}
           </div>
         </div>
 
@@ -543,19 +642,89 @@ export const LmsCatalog = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    {/* Everyone: Watch / Continue link (label adapts to progress) */}
                     <Link
                       to={`/courses/${course.id}`}
                       className="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl flex items-center justify-center gap-1.5 transition-all"
+                      title="Watch course videos"
                     >
-                      <PlayCircle className="w-4 h-4 text-indigo-400" /> Watch Videos
+                      <PlayCircle className="w-4 h-4 text-indigo-400" />
+                      {(() => {
+                        const enr = (enrollments || []).find(e => String(e.courseId) === String(course.id));
+                        if (enr?.completed) return 'Re-watch';
+                        if (enr?.progress > 0) return 'Continue';
+                        return 'Watch Videos';
+                      })()}
                     </Link>
 
-                    <button
-                      onClick={() => handleEnrollUser(course.id, course.title)}
-                      className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-md shadow-indigo-600/20"
-                    >
-                      Enroll
-                    </button>
+                    {/* Role-aware right-side action */}
+                    {(() => {
+                      const enr = (enrollments || []).find(e => String(e.courseId) === String(course.id));
+
+                      // ── Completed → View Certificate (all roles) ──────────
+                      if (enr?.completed) {
+                        return (
+                          <button
+                            onClick={() => {
+                              setSelectedCert({
+                                userName: user?.fullName || 'Learner',
+                                courseTitle: course.title,
+                                code: 'CERT-' + enr.enrollmentId?.substring(0, 8).toUpperCase(),
+                                issueDate: enr.completedAt
+                                  ? new Date(enr.completedAt).toLocaleDateString()
+                                  : new Date().toLocaleDateString(),
+                                authority: 'SkillSphere Enterprise LMS'
+                              });
+                            }}
+                            className="px-3 py-2.5 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors border border-amber-500/30"
+                            title="View completion certificate"
+                          >
+                            <Award className="w-3.5 h-3.5" /> Certificate
+                          </button>
+                        );
+                      }
+
+                      // ── In-progress → Continue Learning ──────────────────
+                      if (enr?.progress > 0) {
+                        return (
+                          <Link
+                            to={`/courses/${course.id}`}
+                            className="px-3 py-2.5 bg-indigo-600/80 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-md shadow-indigo-600/20"
+                            title="Continue learning"
+                          >
+                            <ChevronRight className="w-3.5 h-3.5" /> Continue
+                          </Link>
+                        );
+                      }
+
+                      // ── Not enrolled ──────────────────────────────────────
+                      // Everyone: Enroll button
+                      // ADMIN / TRAINER: additionally show an Edit button
+                      return (
+                        <>
+                          <button
+                            id={`btn-enroll-${course.id}`}
+                            onClick={() => handleEnrollUser(course.id, course.title)}
+                            className="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors shadow-md shadow-indigo-600/20"
+                            title="Enroll in this course"
+                          >
+                            Enroll
+                          </button>
+
+                          {/* Admin / Trainer: Edit button */}
+                          {canCreateCourse && (
+                            <button
+                              id={`btn-edit-course-${course.id}`}
+                              onClick={() => showToast(`Edit mode for "${course.title}" — coming soon.`)}
+                              className="px-3 py-2.5 bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs font-semibold rounded-xl flex items-center gap-1.5 transition-colors border border-slate-600"
+                              title="Edit course (Admin / Trainer only)"
+                            >
+                              Edit
+                            </button>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
               </div>

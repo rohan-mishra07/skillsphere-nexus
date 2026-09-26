@@ -1,26 +1,62 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Bot, User, Sparkles, Loader2, ArrowRight, Trash2, HelpCircle } from 'lucide-react';
+import { 
+  X, Send, Bot, User, Sparkles, Loader2, ArrowRight, Trash2, HelpCircle 
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+
+// Default courses for catalog searching when localStorage is not populated
+const DEFAULT_COURSES = [
+  { 
+    id: 1, 
+    title: 'Enterprise Java Spring Boot 4 & Security', 
+    description: 'Master modern Spring Boot 4 RESTful APIs, Spring Security 6 with JWT tokens, Spring Data JPA, and Microservices Architecture.', 
+    category: 'Backend Engineering', 
+    rating: 4.9 
+  },
+  { 
+    id: 2, 
+    title: 'React 18 & Modern Tailwind CSS Enterprise UI', 
+    description: 'Build high-performance web applications using React hooks, dynamic routing, state management, and custom glassmorphism design systems.', 
+    category: 'Frontend Web Development', 
+    rating: 4.85 
+  },
+  { 
+    id: 3, 
+    title: 'AWS Certified Solutions Architect & Cloud Native Strategy', 
+    description: 'Designing fault-tolerant, highly available enterprise microservices on AWS Cloud infrastructure.', 
+    category: 'Cloud & DevOps', 
+    rating: 4.95 
+  },
+  { 
+    id: 4, 
+    title: 'AI-Driven Workforce Analytics & HR Strategy', 
+    description: 'Leverage predictive AI models, skill gap matrixes, and performance KPIs to optimize enterprise talent development.', 
+    category: 'Management & Leadership', 
+    rating: 4.90 
+  }
+];
+
+// Interactive Quick-Prompt Suggestion Chips required by specs
+const QUICK_PROMPT_CHIPS = [
+  { label: '📚 Recommend a Course', query: 'Find courses on Java and React' },
+  { label: '💼 Open Job Openings', query: 'Find jobs / How do I apply?' },
+  { label: '📜 Certification Policy', query: 'Check certification expiry' },
+  { label: '📊 My Skill Radar', query: 'How to close my skill gap?' }
+];
 
 export const AiAssistantModal = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const messagesEndRef = useRef(null);
 
-  const PRESET_PROMPTS = [
-    "What courses should I take for my skill gap?",
-    "How do I apply for annual leave?",
-    "How do I get my digital certificate?",
-    "What is my recommended career path?",
-    "Show my Q3 OKR goal progress"
-  ];
-
   const [messages, setMessages] = useState([
     {
       sender: 'ai',
-      text: 'Hello! I am your SkillSphere AI Assistant. How can I help you today with courses, skill gap analysis, leave policies, or career path planning?',
-      actionLink: '/courses',
-      actionLabel: 'Browse LMS Catalog'
+      text: 'Hello! I am your SkillSphere AI Copilot & Interactive Platform Concierge. How can I assist you with course recommendations, active job openings, certification rules, or closing your skill gap today?',
+      actions: [
+        { label: 'Browse LMS Catalog', link: '/courses' },
+        { label: 'View Skill Matrix', link: '/skills' }
+      ]
     }
   ]);
   const [input, setInput] = useState('');
@@ -30,11 +66,182 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
     scrollToBottom();
   }, [messages, loading]);
 
+  // Prevent body scroll when modal is open on mobile
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   if (!isOpen) return null;
+
+  // Rule-based Mock Engine & Intent Recognizer
+  const parseRuleBasedIntent = (userPrompt) => {
+    const lower = userPrompt.toLowerCase();
+
+    // Helper: fetch current course catalog from localStorage or defaults
+    const getCoursesFromCatalog = () => {
+      try {
+        const saved = localStorage.getItem('nexus_courses');
+        if (saved) return JSON.parse(saved);
+      } catch (e) {}
+      return DEFAULT_COURSES;
+    };
+
+    // 1. Intent: Find courses on [topic] / Course Recommendations
+    if (
+      lower.includes('course') || 
+      lower.includes('learn') || 
+      lower.includes('catalog') || 
+      lower.includes('class') || 
+      lower.includes('training') || 
+      lower.includes('find courses') ||
+      lower.includes('recommend a course')
+    ) {
+      const catalog = getCoursesFromCatalog();
+      
+      // Check if user specified a specific topic (e.g., "find courses on java", "react courses")
+      let matchedCourses = catalog;
+      const topicMatch = lower.match(/(?:find|search|show|get|recommend)?\s*courses?\s*(?:on|for|about|in)?\s*(.*)/i);
+      const extractedTopic = topicMatch && topicMatch[1] ? topicMatch[1].trim() : '';
+      
+      if (extractedTopic && !extractedTopic.includes('recommend') && extractedTopic.length > 2) {
+        matchedCourses = catalog.filter(c => 
+          c.title.toLowerCase().includes(extractedTopic) || 
+          c.category?.toLowerCase().includes(extractedTopic) ||
+          (c.description && c.description.toLowerCase().includes(extractedTopic))
+        );
+      }
+
+      if (matchedCourses.length > 0) {
+        const topMatches = matchedCourses.slice(0, 3);
+        const courseItemsText = topMatches
+          .map((c, i) => `${i + 1}. **${c.title}** (${c.category || 'General'}) — ⭐ ${c.rating || 4.9}`)
+          .join('\n');
+
+        const actions = topMatches.map(c => ({
+          label: `Open Course #${c.id}: ${c.title.split(' ')[0]} ${c.title.split(' ')[1] || ''}`,
+          link: `/courses/${c.id}`
+        }));
+        actions.push({ label: 'Browse Full LMS Catalog', link: '/courses' });
+
+        return {
+          text: `🔍 **Matching LMS Courses Found:**\n\n${courseItemsText}\n\nSelect a course below to jump directly into the interactive player:`,
+          actions
+        };
+      } else {
+        return {
+          text: `No specific courses found matching your query. Here are our top featured enterprise courses:`,
+          actions: catalog.slice(0, 2).map(c => ({
+            label: `Open Course #${c.id}: ${c.title}`,
+            link: `/courses/${c.id}`
+          })).concat([{ label: 'Browse Full Catalog', link: '/courses' }])
+        };
+      }
+    }
+
+    // 2. Intent: Find jobs / How do I apply? / Job Openings
+    if (
+      lower.includes('job') || 
+      lower.includes('career') || 
+      lower.includes('apply') || 
+      lower.includes('opening') || 
+      lower.includes('vacancy') || 
+      lower.includes('hiring') || 
+      lower.includes('recruitment')
+    ) {
+      return {
+        text: `💼 **Active Internal Job Openings & Career Portal**\n\nBased on your current profile and skill competencies, here are top matching requisition openings:\n\n1. **Senior Cloud Backend Architect** (Engineering - Remote) — *94% Skill Match*\n2. **Full-Stack UI Specialist (React/TS)** (Frontend - Hybrid) — *88% Skill Match*\n3. **DevOps & Cloud Automation Lead** (Operations - On-site) — *85% Skill Match*\n\nYou can submit 1-click internal applications and view pipeline stages directly in the Career Portal.`,
+        actions: [
+          { label: 'Explore Career Portal', link: '/career' },
+          { label: 'View ATS & Recruitment Board', link: '/recruitment' }
+        ]
+      };
+    }
+
+    // 3. Intent: Check certification expiry / Certification Policy
+    if (
+      lower.includes('certif') || 
+      lower.includes('expiry') || 
+      lower.includes('expire') || 
+      lower.includes('renew') || 
+      lower.includes('badge') || 
+      lower.includes('policy')
+    ) {
+      return {
+        text: `📜 **Certification Expiry & 30-Day Renewal Policy**\n\n• **Validity Window:** Enterprise certificates are valid for **12 months** from issuance date.\n• **30-Day Expiry Notice:** Automated notifications trigger **30 days prior** to certificate expiration.\n• **Renewal Rule:** Complete at least 5 Continuing Professional Education (CPE) credits or achieve an 80%+ score on the updated recertification assessment to automatically renew validity for another year.\n\nView active certificates and verify digital badges below:`,
+        actions: [
+          { label: 'Go to Certifications', link: '/certifications' },
+          { label: 'Verify Digital Credentials', link: '/verify' }
+        ]
+      };
+    }
+
+    // 4. Intent: How to close my skill gap? / Skill Radar
+    if (
+      lower.includes('skill') || 
+      lower.includes('gap') || 
+      lower.includes('radar') || 
+      lower.includes('competency') || 
+      lower.includes('roadmap') || 
+      lower.includes('matrix')
+    ) {
+      return {
+        text: `📊 **Skill Gap & Competency Analysis Summary**\n\n**Current Role Competencies:**\n• Java & Spring Boot: **88%** (Proficient)\n• React & Modern UI: **82%** (Advanced)\n• Cloud & AWS Infrastructure: **65%** (*Primary Skill Gap - 35% Delta*)\n• Enterprise Security & OAuth2: **60%** (*Secondary Skill Gap*)\n\n🎯 **Top Suggested Prerequisite Course to close your gap:**\n**AWS Certified Solutions Architect & Cloud Native Strategy** (Course #3).`,
+        actions: [
+          { label: 'Open Prerequisite Course (#3)', link: '/courses/3' },
+          { label: 'View Skill Matrix & Radar', link: '/skills' }
+        ]
+      };
+    }
+
+    // 5. Intent: Mentorship / Coaching
+    if (
+      lower.includes('mentor') || 
+      lower.includes('coach') || 
+      lower.includes('advisor') || 
+      lower.includes('guidance')
+    ) {
+      return {
+        text: `🤝 **Enterprise Mentorship & Technical Coaching**\n\nOur AI matching engine pairs you with senior staff architects based on your target career roadmap and skill gap metrics. Connect 1-on-1 for bi-weekly coaching sessions.`,
+        actions: [
+          { label: 'Find a Technical Mentor', link: '/skills' }
+        ]
+      };
+    }
+
+    // 6. Intent: Leave / PTO / Time off
+    if (
+      lower.includes('leave') || 
+      lower.includes('vacation') || 
+      lower.includes('pto') || 
+      lower.includes('time off')
+    ) {
+      return {
+        text: `🌴 **Workforce Leave Policy**\n\nStandard employee leave balance is **14 annual PTO days**. Requests submitted via the Workforce portal undergo automated 24-hour manager routing and attendance calendar sync.`,
+        actions: [
+          { label: 'Apply for Leave in Workforce', link: '/workforce' }
+        ]
+      };
+    }
+
+    // Default Fallback
+    return {
+      text: `I've analyzed your request across enterprise modules. Here are direct deep-links to help you navigate:`,
+      actions: [
+        { label: 'Browse LMS Courses', link: '/courses' },
+        { label: 'View Career Portal', link: '/career' },
+        { label: 'My Skill Radar', link: '/skills' }
+      ]
+    };
+  };
 
   const sendMessage = async (userPrompt) => {
     if (!userPrompt.trim() || loading) return;
@@ -45,46 +252,37 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
     setLoading(true);
 
     try {
+      // Attempt backend AI endpoint if configured
       const res = await api.post('/analytics/ai-chatbot', { prompt: userMsg });
-      const aiReply = res.data.response || 'I am analyzing your profile data across all modules.';
-      const actionLink = res.data.actionLink;
-      const actionLabel = res.data.actionLabel;
+      
+      let aiReply = res.data.response;
+      let actions = [];
 
-      setMessages(prev => [...prev, { sender: 'ai', text: aiReply, actionLink, actionLabel }]);
-    } catch (err) {
-      // Offline fallback answer logic
-      const lower = userMsg.toLowerCase();
-      let reply = "Based on your current skill matrix and enterprise goals, I recommend completing 'Enterprise Java Spring Boot 3 & Security' to boost your technical proficiency index.";
-      let link = "/courses";
-      let label = "Explore LMS Courses";
-
-      if (lower.includes('leave') || lower.includes('vacation') || lower.includes('pto') || lower.includes('time off')) {
-        reply = "You can log leave requests in the Workforce module. Standard processing time is 24 hours with automatic manager notification and 14 days annual balance available.";
-        link = "/workforce";
-        label = "Apply for Leave";
-      } else if (lower.includes('career') || lower.includes('roadmap') || lower.includes('promotion') || lower.includes('path')) {
-        reply = "Based on your current skill matrix (Java: 88%, React: 65%), your recommended career progression is Senior Full-Stack Architect within 12 months.";
-        link = "/skills";
-        label = "View Skill Matrix & Roadmap";
-      } else if (lower.includes('certif') || lower.includes('verify') || lower.includes('badge') || lower.includes('degree')) {
-        reply = "You can generate, view, and publicly verify digital certificates for all completed courses under the Certification Management module.";
-        link = "/certifications";
-        label = "View Certifications";
-      } else if (lower.includes('skill') || lower.includes('gap') || lower.includes('matrix') || lower.includes('competency')) {
-        reply = "Your primary identified skill gap is Advanced Cloud Architecture (AWS/Azure). Closing this gap will elevate your role readiness to 94%.";
-        link = "/skills";
-        label = "Analyze Skill Gaps";
-      } else if (lower.includes('course') || lower.includes('catalog') || lower.includes('recommend') || lower.includes('learn')) {
-        reply = "Top recommended courses for your profile: 1) Enterprise Java Spring Boot 3 & Security, 2) Modern React & TypeScript Architecture, 3) AWS Certified Solutions Architect.";
-        link = "/courses";
-        label = "Browse LMS Catalog";
-      } else if (lower.includes('okr') || lower.includes('goal') || lower.includes('performance')) {
-        reply = "Your Q3 OKR goal progress is currently at 78%. Your overall performance rating is 4.6/5. Key focus area: Lead 1 cross-team architecture workshop.";
-        link = "/performance";
-        label = "View Performance Hub";
+      if (res.data.actions && Array.isArray(res.data.actions)) {
+        actions = res.data.actions;
+      } else if (res.data.actionLink) {
+        actions = [{ label: res.data.actionLabel || 'Navigate', link: res.data.actionLink }];
       }
 
-      setMessages(prev => [...prev, { sender: 'ai', text: reply, actionLink: link, actionLabel: label }]);
+      // If backend returns generic text or no actions, enrich with mock engine
+      if (!aiReply || actions.length === 0) {
+        const enriched = parseRuleBasedIntent(userMsg);
+        aiReply = aiReply || enriched.text;
+        actions = actions.length > 0 ? actions : enriched.actions;
+      }
+
+      setMessages(prev => [...prev, { sender: 'ai', text: aiReply, actions }]);
+    } catch (err) {
+      // Robust Context-Aware Fallback Mock Engine
+      const fallbackResponse = parseRuleBasedIntent(userMsg);
+      setMessages(prev => [
+        ...prev, 
+        { 
+          sender: 'ai', 
+          text: fallbackResponse.text, 
+          actions: fallbackResponse.actions 
+        }
+      ]);
     } finally {
       setLoading(false);
     }
@@ -103,91 +301,118 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-      <div className="w-full max-w-xl glass-panel rounded-3xl border border-slate-700 shadow-2xl overflow-hidden flex flex-col h-[560px] bg-slate-900/90">
-        
-        {/* Header */}
-        <div className="p-4 bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border-b border-slate-800 flex items-center justify-between">
+    <div
+      className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-md"
+      role="dialog"
+      aria-modal="true"
+      aria-label="AI Assistant Concierge"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <style>{`
+        @keyframes aiSlideUp {
+          from { transform: translateY(40px); opacity: 0; }
+          to   { transform: translateY(0);    opacity: 1; }
+        }
+        @keyframes aiFadeScale {
+          from { opacity: 0; transform: scale(0.96); }
+          to   { opacity: 1; transform: scale(1); }
+        }
+        .ai-slide-up  { animation: aiSlideUp   0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .ai-fade-in   { animation: aiFadeScale  0.22s ease-out forwards; }
+      `}</style>
+
+      {/* Main Responsive Dialog Panel */}
+      <div
+        className="ai-slide-up sm:ai-fade-in w-full sm:max-w-xl flex flex-col
+                   bg-slate-900/95 border border-slate-700 shadow-2xl overflow-hidden
+                   rounded-t-3xl sm:rounded-3xl
+                   h-[88vh] sm:h-[620px] sm:max-h-[90vh]
+                   relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Mobile drag bar */}
+        <div
+          className="absolute top-2.5 left-1/2 -translate-x-1/2 w-10 h-1 rounded-full bg-slate-600 sm:hidden"
+          aria-hidden="true"
+        />
+
+        {/* ── Header ───────────────────────────────────────────────────────── */}
+        <div className="px-4 pt-7 pb-3 sm:pt-4 sm:pb-3 bg-gradient-to-r from-slate-900 via-indigo-950/70 to-slate-900 border-b border-slate-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-600/30 shrink-0">
               <Bot className="w-5 h-5" />
             </div>
             <div>
               <h3 className="font-bold text-sm text-white flex items-center gap-2 font-outfit">
-                SkillSphere AI Copilot
-                <span className="flex items-center gap-1 text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30">
-                  <Sparkles className="w-2.5 h-2.5" /> Active Engine
+                SkillSphere Platform Concierge
+                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] bg-indigo-500/20 text-indigo-300 px-2 py-0.5 rounded-full border border-indigo-500/30 font-medium">
+                  <Sparkles className="w-2.5 h-2.5 text-indigo-400" /> AI Guide
                 </span>
               </h3>
-              <p className="text-[11px] text-slate-400">Contextual LMS, Skill Gap & Workforce Assistant</p>
+              <p className="text-[11px] text-slate-400">Navigational Deep-Links, Skill Gap &amp; Career Assistant</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => setMessages([])}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
-              title="Clear chat history"
+              className="hidden sm:flex items-center justify-center w-10 h-10 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors"
+              title="Clear conversation"
+              aria-label="Clear chat history"
             >
               <Trash2 className="w-4 h-4" />
             </button>
-            <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
-              <X className="w-4 h-4" />
+
+            <button
+              onClick={onClose}
+              className="flex items-center justify-center w-11 h-11 rounded-xl text-slate-300 hover:text-white hover:bg-slate-700 active:bg-slate-600 transition-colors"
+              aria-label="Close AI Assistant"
+            >
+              <X className="w-5 h-5" />
             </button>
           </div>
         </div>
 
-        {/* Quick Suggestion Chips Bar */}
-        <div className="p-2.5 px-4 bg-slate-950/60 border-b border-slate-800/80 flex items-center gap-2 overflow-x-auto scrollbar-none">
-          <span className="text-[10px] font-bold text-indigo-400 shrink-0 flex items-center gap-1 uppercase tracking-wider">
-            <HelpCircle className="w-3 h-3" /> Quick Prompts:
-          </span>
-          {PRESET_PROMPTS.map((p, idx) => (
-            <button
-              key={idx}
-              onClick={() => sendMessage(p)}
-              className="px-2.5 py-1 rounded-full bg-slate-800/80 hover:bg-indigo-600/30 hover:border-indigo-500/50 text-slate-300 hover:text-white text-[11px] font-medium border border-slate-700 shrink-0 transition-all"
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-
-        {/* Message Thread */}
-        <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-950/40">
+        {/* ── Message Thread ───────────────────────────────────────────────── */}
+        <div className="flex-1 min-h-0 p-4 overflow-y-auto space-y-4 bg-slate-950/50 overscroll-contain">
           {messages.map((m, idx) => (
             <div key={idx} className={`flex gap-3 ${m.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
               {m.sender === 'ai' && (
-                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-xs shrink-0 shadow-md">
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white text-xs shrink-0 shadow-md mt-0.5">
                   <Bot className="w-4 h-4" />
                 </div>
               )}
 
-              <div className="space-y-2 max-w-[82%]">
+              <div className="space-y-2 max-w-[85%]">
                 <div
-                  className={`p-3.5 rounded-2xl text-xs leading-relaxed ${
+                  className={`p-3.5 rounded-2xl text-xs leading-relaxed whitespace-pre-line ${
                     m.sender === 'user'
                       ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-br-none shadow-md'
-                      : 'glass-panel text-slate-200 border border-slate-800 rounded-bl-none'
+                      : 'glass-panel text-slate-200 border border-slate-800/80 rounded-bl-none'
                   }`}
                 >
                   {m.text}
                 </div>
 
-                {/* Direct Action Link Button */}
-                {m.sender === 'ai' && m.actionLink && (
-                  <button
-                    onClick={() => handleActionClick(m.actionLink)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-[11px] font-bold rounded-xl border border-indigo-500/30 transition-all shadow-sm"
-                  >
-                    <span>{m.actionLabel || 'View Feature'}</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </button>
+                {/* Direct Action Deep-Links / Buttons */}
+                {m.sender === 'ai' && m.actions && m.actions.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {m.actions.map((act, aIdx) => (
+                      <button
+                        key={aIdx}
+                        onClick={() => handleActionClick(act.link)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white text-[11px] font-bold rounded-xl border border-indigo-500/40 hover:border-indigo-500 transition-all shadow-sm active:scale-95"
+                      >
+                        <span>{act.label}</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
 
               {m.sender === 'user' && (
-                <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-white text-xs shrink-0 border border-slate-700">
+                <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center text-white text-xs shrink-0 border border-slate-700 mt-0.5">
                   <User className="w-4 h-4" />
                 </div>
               )}
@@ -197,29 +422,54 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
           {loading && (
             <div className="flex gap-2 items-center text-xs text-indigo-400 glass-panel p-3 rounded-xl w-fit">
               <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
-              <span>AI is analyzing skill matrices & knowledge base...</span>
+              <span>Analyzing intent &amp; searching platform catalog...</span>
             </div>
           )}
 
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Prompt Input Form */}
-        <form onSubmit={handleSendForm} className="p-3 bg-slate-900 border-t border-slate-800 flex gap-2">
+        {/* ── Interactive Quick-Prompt Suggestion Chips ───────────────────── */}
+        <div className="p-2 px-3 bg-slate-950/80 border-t border-slate-800/80 flex items-center gap-2 overflow-x-auto scrollbar-none shrink-0">
+          <span className="text-[10px] font-bold text-indigo-400 shrink-0 flex items-center gap-1 uppercase tracking-wider pl-1">
+            <HelpCircle className="w-3 h-3" /> Quick Prompts:
+          </span>
+          {QUICK_PROMPT_CHIPS.map((chip, idx) => (
+            <button
+              key={idx}
+              onClick={() => sendMessage(chip.query)}
+              className="px-2.5 py-1 rounded-full bg-slate-800/90 hover:bg-indigo-600/40 hover:border-indigo-400 text-slate-200 hover:text-white text-[11px] font-medium border border-slate-700/80 shrink-0 transition-all shadow-sm active:scale-95"
+            >
+              {chip.label}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Prompt Input Form ────────────────────────────────────────────── */}
+        <form
+          onSubmit={handleSendForm}
+          className="p-3 bg-slate-900 border-t border-slate-800 flex gap-2 shrink-0"
+          style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
+        >
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask about courses, skill gaps, leave requests, or career paths..."
-            className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-indigo-500 transition-colors"
+            placeholder="Ask about courses, jobs, cert rules, or skill gaps..."
+            className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-indigo-500 transition-colors placeholder:text-slate-500 text-sm"
+            style={{ fontSize: '16px' }}
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
           />
           <button
             type="submit"
             disabled={loading}
-            className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-md shadow-indigo-600/20"
+            className="px-4 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity flex items-center gap-1.5 shadow-md shadow-indigo-600/20 disabled:opacity-50 shrink-0"
+            aria-label="Send message"
           >
             <Send className="w-3.5 h-3.5" />
-            <span>Send</span>
+            <span className="hidden sm:inline">Send</span>
           </button>
         </form>
       </div>

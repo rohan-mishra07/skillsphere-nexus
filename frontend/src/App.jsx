@@ -6,6 +6,7 @@ import { FeedbackProvider } from './context/FeedbackContext';
 import { Sidebar } from './components/Sidebar';
 import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import { RoleGuard } from './components/RoleGuard';
 import { AICopilotDrawer } from './components/AICopilotDrawer';
 import { LoginModal } from './components/LoginModal';
 import { UserFeedbackModal } from './components/UserFeedbackModal';
@@ -93,7 +94,37 @@ export function AppContent() {
           <Route path="/performance" element={<PerformanceHub />} />
           <Route path="/recruitment" element={<RecruitmentBoard />} />
           <Route path="/jobs" element={<RecruitmentBoard />} />
-          <Route path="/admin/users" element={<AdminDashboard />} />
+
+          {/* Role-gated: Admin-only user management */}
+          <Route
+            path="/admin/users"
+            element={
+              <ProtectedRoute allowedRoles={['ROLE_ADMIN']} unauthorizedRedirect="/dashboard">
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Role-gated: Course creation — ADMIN or TRAINER only */}
+          <Route
+            path="/admin/create-course"
+            element={
+              <RoleGuard allowedRoles={['ROLE_ADMIN', 'ROLE_TRAINER']} redirectTo="/courses">
+                <LmsCatalog />
+              </RoleGuard>
+            }
+          />
+
+          {/* Role-gated: Job posting — ADMIN only */}
+          <Route
+            path="/admin/create-job"
+            element={
+              <RoleGuard allowedRoles={['ROLE_ADMIN']} redirectTo="/career-analytics">
+                <CareerAnalytics />
+              </RoleGuard>
+            }
+          />
+
           <Route path="/audit-logs" element={<AuditLogsView />} />
           <Route path="/audit" element={<AuditLogsView />} />
           <Route path="/reports" element={<ReportsAnalytics />} />
