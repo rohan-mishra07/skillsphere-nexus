@@ -66,15 +66,25 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
     scrollToBottom();
   }, [messages, loading]);
 
-  // Prevent body scroll when modal is open on mobile
+  // Prevent body scroll when modal is open on mobile & add Escape key listener
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
     if (isOpen) {
       document.body.style.overflow = 'hidden';
+      window.addEventListener('keydown', handleKeyDown);
     } else {
       document.body.style.overflow = '';
     }
-    return () => { document.body.style.overflow = ''; };
-  }, [isOpen]);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isOpen, onClose]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

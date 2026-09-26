@@ -16,26 +16,28 @@ import {
 export const Sidebar = ({ onOpenAiCopilot }) => {
   const { user } = useAuth();
 
-  // Determine if active session has management privileges
+  // Determine if active session has management or admin privileges
   const isManagement = ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER'].includes(user?.role);
+  const isAdmin = user?.role === 'ROLE_ADMIN';
 
   // Strict Segregated Menu Structures:
   
   // Non-Management (Employee Portal) Links (ONLY 4 Links)
   const employeeNavItems = [
-    { label: 'My Growth Hub', icon: Home, path: '/dashboard', iconEmoji: '🏠' },
-    { label: 'Course Catalog', icon: BookOpen, path: '/learning', iconEmoji: '📚' },
-    { label: 'My Certifications', icon: Award, path: '/certifications', iconEmoji: '🏆' },
-    { label: 'Internal Jobs', icon: Briefcase, path: '/jobs', iconEmoji: '💼' },
+    { id: 'dashboard', label: 'My Growth Hub', icon: Home, path: '/dashboard', iconEmoji: '🏠' },
+    { id: 'learning', label: 'Course Catalog', icon: BookOpen, path: '/learning', iconEmoji: '📚' },
+    { id: 'certifications', label: 'My Certifications', icon: Award, path: '/certifications', iconEmoji: '🏆' },
+    { id: 'jobs', label: 'Internal Jobs', icon: Briefcase, path: '/jobs', iconEmoji: '💼' },
   ];
 
-  // Management Portal Administrative Links (5 Administrative Links)
+  // Management Portal Administrative Links
   const managementNavItems = [
-    { label: 'Management Intelligence', icon: Home, path: '/dashboard', iconEmoji: '🏠' },
-    { label: 'User Directory & RBAC', icon: Users, path: '/admin/users', iconEmoji: '👥' },
-    { label: 'Workforce & Leaves', icon: ClipboardList, path: '/workforce', iconEmoji: '📋' },
-    { label: 'Course Management', icon: BookOpen, path: '/learning', iconEmoji: '📚' },
-    { label: 'Reports & Analytics', icon: BarChart3, path: '/reports', iconEmoji: '📊' },
+    { id: 'dashboard', label: 'Management Intelligence', icon: Home, path: '/dashboard', iconEmoji: '🏠' },
+    { id: 'users', label: 'User Directory & RBAC', icon: Users, path: '/admin/users', iconEmoji: '👥' },
+    ...(isAdmin ? [{ id: 'jobs', label: 'Job Requisitions (M4)', icon: Briefcase, path: '/management/jobs', iconEmoji: '💼' }] : []),
+    { id: 'workforce', label: 'Workforce & Leaves', icon: ClipboardList, path: '/workforce', iconEmoji: '📋' },
+    { id: 'courses', label: 'Course Management', icon: BookOpen, path: '/learning', iconEmoji: '📚' },
+    { id: 'reports', label: 'Reports & Analytics', icon: BarChart3, path: '/reports', iconEmoji: '📊' },
   ];
 
   const currentNav = isManagement ? managementNavItems : employeeNavItems;

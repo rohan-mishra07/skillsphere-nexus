@@ -27,6 +27,7 @@ import { AdminDashboard } from './pages/AdminDashboard';
 import Milestone2Dashboard, { Milestone2Dashboard as Milestone2DashboardNamed } from './pages/Milestone2Dashboard';
 import { CertificationManagement } from './pages/CertificationManagement';
 import { CareerAnalytics } from './pages/CareerAnalytics';
+import { JobRequisitionsManagement } from './pages/JobRequisitionsManagement';
 import { MobileBottomNav } from './components/MobileBottomNav';
 
 const ProtectedLayout = ({ onOpenAiModal, onOpenLoginModal }) => {
@@ -101,6 +102,24 @@ export function AppContent() {
             element={
               <ProtectedRoute allowedRoles={['ROLE_ADMIN']} unauthorizedRedirect="/dashboard">
                 <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Role-gated: Admin-only job requisitions management */}
+          <Route
+            path="/management/jobs"
+            element={
+              <ProtectedRoute allowedRoles={['ROLE_ADMIN']} unauthorizedRedirect="/dashboard">
+                <JobRequisitionsManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/jobs"
+            element={
+              <ProtectedRoute allowedRoles={['ROLE_ADMIN']} unauthorizedRedirect="/dashboard">
+                <JobRequisitionsManagement />
               </ProtectedRoute>
             }
           />

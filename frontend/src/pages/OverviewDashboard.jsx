@@ -28,6 +28,7 @@ import {
 import api from '../api/axios';
 import { CertificateModal } from '../components/CertificateModal';
 import { ApplyLeaveModal } from '../components/ApplyLeaveModal';
+import { JobRequisitionsManagement } from './JobRequisitionsManagement';
 
 // ----------------------------------------------------------------------
 // 1. Employee Dashboard View Component
@@ -335,7 +336,11 @@ export const EmployeeDashboardView = ({ user }) => {
 // ----------------------------------------------------------------------
 // 2. Management Dashboard View Component
 // ----------------------------------------------------------------------
-export const ManagementDashboardView = ({ user }) => {
+export const ManagementDashboardView = ({ user, activeTab }) => {
+  if (activeTab === 'jobs') {
+    return <JobRequisitionsManagement />;
+  }
+
   const { leaveRequests, approveLeaveRequest, rejectLeaveRequest } = useWorkforce();
   const { feedbacks } = useFeedback();
 
@@ -584,8 +589,12 @@ export const ManagementDashboardView = ({ user }) => {
 // ----------------------------------------------------------------------
 // 3. Main OverviewDashboard Router Component
 // ----------------------------------------------------------------------
-export const OverviewDashboard = () => {
+export const OverviewDashboard = ({ activeTab }) => {
   const { user } = useAuth();
+
+  if (activeTab === 'jobs') {
+    return <JobRequisitionsManagement />;
+  }
 
   // Management Role Check
   const isManagement = ['ROLE_ADMIN', 'ROLE_HR', 'ROLE_MANAGER'].includes(user?.role);
@@ -598,7 +607,7 @@ export const OverviewDashboard = () => {
   }
 
   if (isManagement) {
-    return <ManagementDashboardView user={user} />;
+    return <ManagementDashboardView user={user} activeTab={activeTab} />;
   }
 
   // Default fallback for any other role
