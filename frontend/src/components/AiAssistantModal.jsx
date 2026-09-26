@@ -140,7 +140,7 @@ export const AiAssistantModal = ({ isOpen, onClose }) => {
           label: `Open Course #${c.id}: ${c.title.split(' ')[0]} ${c.title.split(' ')[1] || ''}`,
           link: `/courses/${c.id}`
         }));
-        actions.push({ label: 'Browse Full LMS Catalog', link: '/courses' });
+        actions.push({ label: '📖 Open in Course Portal', link: '/courses' });
 
         return {
           text: `🔍 **Matching LMS Courses Found:**\n\n${courseItemsText}\n\nSelect a course below to jump directly into the interactive player:`,

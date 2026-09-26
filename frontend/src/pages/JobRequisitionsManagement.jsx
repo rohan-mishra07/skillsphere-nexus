@@ -186,10 +186,10 @@ export const JobRequisitionsManagement = () => {
         {/* Primary Action Button */}
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-bold text-xs shadow-xl shadow-indigo-600/30 border border-indigo-400/30 flex items-center gap-2 shrink-0 transition-all hover:scale-[1.02] active:scale-95 z-10"
+          className="px-5 py-3 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 text-white font-bold text-xs shadow-xl shadow-indigo-600/30 border border-indigo-400/30 flex items-center shrink-0 transition-all hover:scale-[1.02] active:scale-95 z-10"
         >
-          <Plus className="w-4 h-4" />
-          <span>+ Post New Job</span>
+          <Plus className="w-4 h-4 mr-2" />
+          <span>Post New Job</span>
         </button>
 
         <div className="absolute right-0 top-0 -bottom-10 w-64 bg-indigo-600/10 blur-3xl pointer-events-none" />

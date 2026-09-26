@@ -15,6 +15,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { useFeedback } from '../context/FeedbackContext';
 import { CertificateModal } from '../components/CertificateModal';
+import SkillAssessmentModal from '../components/SkillAssessmentModal';
 
 export const CoursePlayer = () => {
   const { id } = useParams();
@@ -25,6 +26,7 @@ export const CoursePlayer = () => {
   const [activeLesson, setActiveLesson] = useState(null);
   const [completedLessons, setCompletedLessons] = useState([1]);
   const [showCertModal, setShowCertModal] = useState(false);
+  const [showAssessmentModal, setShowAssessmentModal] = useState(false);
   const [certCode, setCertCode] = useState('SKSP-89F2A90C');
   const [certDate, setCertDate] = useState(null);
 
@@ -89,16 +91,24 @@ export const CoursePlayer = () => {
   return (
     <div className="space-y-6">
       {/* Top Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <Link to="/courses" className="inline-flex items-center gap-2 text-xs font-semibold text-slate-400 hover:text-white transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to LMS Catalog
         </Link>
-        <button
-          onClick={() => setShowCertModal(true)}
-          className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-amber-500/20"
-        >
-          <Award className="w-4 h-4" /> Claim Digital Certificate
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowAssessmentModal(true)}
+            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/20 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            <Sparkles className="w-4 h-4" /> Quick Self-Test (15 Qs / 15 Mins)
+          </button>
+          <button
+            onClick={() => setShowCertModal(true)}
+            className="px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer hover:scale-[1.02] active:scale-95 transition-all"
+          >
+            <Award className="w-4 h-4" /> Claim Digital Certificate
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -213,6 +223,17 @@ export const CoursePlayer = () => {
           certificateCode: certCode,
           instructor: course?.trainerName || 'Prof. David Sterling',
           director: 'Sarah Jenkins'
+        }}
+      />
+
+      {/* 15-Question / 15-Minute Skill Assessment Modal */}
+      <SkillAssessmentModal
+        isOpen={showAssessmentModal}
+        onClose={() => setShowAssessmentModal(false)}
+        assessmentData={{
+          id: id || 1,
+          testName: `${course?.title || 'Software Engineering'} Skill Self-Test`,
+          skillName: course?.title || 'Java & Spring Boot Core Competency'
         }}
       />
     </div>

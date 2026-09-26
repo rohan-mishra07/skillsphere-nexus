@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth, getInitials } from '../context/AuthContext';
 import { useWorkforce } from '../context/WorkforceContext';
 import { NotificationBar, INITIAL_NOTIFICATIONS } from './NotificationBar';
@@ -10,10 +11,25 @@ import {
   LogOut,
   Bot,
   Activity,
-  CheckCircle2
+  CheckCircle2,
+  ArrowRight
 } from 'lucide-react';
 
+const SEARCH_INDEX = [
+  { title: "Workforce & Leaves", description: "Attendance logs, clock-ins & leave approvals", category: "Navigation", link: "/workforce", keywords: ["workforce", "leave", "attendance", "pto", "clock"] },
+  { title: "User Directory & RBAC", description: "Manage staff, provision users & roles", category: "Navigation", link: "/admin/users", keywords: ["users", "user", "directory", "rbac", "staff", "admin"] },
+  { title: "Job Requisitions & ATS", description: "Internal job openings & candidate applications", category: "Navigation", link: "/jobs", keywords: ["jobs", "job", "requisition", "career", "hiring", "ats", "apply"] },
+  { title: "Course Catalog", description: "LMS learning courses & workshops", category: "Navigation", link: "/courses", keywords: ["courses", "course", "learning", "lms", "training", "catalog"] },
+  { title: "Skill Management Hub", description: "Skill matrix, ratings & radar graph", category: "Navigation", link: "/skills", keywords: ["skills", "skill", "matrix", "radar", "competency", "assessment"] },
+  { title: "My Certifications", description: "View & verify digital certificates", category: "Navigation", link: "/certifications", keywords: ["certifications", "cert", "certificate", "badge", "verify"] },
+  { title: "Reports & Analytics", description: "Executive telemetry & performance reports", category: "Navigation", link: "/reports", keywords: ["reports", "analytics", "telemetry", "metrics"] },
+  { title: "Enterprise Java Spring Boot 4 & Security", description: "Backend Engineering Course", category: "Course", link: "/courses/1", keywords: ["java", "spring", "boot", "security"] },
+  { title: "React 18 & Modern Tailwind CSS Enterprise UI", description: "Frontend Web Development Course", category: "Course", link: "/courses/2", keywords: ["react", "tailwind", "ui", "frontend"] },
+  { title: "AWS Certified Solutions Architect & Cloud Native", description: "Cloud & DevOps Strategy Course", category: "Course", link: "/courses/3", keywords: ["aws", "cloud", "devops", "architect"] }
+];
+
 export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
+  const navigate = useNavigate();
   const { user, logout } = useAuth();
   const { activeInOffice, pulseType } = useWorkforce();
   const [showNotificationBar, setShowNotificationBar] = useState(false);
@@ -36,6 +52,12 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
     setSearchQuery(query);
     window.dispatchEvent(new CustomEvent('nexus_global_search', { detail: query }));
   };
+
+  const searchResults = searchQuery.trim() ? SEARCH_INDEX.filter(item => 
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.keywords.some(k => k.toLowerCase().includes(searchQuery.toLowerCase()))
+  ) : [];
 
   const unreadCount = (notifications || []).filter(n => !n.read).length;
 
@@ -67,11 +89,41 @@ export const Navbar = ({ onOpenAiModal, onOpenLoginModal }) => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
           <input
             type="text"
-            placeholder="Search skills, courses, certifications..."
+            placeholder="Search workforce, jobs, courses, users, skills..."
             value={searchQuery}
             onChange={handleSearchChange}
             className="w-full bg-slate-950/80 border border-slate-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 transition-colors"
           />
+
+          {/* Quick-Jump Global Search Dropdown */}
+          {searchQuery.trim() && searchResults.length > 0 && (
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-slate-900/95 border border-indigo-500/40 rounded-2xl shadow-2xl p-2 z-50 space-y-1 backdrop-blur-xl animate-in fade-in zoom-in duration-150">
+              <div className="text-[10px] font-extrabold text-indigo-400 px-2 py-1 uppercase tracking-wider">
+                Quick Jump Navigation ({searchResults.length}):
+              </div>
+              {searchResults.slice(0, 5).map((res, rIdx) => (
+                <button
+                  key={rIdx}
+                  onClick={() => {
+                    setSearchQuery('');
+                    navigate(res.link);
+                  }}
+                  className="w-full text-left p-2.5 rounded-xl hover:bg-indigo-600/20 border border-transparent hover:border-indigo-500/30 flex items-center justify-between group transition-all cursor-pointer"
+                >
+                  <div>
+                    <div className="text-xs font-bold text-white group-hover:text-indigo-300 font-outfit flex items-center gap-1.5">
+                      <span>{res.title}</span>
+                      <span className="text-[9px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-400 font-mono">{res.category}</span>
+                    </div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">{res.description}</div>
+                  </div>
+                  <span className="text-[10px] font-bold text-indigo-300 group-hover:text-white bg-indigo-500/20 px-2.5 py-1 rounded-full border border-indigo-500/30 shrink-0 flex items-center gap-1 transition-all">
+                    Go to page <ArrowRight className="w-3 h-3" />
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Live Staff Ticker */}
